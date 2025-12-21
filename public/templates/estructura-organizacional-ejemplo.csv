@@ -1,0 +1,25 @@
+id,name,type,depth,parentId,parentName,responsibleEmail,description
+DG,Dirección General,UNIT,0,,,director@empresa.com,Dirección General de la Organización
+RRHH,Recursos Humanos,UNIT,1,DG,Dirección General,rrhh@empresa.com,Gestión del talento humano
+RRHH-RS,Reclutamiento y Selección,UNIT,2,RRHH,Recursos Humanos,reclutamiento@empresa.com,Procesos de atracción y selección de talento
+RRHH-RS-P1,Gestión de Candidatos,PROCESS,,RRHH-RS,Reclutamiento y Selección,,Administración de candidatos y vacantes
+RRHH-RS-P2,Onboarding,PROCESS,,RRHH-RS,Reclutamiento y Selección,,Proceso de integración de nuevos empleados
+RRHH-CAP,Capacitación y Desarrollo,UNIT,2,RRHH,Recursos Humanos,capacitacion@empresa.com,Formación y desarrollo del personal
+RRHH-CAP-P1,Planes de Formación,PROCESS,,RRHH-CAP,Capacitación y Desarrollo,,Diseño y ejecución de programas de capacitación
+RRHH-CAP-P2,Evaluación de Desempeño,PROCESS,,RRHH-CAP,Capacitación y Desarrollo,,Evaluación periódica del desempeño
+TI,Tecnología de la Información,UNIT,1,DG,Dirección General,ti@empresa.com,Gestión de tecnología y sistemas
+TI-DS,Desarrollo de Software,UNIT,2,TI,Tecnología de la Información,desarrollo@empresa.com,Desarrollo y mantenimiento de aplicaciones
+TI-DS-P1,DevOps,PROCESS,,TI-DS,Desarrollo de Software,,Integración y despliegue continuo
+TI-DS-P2,QA Testing,PROCESS,,TI-DS,Desarrollo de Software,,Aseguramiento de calidad y pruebas
+TI-DS-P3,Arquitectura,PROCESS,,TI-DS,Desarrollo de Software,,Diseño de arquitectura de software
+TI-INF,Infraestructura,UNIT,2,TI,Tecnología de la Información,infraestructura@empresa.com,Gestión de infraestructura tecnológica
+TI-INF-P1,Redes,PROCESS,,TI-INF,Infraestructura,,Administración de redes y conectividad
+TI-INF-P2,Soporte Técnico,PROCESS,,TI-INF,Infraestructura,,Soporte a usuarios finales
+FIN,Finanzas,UNIT,1,DG,Dirección General,finanzas@empresa.com,Gestión financiera y contable
+FIN-CONT,Contabilidad,UNIT,2,FIN,Finanzas,contabilidad@empresa.com,Registro y control contable
+FIN-CONT-P1,Cuentas por Pagar,PROCESS,,FIN-CONT,Contabilidad,,Gestión de pagos a proveedores
+FIN-CONT-P2,Cuentas por Cobrar,PROCESS,,FIN-CONT,Contabilidad,,Gestión de cobros a clientes
+FIN-CONT-P3,Cierre Mensual,PROCESS,,FIN-CONT,Contabilidad,,Proceso de cierre contable mensual
+FIN-TES,Tesorería,UNIT,2,FIN,Finanzas,tesoreria@empresa.com,Gestión de flujo de caja
+FIN-TES-P1,Flujo de Caja,PROCESS,,FIN-TES,Tesorería,,Proyección y control de flujo de caja
+FIN-TES-P2,Inversiones,PROCESS,,FIN-TES,Tesorería,,Gestión de inversiones financieras

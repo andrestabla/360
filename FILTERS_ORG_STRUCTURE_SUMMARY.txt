@@ -1,0 +1,4 @@
+Filters Updated:
+1. 'Areas' filter now correctly pulls directly from the Organizational Structure ('DB.units' where type='UNIT'), ensuring full fidelity with the defined hierarchy.
+2. Removed legacy logic that only showed units associated with existing cases/users.
+3. 'Process' filter remains dynamic, showing only child processes of the selected Area.

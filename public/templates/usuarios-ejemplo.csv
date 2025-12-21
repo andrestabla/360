@@ -1,0 +1,13 @@
+name,email,password,level,role,unit,jobTitle,phone,location,status
+Juan Pérez,juan.perez@empresa.com,Password123!,1,Administrador,Dirección General,Director General,+57 300 123 4567,Bogotá - Sede Central,ACTIVE
+María García,maria.garcia@empresa.com,Password123!,2,Manager,Recursos Humanos,Gerente de RRHH,+57 300 234 5678,Bogotá - Sede Central,ACTIVE
+Carlos López,carlos.lopez@empresa.com,Password123!,3,Analista,Reclutamiento y Selección,Analista de Reclutamiento,+57 300 345 6789,Bogotá - Sede Central,ACTIVE
+Ana Martínez,ana.martinez@empresa.com,Password123!,3,Especialista,Capacitación y Desarrollo,Especialista en Capacitación,+57 300 456 7890,Medellín - Norte,ACTIVE
+Pedro Rodríguez,pedro.rodriguez@empresa.com,Password123!,2,Manager,Tecnología de la Información,Gerente de TI,+57 300 567 8901,Bogotá - Sede Central,ACTIVE
+Laura Sánchez,laura.sanchez@empresa.com,Password123!,3,Desarrollador,Desarrollo de Software,Desarrollador Senior,+57 300 678 9012,Remoto,ACTIVE
+Diego Torres,diego.torres@empresa.com,Password123!,3,Desarrollador,Desarrollo de Software,Desarrollador Junior,+57 300 789 0123,Bogotá - Sede Central,ACTIVE
+Sofia Ramírez,sofia.ramirez@empresa.com,Password123!,4,Soporte,Infraestructura,Técnico de Soporte,+57 300 890 1234,Cali - Sur,ACTIVE
+Miguel Flores,miguel.flores@empresa.com,Password123!,2,Manager,Finanzas,Gerente Financiero,+57 300 901 2345,Bogotá - Sede Central,ACTIVE
+Carmen Díaz,carmen.diaz@empresa.com,Password123!,3,Contador,Contabilidad,Contador Senior,+57 300 012 3456,Bogotá - Sede Central,ACTIVE
+Roberto Morales,roberto.morales@empresa.com,Password123!,3,Analista,Tesorería,Analista Financiero,+57 300 123 4567,Bogotá - Sede Central,ACTIVE
+Patricia Ruiz,patricia.ruiz@empresa.com,Password123!,4,Asistente,Contabilidad,Asistente Contable,+57 300 234 5678,Medellín - Norte,ACTIVE

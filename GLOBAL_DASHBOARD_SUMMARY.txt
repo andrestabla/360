@@ -1,0 +1,6 @@
+Global Dashboard Implemented:
+- Refactored app/dashboard/page.tsx to conditionally render GlobalDashboard for Super Admins.
+- Implemented Stat Cards for Tenants, Users, Storage, and Uptime.
+- Added Recent Tenants table.
+- Added Recent Audit Logs view.
+- Maintained existing Tenant Dashboard functionality for regular users.

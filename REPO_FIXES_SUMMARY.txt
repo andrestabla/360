@@ -1,0 +1,5 @@
+Fixes Applied:
+1. Data Model: Added 'process' field to Doc interface.
+2. Filter Logic: Removed visibility filter completely.
+3. Mock Data: Updated generator to assign random processes to new test docs, ensuring the Process filter has data to work with.
+4. UI: Removed 'Visibilidad' chip from filter row.

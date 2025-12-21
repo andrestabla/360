@@ -1,0 +1,5 @@
+Repository Updated:
+- Docs now support 'Unit' and 'Process' metadata (hierarchical).
+- Upload Modal: Added dependent dropdowns. Selecting a Unit filters the available Processes (those that are children of the unit).
+- Filters: Added 'Unit' and 'Process' filters to the search bar area.
+- Doc Details: Displays associated Process in version history.

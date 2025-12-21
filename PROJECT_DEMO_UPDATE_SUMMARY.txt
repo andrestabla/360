@@ -1,0 +1,5 @@
+Review Complete:
+1. Demo Projects: Updated logical unit and process assignment in 'createBigDemoProject'.
+2. Creation Rule: Enforced mandatory Unit and Process selection in 'NewProjectModal' (button is now disabled if fields are empty).
+3. Viewing/Editing: Added Unit and Process fields to the 'ProjectDrawer' in both view and edit modes.
+4. Project Card: Added visual display of Unit/Process on the project cards in the main view.
