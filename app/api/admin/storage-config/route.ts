@@ -24,12 +24,13 @@ export async function GET(request: NextRequest) {
   
   if (config.encryptedConfig) {
     const decrypted = decryptCredentials(config.encryptedConfig);
-    config.config = { ...config.config };
+    const configData = { ...config.config } as Record<string, any>;
     secretFields.forEach(field => {
       if (decrypted[field]) {
-        config.config[field] = maskCredential(decrypted[field]);
+        configData[field] = maskCredential(decrypted[field]);
       }
     });
+    config.config = configData;
   }
 
   return NextResponse.json({
