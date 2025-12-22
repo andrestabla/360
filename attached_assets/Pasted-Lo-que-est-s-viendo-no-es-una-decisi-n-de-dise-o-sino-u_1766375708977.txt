@@ -1,0 +1,46 @@
+Lo que estás viendo no es una decisión de diseño, sino un error técnico común en el desarrollo de software, específicamente relacionado con la internacionalización (i18n) o los diccionarios de texto.
+
+Aquí te explico exactamente qué está pasando:
+
+1. El problema: "Llaves" vs. "Valores"
+En el código, los desarrolladores no suelen escribir el texto final (como "Dashboard" o "Repositorio") directamente en los botones. En su lugar, usan identificadores o "llaves" (keys) para poder cambiar el idioma de la aplicación fácilmente más adelante.
+
+La Llave (Key): nav_dashboard (Es el nombre interno que usa el código).
+
+El Valor (Value): "Tablero" o "Inicio" (Es lo que el usuario debería ver).
+
+2. ¿Por qué ves nav_?
+El prefijo nav_ es simplemente una convención de nomenclatura que el programador usó para organizar su código (significa "navigation").
+
+Lo que está ocurriendo en esa pantalla es que el sistema no encontró la traducción asociada a esa llave. Como mecanismo de defensa (para no mostrar un espacio en blanco), el sistema muestra el nombre de la llave tal cual está en el código.
+
+Ejemplo de lo que está fallando por detrás:
+Normalmente, existe un archivo de traducción (como un .json) que se ve así:
+
+JSON
+
+// archivo: es.json (Español)
+{
+  "nav_dashboard": "Inicio",
+  "nav_repository": "Repositorio",
+  "nav_workflows": "Mis Flujos",
+  "nav_analytics": "Analítica"
+}
+El error: Probablemente el sistema está buscando esas llaves, pero:
+
+El archivo de traducción no se cargó correctamente.
+
+Las llaves en el archivo no coinciden exactamente con las del menú.
+
+O simplemente olvidaron agregar las traducciones para esos ítems específicos (nota que "Configuración Técnica" y "Almacenamiento" sí se ven bien, lo que indica que algunas traducciones sí funcionan y otras no).
+
+¿Qué debes hacer?
+Si eres el tester, cliente o usuario:
+
+Debes reportarlo como un bug de interfaz o de contenido. Diles: "Los ítems del menú lateral están mostrando las llaves de traducción (translation keys) en lugar de los nombres correctos."
+
+Si eres el desarrollador:
+
+Revisa tus archivos de locales (en.json, es.json).
+
+Verifica que la librería de i18n (como react-i18next, ngx-translate, etc.) esté inicializada antes de renderizar el menú.
