@@ -130,3 +130,16 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
   - Added missing nav_ prefixed translations to lib/i18n.ts
   - Fixed sidebar menu items showing translation keys instead of text
   - Removed unnecessary security warning for super admin on tenant domains
+- December 22, 2025: Mobile responsiveness
+  - Added mobile menu toggle with hamburger button in Topbar
+  - Sidebar now slides in/out on mobile with overlay backdrop
+  - Responsive CSS media queries for tablets (<1024px) and phones (<640px)
+  - Cards, buttons, and content areas adapt to smaller screens
+  - Tables become horizontally scrollable on mobile
+
+## Tenant Data Isolation
+All data tables include a `tenant_id` foreign key referencing the `tenants` table:
+- users, units, documents, conversations, messages
+- workflows, surveys, tenant_email_configs, audit_logs
+- Services filter all queries by tenant_id to ensure data separation
+- Each tenant's data is completely isolated from other tenants
