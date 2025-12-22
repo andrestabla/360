@@ -95,6 +95,17 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
 - Session persistence with localStorage (synchronized hydration to prevent logout on refresh)
 - Tenant users authenticate through their subdomain
 
+### HMAC-Signed Session Tokens
+- Super Admin API calls use HMAC-SHA256 signed session tokens for authentication
+- Tokens are generated on login and stored in localStorage (`m360_session_token`)
+- Token structure: `{payload_base64}.{hmac_signature}`
+- Token payload includes: email, isSuperAdmin flag, timestamp
+- Tokens expire after 24 hours (validated server-side)
+- Secret key: Uses `SESSION_SECRET` or `EMAIL_ENCRYPTION_KEY` environment variable
+- Token verification: `lib/services/sessionToken.ts` (createSessionToken, verifySessionToken)
+- Protected endpoints: `/api/admin/tenants` (GET/POST/PUT/DELETE require valid token)
+- **Production requirement**: `SESSION_SECRET` or `EMAIL_ENCRYPTION_KEY` must be configured
+
 ## Email Notifications (Tenant-Specific SMTP)
 - Each tenant (including superadmin) configures their own outgoing email settings
 - Email configuration stored in `tenant_email_configs` table (PostgreSQL)

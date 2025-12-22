@@ -68,7 +68,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const getInitialState = () => {
     if (typeof window === 'undefined') {
-        return { user: null, tenantId: null, superAdmin: false, originalSession: null, sidebarCollapsed: false };
+        return { user: null, tenantId: null, superAdmin: false, originalSession: null, sidebarCollapsed: false, sessionToken: null };
     }
     try {
         const storedUser = localStorage.getItem('m360_user');
@@ -76,15 +76,17 @@ const getInitialState = () => {
         const storedIsSuperAdmin = localStorage.getItem('m360_is_super_admin');
         const storedOriginalSession = localStorage.getItem('m360_original_session');
         const storedSidebar = localStorage.getItem('m360_sidebar_collapsed');
+        const storedSessionToken = localStorage.getItem('m360_session_token');
         return {
             user: storedUser ? JSON.parse(storedUser) : null,
             tenantId: storedTenantId || null,
             superAdmin: storedIsSuperAdmin === 'true',
             originalSession: storedOriginalSession ? JSON.parse(storedOriginalSession) : null,
-            sidebarCollapsed: storedSidebar === 'true'
+            sidebarCollapsed: storedSidebar === 'true',
+            sessionToken: storedSessionToken || null
         };
     } catch {
-        return { user: null, tenantId: null, superAdmin: false, originalSession: null, sidebarCollapsed: false };
+        return { user: null, tenantId: null, superAdmin: false, originalSession: null, sidebarCollapsed: false, sessionToken: null };
     }
 };
 
@@ -94,6 +96,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [originalSession, setOriginalSession] = useState<User | null>(initialState.originalSession);
     const [currentTenantId, setCurrentTenantId] = useState<string | null>(initialState.tenantId);
     const [isSuperAdmin, setIsSuperAdmin] = useState(initialState.superAdmin);
+    const [sessionToken, setSessionToken] = useState<string | null>(initialState.sessionToken);
     const [forceUpdate, setForceUpdate] = useState(0);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(initialState.sidebarCollapsed);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -122,9 +125,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             if (originalSession) localStorage.setItem('m360_original_session', JSON.stringify(originalSession));
             else localStorage.removeItem('m360_original_session');
 
+            if (sessionToken) localStorage.setItem('m360_session_token', sessionToken);
+            else localStorage.removeItem('m360_session_token');
+
             localStorage.setItem('m360_sidebar_collapsed', isSidebarCollapsed.toString());
         }
-    }, [currentUser, currentTenantId, isSuperAdmin, originalSession, isSidebarCollapsed]);
+    }, [currentUser, currentTenantId, isSuperAdmin, originalSession, sessionToken, isSidebarCollapsed]);
 
     // 3. Unread Chat Count Logic
     const refreshUnreadCount = async () => {
@@ -348,11 +354,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setOriginalSession(null);
         setCurrentTenantId(null);
         setIsSuperAdmin(false);
+        setSessionToken(null);
         if (typeof window !== 'undefined') {
             localStorage.removeItem('m360_user');
             localStorage.removeItem('m360_tenant_id');
             localStorage.removeItem('m360_is_super_admin');
             localStorage.removeItem('m360_original_session');
+            localStorage.removeItem('m360_session_token');
         }
         router.push('/');
     };
@@ -370,11 +378,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const getAuthHeaders = (): Record<string, string> => {
+        if (!sessionToken) {
+            return { 'Content-Type': 'application/json' };
+        }
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionToken}`,
+        };
+    };
+
     const createTenant = async (data: Omit<Partial<Tenant>, 'branding' | 'policies'> & { branding?: Partial<TenantBranding>, policies?: Partial<TenantPolicy> }) => {
         try {
             const response = await fetch('/api/admin/tenants', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({
                     name: data.name || 'New Tenant',
                     slug: data.slug || `tenant-${Date.now()}`,
@@ -412,7 +430,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         try {
             const response = await fetch('/api/admin/tenants', {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ id, ...updates }),
             });
 
@@ -435,6 +453,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         try {
             const response = await fetch(`/api/admin/tenants?id=${id}`, {
                 method: 'DELETE',
+                headers: getAuthHeaders(),
             });
 
             const result = await response.json();

@@ -4,6 +4,7 @@ import { db } from '@/server/db';
 import { platformAdmins } from '@/shared/schema';
 import { eq, sql } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
+import { createSessionToken } from '@/lib/services/sessionToken';
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,6 +47,12 @@ export async function POST(request: NextRequest) {
         lastLogin: new Date(),
       }).where(eq(platformAdmins.id, admin.id));
 
+      const sessionToken = createSessionToken({
+        email: admin.email,
+        isSuperAdmin: true,
+        timestamp: Date.now(),
+      });
+
       return NextResponse.json({
         success: true,
         user: {
@@ -55,6 +62,7 @@ export async function POST(request: NextRequest) {
           role: admin.role,
           isSuperAdmin: true,
         },
+        sessionToken,
       });
     }
 

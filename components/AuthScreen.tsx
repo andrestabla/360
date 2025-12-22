@@ -108,6 +108,9 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
                 const role = data.user.role === 'Admin Global' ? 'admin' : 'user';
                 login(role, detectedTenant.id, email);
             } else {
+                if (data.sessionToken) {
+                    localStorage.setItem('m360_session_token', data.sessionToken);
+                }
                 login('superadmin', undefined, email);
             }
         } catch (err) {

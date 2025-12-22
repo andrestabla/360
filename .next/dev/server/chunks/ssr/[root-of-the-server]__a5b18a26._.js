@@ -724,7 +724,8 @@ const getInitialState = ()=>{
             tenantId: null,
             superAdmin: false,
             originalSession: null,
-            sidebarCollapsed: false
+            sidebarCollapsed: false,
+            sessionToken: null
         };
     }
     //TURBOPACK unreachable
@@ -736,6 +737,7 @@ function AppProvider({ children }) {
     const [originalSession, setOriginalSession] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(initialState.originalSession);
     const [currentTenantId, setCurrentTenantId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(initialState.tenantId);
     const [isSuperAdmin, setIsSuperAdmin] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(initialState.superAdmin);
+    const [sessionToken, setSessionToken] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(initialState.sessionToken);
     const [forceUpdate, setForceUpdate] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(0);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(initialState.sidebarCollapsed);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
@@ -755,6 +757,7 @@ function AppProvider({ children }) {
         currentTenantId,
         isSuperAdmin,
         originalSession,
+        sessionToken,
         isSidebarCollapsed
     ]);
     // 3. Unread Chat Count Logic
@@ -971,6 +974,7 @@ function AppProvider({ children }) {
         setOriginalSession(null);
         setCurrentTenantId(null);
         setIsSuperAdmin(false);
+        setSessionToken(null);
         if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
         ;
         router.push('/');
@@ -990,13 +994,22 @@ function AppProvider({ children }) {
             }
         }
     };
+    const getAuthHeaders = ()=>{
+        if (!sessionToken) {
+            return {
+                'Content-Type': 'application/json'
+            };
+        }
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionToken}`
+        };
+    };
     const createTenant = async (data)=>{
         try {
             const response = await fetch('/api/admin/tenants', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({
                     name: data.name || 'New Tenant',
                     slug: data.slug || `tenant-${Date.now()}`,
@@ -1037,9 +1050,7 @@ function AppProvider({ children }) {
         try {
             const response = await fetch('/api/admin/tenants', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({
                     id,
                     ...updates
@@ -1061,7 +1072,8 @@ function AppProvider({ children }) {
     const deleteTenant = async (id)=>{
         try {
             const response = await fetch(`/api/admin/tenants?id=${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: getAuthHeaders()
             });
             const result = await response.json();
             if (!result.success) {
@@ -1605,7 +1617,7 @@ function AppProvider({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/context/AppContext.tsx",
-        lineNumber: 944,
+        lineNumber: 963,
         columnNumber: 9
     }, this);
 }

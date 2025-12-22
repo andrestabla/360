@@ -1,12 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { tenants, users } from '@/shared/schema';
+import { tenants, users, platformAdmins } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
+import { verifySessionToken } from '@/lib/services/sessionToken';
 
 const SALT_ROUNDS = 12;
 
-export async function GET() {
+async function validateSuperAdmin(request: NextRequest): Promise<{ valid: boolean; error?: string; admin?: { id: string; email: string } }> {
+  const authHeader = request.headers.get('authorization');
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { valid: false, error: 'Authorization required' };
+  }
+
+  try {
+    const token = authHeader.substring(7);
+    const payload = verifySessionToken(token);
+    
+    if (!payload) {
+      return { valid: false, error: 'Invalid or expired token' };
+    }
+
+    if (!payload.isSuperAdmin) {
+      return { valid: false, error: 'Super Admin access required' };
+    }
+
+    const [admin] = await db.select().from(platformAdmins).where(eq(platformAdmins.email, payload.email.toLowerCase().trim()));
+    
+    if (!admin || admin.role !== 'SUPER_ADMIN') {
+      return { valid: false, error: 'Unauthorized: Super Admin access required' };
+    }
+
+    return { valid: true, admin: { id: admin.id, email: admin.email } };
+  } catch (error) {
+    console.error('Auth validation error:', error);
+    return { valid: false, error: 'Invalid authorization token' };
+  }
+}
+
+export async function GET(request: NextRequest) {
+  const auth = await validateSuperAdmin(request);
+  if (!auth.valid) {
+    return NextResponse.json(
+      { success: false, error: auth.error },
+      { status: 401 }
+    );
+  }
+
   try {
     const allTenants = await db.select().from(tenants).orderBy(tenants.createdAt);
     
@@ -24,6 +65,14 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await validateSuperAdmin(request);
+  if (!auth.valid) {
+    return NextResponse.json(
+      { success: false, error: auth.error },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
     const { name, slug, domains, timezone, locale, sector, contactName, contactEmail, contactPhone, features, branding, policies } = body;
@@ -103,6 +152,14 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const auth = await validateSuperAdmin(request);
+  if (!auth.valid) {
+    return NextResponse.json(
+      { success: false, error: auth.error },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
     const { id, ...updates } = body;
@@ -148,6 +205,14 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const auth = await validateSuperAdmin(request);
+  if (!auth.valid) {
+    return NextResponse.json(
+      { success: false, error: auth.error },
+      { status: 401 }
+    );
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
