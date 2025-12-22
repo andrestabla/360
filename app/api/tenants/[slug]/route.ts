@@ -25,7 +25,7 @@ export async function GET(
       }, { status: 404 });
     }
 
-    if (tenant.status !== 'ACTIVE') {
+    if (tenant.status?.toUpperCase() !== 'ACTIVE') {
       return NextResponse.json({ 
         found: false,
         error: 'Tenant is not active' 
