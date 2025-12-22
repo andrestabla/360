@@ -463,12 +463,12 @@ function TenantList({ tenants, onEdit, onToggleStatus, onDelete }: { tenants: Te
                         <div className="bg-slate-50 p-2 rounded border border-slate-100 col-span-2">
                             <div className="uppercase text-[10px] tracking-wide mb-1 opacity-70">Portal de Acceso (Local)</div>
                             <a
-                                href={`http://${tenant.id}.localhost:3000`}
+                                href={`https://${tenant.id}.maturity.online`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="font-mono text-blue-600 hover:underline block truncate"
                             >
-                                http://{tenant.id}.localhost:3000
+                                https://{tenant.id}.maturity.online
                             </a>
                         </div>
                     </div>

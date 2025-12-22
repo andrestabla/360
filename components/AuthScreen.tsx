@@ -15,8 +15,8 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding }: 
     const [password, setPassword] = useState('');
 
 
-    // Multi-tenant Logic
-    const [mode, setMode] = useState<'FIND' | 'LOGIN'>('FIND');
+    // Multi-tenant Logic - Default to LOGIN for main domain (superadmin)
+    const [mode, setMode] = useState<'FIND' | 'LOGIN'>('LOGIN');
     const [detectedTenant, setDetectedTenant] = useState<any>(null);
     const [workspaceDomain, setWorkspaceDomain] = useState('');
     const [mounted, setMounted] = useState(false);
@@ -29,23 +29,25 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding }: 
             const parts = host.split('.');
             let subdomain = '';
 
-            // Localhost: sub.localhost (2 parts if no port logic interfering, usually split on dot works)
-            // Prod: sub.domain.com (3 parts)
-            if (parts.length > (host.includes('localhost') ? 1 : 2)) {
+            // Detect subdomain for maturity.online or localhost
+            if (host.endsWith('maturity.online')) {
+                const withoutDomain = host.replace('.maturity.online', '').replace('maturity.online', '');
+                subdomain = withoutDomain && withoutDomain !== 'www' ? withoutDomain : '';
+            } else if (host.includes('localhost') && parts.length > 1) {
                 subdomain = parts[0];
+            } else if (parts.length > 2) {
+                subdomain = parts[0] !== 'www' ? parts[0] : '';
             }
 
-            if (subdomain && subdomain !== 'www') {
+            if (subdomain) {
                 const t = DB.tenants.find(ten => ten.id.toLowerCase() === subdomain.toLowerCase());
                 if (t) {
                     setDetectedTenant(t);
                     setMode('LOGIN');
                 }
             } else {
-                // If on main domain and forceLoginMode is true (e.g. /login), default to LOGIN mode (SuperAdmin)
-                if (forceLoginMode) {
-                    setMode('LOGIN');
-                }
+                // Main domain: always show superadmin login directly
+                setMode('LOGIN');
             }
         }
     }, [forceLoginMode]);
@@ -126,44 +128,7 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding }: 
                 </div>
 
                 <div className="px-8 pb-8">
-                    {(!detectedTenant && mode === 'FIND') ? (
-                        <form onSubmit={handleFindWorkspace} className="space-y-4 animate-fadeIn">
-                            <div className="p-3 bg-blue-50 text-blue-700 text-xs rounded-lg mb-4 text-center">
-                                ¿Eres un empleado? Encuentra tu espacio de trabajo.
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Dominio de la Empresa</label>
-                                <div className="relative">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                        <Buildings size={18} />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        className="w-full pl-10 pr-24 py-2.5 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-slate-800 text-sm"
-                                        placeholder="mi-empresa"
-                                        value={workspaceDomain}
-                                        onChange={(e) => setWorkspaceDomain(e.target.value)}
-                                        required
-                                    />
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium bg-slate-100 px-2 py-1 rounded">
-                                        .maturity.online
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="submit" className="w-full bg-slate-900 hover:bg-black text-white font-medium py-2.5 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2">
-                                Ir a mi Empresa
-                            </button>
-                            <button type="button" onClick={() => setMode('LOGIN')} className="w-full text-xs text-slate-500 hover:text-blue-600 mt-4">
-                                Soy Super Admin, iniciar sesión aquí
-                            </button>
-                        </form>
-                    ) : (
                         <form onSubmit={handleLogin} className="space-y-4 animate-slideLeft">
-                            {!detectedTenant && (
-                                <button type="button" onClick={() => setMode('FIND')} className="w-full text-xs text-slate-400 hover:text-blue-600 mb-4 text-center">
-                                    ¿No eres admin? Buscar espacio de trabajo
-                                </button>
-                            )}
                             {detectedTenant && typeof window !== 'undefined' && !window.location.host.includes(detectedTenant.id.toLowerCase()) && (
                                 <button type="button" onClick={() => { setDetectedTenant(null); setMode('LOGIN'); }} className="text-xs text-blue-600 hover:underline mb-2 block mx-auto">
                                     ← Volver al inicio
@@ -231,7 +196,6 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding }: 
                                 </div>
                             )}
                         </form>
-                    )}
 
                     {/* Social Login (Only if SSO enabled for Tenant) */}
                     {detectedTenant && mode === 'LOGIN' && (detectedTenant.policies?.sso_enabled ?? true) && (

@@ -3999,10 +3999,6 @@
     padding-right: calc(var(--spacing) * 12);
   }
 
-  .pr-24 {
-    padding-right: calc(var(--spacing) * 24);
-  }
-
   .pb-1 {
     padding-bottom: calc(var(--spacing) * 1);
   }

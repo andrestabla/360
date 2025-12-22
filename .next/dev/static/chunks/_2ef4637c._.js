@@ -34,8 +34,8 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
     const [showPassword, setShowPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [email, setEmail] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [password, setPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
-    // Multi-tenant Logic
-    const [mode, setMode] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('FIND');
+    // Multi-tenant Logic - Default to LOGIN for main domain (superadmin)
+    const [mode, setMode] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('LOGIN');
     const [detectedTenant, setDetectedTenant] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [workspaceDomain, setWorkspaceDomain] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [mounted, setMounted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
@@ -47,12 +47,16 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                 const host = window.location.hostname;
                 const parts = host.split('.');
                 let subdomain = '';
-                // Localhost: sub.localhost (2 parts if no port logic interfering, usually split on dot works)
-                // Prod: sub.domain.com (3 parts)
-                if (parts.length > (host.includes('localhost') ? 1 : 2)) {
+                // Detect subdomain for maturity.online or localhost
+                if (host.endsWith('maturity.online')) {
+                    const withoutDomain = host.replace('.maturity.online', '').replace('maturity.online', '');
+                    subdomain = withoutDomain && withoutDomain !== 'www' ? withoutDomain : '';
+                } else if (host.includes('localhost') && parts.length > 1) {
                     subdomain = parts[0];
+                } else if (parts.length > 2) {
+                    subdomain = parts[0] !== 'www' ? parts[0] : '';
                 }
-                if (subdomain && subdomain !== 'www') {
+                if (subdomain) {
                     const t = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].tenants.find({
                         "AuthScreen.useEffect.t": (ten)=>ten.id.toLowerCase() === subdomain.toLowerCase()
                     }["AuthScreen.useEffect.t"]);
@@ -61,10 +65,8 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                         setMode('LOGIN');
                     }
                 } else {
-                    // If on main domain and forceLoginMode is true (e.g. /login), default to LOGIN mode (SuperAdmin)
-                    if (forceLoginMode) {
-                        setMode('LOGIN');
-                    }
+                    // Main domain: always show superadmin login directly
+                    setMode('LOGIN');
                 }
             }
         }
@@ -122,7 +124,7 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                 }
             }, void 0, false, {
                 fileName: "[project]/components/AuthScreen.tsx",
-                lineNumber: 104,
+                lineNumber: 106,
                 columnNumber: 26
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -132,7 +134,7 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                 }
             }, void 0, false, {
                 fileName: "[project]/components/AuthScreen.tsx",
-                lineNumber: 105,
+                lineNumber: 107,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -152,24 +154,24 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                     className: "w-full h-full object-contain p-2"
                                 }, void 0, false, {
                                     fileName: "[project]/components/AuthScreen.tsx",
-                                    lineNumber: 115,
+                                    lineNumber: 117,
                                     columnNumber: 29
                                 }, this) : detectedTenant ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Buildings$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Buildings"], {
                                     weight: "fill"
                                 }, void 0, false, {
                                     fileName: "[project]/components/AuthScreen.tsx",
-                                    lineNumber: 117,
+                                    lineNumber: 119,
                                     columnNumber: 46
                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Planet$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Planet"], {
                                     weight: "fill"
                                 }, void 0, false, {
                                     fileName: "[project]/components/AuthScreen.tsx",
-                                    lineNumber: 117,
+                                    lineNumber: 119,
                                     columnNumber: 76
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/components/AuthScreen.tsx",
-                                lineNumber: 110,
+                                lineNumber: 112,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -177,7 +179,7 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                 children: effectiveBranding?.app_title || (detectedTenant ? detectedTenant.name : 'Platform Admin')
                             }, void 0, false, {
                                 fileName: "[project]/components/AuthScreen.tsx",
-                                lineNumber: 120,
+                                lineNumber: 122,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -185,127 +187,22 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                 children: effectiveBranding?.login_description || (detectedTenant ? 'Portal de Colaboradores' : 'Acceso Super Administrador')
                             }, void 0, false, {
                                 fileName: "[project]/components/AuthScreen.tsx",
-                                lineNumber: 123,
+                                lineNumber: 125,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/AuthScreen.tsx",
-                        lineNumber: 108,
+                        lineNumber: 110,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "px-8 pb-8",
                         children: [
-                            !detectedTenant && mode === 'FIND' ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
-                                onSubmit: handleFindWorkspace,
-                                className: "space-y-4 animate-fadeIn",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "p-3 bg-blue-50 text-blue-700 text-xs rounded-lg mb-4 text-center",
-                                        children: "¿Eres un empleado? Encuentra tu espacio de trabajo."
-                                    }, void 0, false, {
-                                        fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 131,
-                                        columnNumber: 29
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                className: "block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1",
-                                                children: "Dominio de la Empresa"
-                                            }, void 0, false, {
-                                                fileName: "[project]/components/AuthScreen.tsx",
-                                                lineNumber: 135,
-                                                columnNumber: 33
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "relative",
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "absolute left-3 top-1/2 -translate-y-1/2 text-slate-400",
-                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Buildings$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Buildings"], {
-                                                            size: 18
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/components/AuthScreen.tsx",
-                                                            lineNumber: 138,
-                                                            columnNumber: 41
-                                                        }, this)
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 137,
-                                                        columnNumber: 37
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                        type: "text",
-                                                        className: "w-full pl-10 pr-24 py-2.5 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-slate-800 text-sm",
-                                                        placeholder: "mi-empresa",
-                                                        value: workspaceDomain,
-                                                        onChange: (e)=>setWorkspaceDomain(e.target.value),
-                                                        required: true
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 140,
-                                                        columnNumber: 37
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium bg-slate-100 px-2 py-1 rounded",
-                                                        children: ".maturity.online"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 148,
-                                                        columnNumber: 37
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/components/AuthScreen.tsx",
-                                                lineNumber: 136,
-                                                columnNumber: 33
-                                            }, this)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 134,
-                                        columnNumber: 29
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                        type: "submit",
-                                        className: "w-full bg-slate-900 hover:bg-black text-white font-medium py-2.5 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2",
-                                        children: "Ir a mi Empresa"
-                                    }, void 0, false, {
-                                        fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 153,
-                                        columnNumber: 29
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                        type: "button",
-                                        onClick: ()=>setMode('LOGIN'),
-                                        className: "w-full text-xs text-slate-500 hover:text-blue-600 mt-4",
-                                        children: "Soy Super Admin, iniciar sesión aquí"
-                                    }, void 0, false, {
-                                        fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 156,
-                                        columnNumber: 29
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/components/AuthScreen.tsx",
-                                lineNumber: 130,
-                                columnNumber: 25
-                            }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
                                 onSubmit: handleLogin,
                                 className: "space-y-4 animate-slideLeft",
                                 children: [
-                                    !detectedTenant && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                        type: "button",
-                                        onClick: ()=>setMode('FIND'),
-                                        className: "w-full text-xs text-slate-400 hover:text-blue-600 mb-4 text-center",
-                                        children: "¿No eres admin? Buscar espacio de trabajo"
-                                    }, void 0, false, {
-                                        fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 163,
-                                        columnNumber: 33
-                                    }, this),
                                     detectedTenant && ("TURBOPACK compile-time value", "object") !== 'undefined' && !window.location.host.includes(detectedTenant.id.toLowerCase()) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         type: "button",
                                         onClick: ()=>{
@@ -316,7 +213,7 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                         children: "← Volver al inicio"
                                     }, void 0, false, {
                                         fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 168,
+                                        lineNumber: 133,
                                         columnNumber: 33
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -329,7 +226,7 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/AuthScreen.tsx",
-                                                lineNumber: 174,
+                                                lineNumber: 139,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -341,12 +238,12 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                             size: 18
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/AuthScreen.tsx",
-                                                            lineNumber: 177,
+                                                            lineNumber: 142,
                                                             columnNumber: 41
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 176,
+                                                        lineNumber: 141,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -358,19 +255,19 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                         required: true
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 179,
+                                                        lineNumber: 144,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/AuthScreen.tsx",
-                                                lineNumber: 175,
+                                                lineNumber: 140,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 173,
+                                        lineNumber: 138,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -383,7 +280,7 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                         children: "Contraseña"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 192,
+                                                        lineNumber: 157,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -393,13 +290,13 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                         children: "¿Olvidaste tu contraseña?"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 193,
+                                                        lineNumber: 158,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/AuthScreen.tsx",
-                                                lineNumber: 191,
+                                                lineNumber: 156,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -411,12 +308,12 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                             size: 18
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/AuthScreen.tsx",
-                                                            lineNumber: 197,
+                                                            lineNumber: 162,
                                                             columnNumber: 41
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 196,
+                                                        lineNumber: 161,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -428,7 +325,7 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                         required: true
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 199,
+                                                        lineNumber: 164,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -439,30 +336,30 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                             size: 18
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/AuthScreen.tsx",
-                                                            lineNumber: 212,
+                                                            lineNumber: 177,
                                                             columnNumber: 57
                                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Eye$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Eye"], {
                                                             size: 18
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/AuthScreen.tsx",
-                                                            lineNumber: 212,
+                                                            lineNumber: 177,
                                                             columnNumber: 82
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 207,
+                                                        lineNumber: 172,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/AuthScreen.tsx",
-                                                lineNumber: 195,
+                                                lineNumber: 160,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 190,
+                                        lineNumber: 155,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -475,7 +372,7 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                         children: detectedTenant ? 'Iniciar Sesión' : 'Acceder al Panel'
                                     }, void 0, false, {
                                         fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 217,
+                                        lineNumber: 182,
                                         columnNumber: 29
                                     }, this),
                                     effectiveBranding?.support_message && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -487,18 +384,18 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                             }
                                         }, void 0, false, {
                                             fileName: "[project]/components/AuthScreen.tsx",
-                                            lineNumber: 227,
+                                            lineNumber: 192,
                                             columnNumber: 37
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 226,
+                                        lineNumber: 191,
                                         columnNumber: 33
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/AuthScreen.tsx",
-                                lineNumber: 161,
+                                lineNumber: 131,
                                 columnNumber: 25
                             }, this),
                             detectedTenant && mode === 'LOGIN' && (detectedTenant.policies?.sso_enabled ?? true) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -513,12 +410,12 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                     className: "w-full border-t border-slate-200"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/AuthScreen.tsx",
-                                                    lineNumber: 240,
+                                                    lineNumber: 204,
                                                     columnNumber: 85
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/AuthScreen.tsx",
-                                                lineNumber: 240,
+                                                lineNumber: 204,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -528,18 +425,18 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                     children: "O continúa con"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/AuthScreen.tsx",
-                                                    lineNumber: 241,
+                                                    lineNumber: 205,
                                                     columnNumber: 97
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/AuthScreen.tsx",
-                                                lineNumber: 241,
+                                                lineNumber: 205,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 239,
+                                        lineNumber: 203,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -553,14 +450,14 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                         className: "text-red-500"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 245,
+                                                        lineNumber: 209,
                                                         columnNumber: 209
                                                     }, this),
                                                     " Google"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/AuthScreen.tsx",
-                                                lineNumber: 245,
+                                                lineNumber: 209,
                                                 columnNumber: 37
                                             }, this),
                                             (!detectedTenant.policies?.sso_providers || detectedTenant.policies.sso_providers.includes('microsoft')) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -571,38 +468,38 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                                                         className: "text-blue-500"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/AuthScreen.tsx",
-                                                        lineNumber: 248,
+                                                        lineNumber: 212,
                                                         columnNumber: 209
                                                     }, this),
                                                     " Entra ID"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/AuthScreen.tsx",
-                                                lineNumber: 248,
+                                                lineNumber: 212,
                                                 columnNumber: 37
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/AuthScreen.tsx",
-                                        lineNumber: 243,
+                                        lineNumber: 207,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/AuthScreen.tsx",
-                                lineNumber: 238,
+                                lineNumber: 202,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/AuthScreen.tsx",
-                        lineNumber: 128,
+                        lineNumber: 130,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/AuthScreen.tsx",
-                lineNumber: 107,
+                lineNumber: 109,
                 columnNumber: 13
             }, this),
             mounted && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -613,7 +510,7 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                     " ",
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                         fileName: "[project]/components/AuthScreen.tsx",
-                        lineNumber: 261,
+                        lineNumber: 225,
                         columnNumber: 54
                     }, this),
                     "Context: ",
@@ -621,7 +518,7 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/AuthScreen.tsx",
-                lineNumber: 260,
+                lineNumber: 224,
                 columnNumber: 17
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -632,7 +529,7 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                         children: "Es una solución digital de"
                     }, void 0, false, {
                         fileName: "[project]/components/AuthScreen.tsx",
-                        lineNumber: 267,
+                        lineNumber: 231,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
@@ -641,23 +538,23 @@ function AuthScreen({ forceLoginMode = false, previewBranding }) {
                         className: "h-5 w-auto invert"
                     }, void 0, false, {
                         fileName: "[project]/components/AuthScreen.tsx",
-                        lineNumber: 269,
+                        lineNumber: 233,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/AuthScreen.tsx",
-                lineNumber: 266,
+                lineNumber: 230,
                 columnNumber: 13
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/AuthScreen.tsx",
-        lineNumber: 96,
+        lineNumber: 98,
         columnNumber: 9
     }, this);
 }
-_s(AuthScreen, "bYnpWuC+lmKeCAaTW8mkFx11I/c=", false, function() {
+_s(AuthScreen, "zhHiY56+2GP3bUbM3H6D1WQnNbk=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$context$2f$AppContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useApp"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]

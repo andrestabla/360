@@ -697,32 +697,48 @@ var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.sign
 ;
 ;
 const AppContext = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["createContext"])(undefined);
+const getInitialState = ()=>{
+    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+    ;
+    try {
+        const storedUser = localStorage.getItem('m360_user');
+        const storedTenantId = localStorage.getItem('m360_tenant_id');
+        const storedIsSuperAdmin = localStorage.getItem('m360_is_super_admin');
+        const storedOriginalSession = localStorage.getItem('m360_original_session');
+        const storedSidebar = localStorage.getItem('m360_sidebar_collapsed');
+        return {
+            user: storedUser ? JSON.parse(storedUser) : null,
+            tenantId: storedTenantId || null,
+            superAdmin: storedIsSuperAdmin === 'true',
+            originalSession: storedOriginalSession ? JSON.parse(storedOriginalSession) : null,
+            sidebarCollapsed: storedSidebar === 'true'
+        };
+    } catch  {
+        return {
+            user: null,
+            tenantId: null,
+            superAdmin: false,
+            originalSession: null,
+            sidebarCollapsed: false
+        };
+    }
+};
 function AppProvider({ children }) {
     _s();
-    const [currentUser, setCurrentUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
-    const [originalSession, setOriginalSession] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null); // Superadmin backup
-    const [currentTenantId, setCurrentTenantId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
-    const [isSuperAdmin, setIsSuperAdmin] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const initialState = getInitialState();
+    const [currentUser, setCurrentUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(initialState.user);
+    const [originalSession, setOriginalSession] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(initialState.originalSession);
+    const [currentTenantId, setCurrentTenantId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(initialState.tenantId);
+    const [isSuperAdmin, setIsSuperAdmin] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(initialState.superAdmin);
     const [forceUpdate, setForceUpdate] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(initialState.sidebarCollapsed);
     const [unreadChatCount, setUnreadChatCount] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
+    const [isHydrated, setIsHydrated] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(("TURBOPACK compile-time value", "object") !== 'undefined');
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const currentTenant = currentTenantId ? __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].tenants.find((t)=>t.id === currentTenantId) || null : null;
-    // 1. Persistence: Load from LocalStorage
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AppProvider.useEffect": ()=>{
-            if ("TURBOPACK compile-time truthy", 1) {
-                const storedUser = localStorage.getItem('m360_user');
-                const storedTenantId = localStorage.getItem('m360_tenant_id');
-                const storedIsSuperAdmin = localStorage.getItem('m360_is_super_admin');
-                const storedOriginalSession = localStorage.getItem('m360_original_session');
-                if (storedUser) setCurrentUser(JSON.parse(storedUser));
-                if (storedTenantId) setCurrentTenantId(storedTenantId);
-                if (storedIsSuperAdmin) setIsSuperAdmin(storedIsSuperAdmin === 'true');
-                if (storedOriginalSession) setOriginalSession(JSON.parse(storedOriginalSession));
-                const storedSidebar = localStorage.getItem('m360_sidebar_collapsed');
-                if (storedSidebar) setIsSidebarCollapsed(storedSidebar === 'true');
-            }
+            setIsHydrated(true);
         }
     }["AppProvider.useEffect"], []);
     // 2. Persistence: Save to LocalStorage
@@ -1292,7 +1308,7 @@ function AppProvider({ children }) {
                 id: `email-${Date.now()}`,
                 to: newUser.email,
                 subject: `Bienvenido a Maturity360 - ${newUser.tenantId !== 'global' ? 'Tenant Invitation' : 'Platform Access'}`,
-                body: `Hola ${newUser.name},\n\nTu cuenta ha sido creada. Tu contraseña temporal es: Temp123!\nIngresa en: https://${newUser.tenantId}.maturity360.com`,
+                body: `Hola ${newUser.name},\n\nTu cuenta ha sido creada. Tu contraseña temporal es: Temp123!\nIngresa en: https://${newUser.tenantId}.maturity.online`,
                 status: 'SENT',
                 sentAt: new Date().toISOString()
             });
@@ -1387,7 +1403,7 @@ function AppProvider({ children }) {
                     id: `email-${Date.now()}`,
                     to: user.email,
                     subject: `Resend: Bienvenido a Maturity360`,
-                    body: `Hola ${user.name},\n\nAqui tienes tu enlace de acceso: https://${user.tenantId}.maturity360.com\nCredenciales temporales: Temp123!`,
+                    body: `Hola ${user.name},\n\nAqui tienes tu enlace de acceso: https://${user.tenantId}.maturity.online\nCredenciales temporales: Temp123!`,
                     status: 'SENT',
                     sentAt: new Date().toISOString()
                 });
@@ -1668,6 +1684,7 @@ function AppProvider({ children }) {
             currentTenantId,
             currentTenant,
             isSuperAdmin,
+            isHydrated,
             version: forceUpdate,
             originalSession,
             impersonateUser,
@@ -1715,11 +1732,11 @@ function AppProvider({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/context/AppContext.tsx",
-        lineNumber: 1027,
+        lineNumber: 1038,
         columnNumber: 9
     }, this);
 }
-_s(AppProvider, "TtPwDLVH6zbx7EFVNOgSPlBx6Xc=", false, function() {
+_s(AppProvider, "CorlXs3doVweKBU16RnSFLTqSE0=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];

@@ -11,6 +11,7 @@ interface AppContextType {
     currentTenant: Tenant | null;
     version: number;
     isSuperAdmin: boolean;
+    isHydrated: boolean;
     originalSession: User | null; // For Impersonation
     impersonateUser: (userId: string, tenantId: string) => void;
     stopImpersonation: () => void;
@@ -62,34 +63,44 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const getInitialState = () => {
+    if (typeof window === 'undefined') {
+        return { user: null, tenantId: null, superAdmin: false, originalSession: null, sidebarCollapsed: false };
+    }
+    try {
+        const storedUser = localStorage.getItem('m360_user');
+        const storedTenantId = localStorage.getItem('m360_tenant_id');
+        const storedIsSuperAdmin = localStorage.getItem('m360_is_super_admin');
+        const storedOriginalSession = localStorage.getItem('m360_original_session');
+        const storedSidebar = localStorage.getItem('m360_sidebar_collapsed');
+        return {
+            user: storedUser ? JSON.parse(storedUser) : null,
+            tenantId: storedTenantId || null,
+            superAdmin: storedIsSuperAdmin === 'true',
+            originalSession: storedOriginalSession ? JSON.parse(storedOriginalSession) : null,
+            sidebarCollapsed: storedSidebar === 'true'
+        };
+    } catch {
+        return { user: null, tenantId: null, superAdmin: false, originalSession: null, sidebarCollapsed: false };
+    }
+};
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [originalSession, setOriginalSession] = useState<User | null>(null); // Superadmin backup
-    const [currentTenantId, setCurrentTenantId] = useState<string | null>(null);
-    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+    const initialState = getInitialState();
+    const [currentUser, setCurrentUser] = useState<User | null>(initialState.user);
+    const [originalSession, setOriginalSession] = useState<User | null>(initialState.originalSession);
+    const [currentTenantId, setCurrentTenantId] = useState<string | null>(initialState.tenantId);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(initialState.superAdmin);
     const [forceUpdate, setForceUpdate] = useState(0);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(initialState.sidebarCollapsed);
     const [unreadChatCount, setUnreadChatCount] = useState(0);
+    const [isHydrated, setIsHydrated] = useState(typeof window !== 'undefined');
     const router = useRouter();
 
     const currentTenant = currentTenantId ? DB.tenants.find(t => t.id === currentTenantId) || null : null;
 
-    // 1. Persistence: Load from LocalStorage
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const storedUser = localStorage.getItem('m360_user');
-            const storedTenantId = localStorage.getItem('m360_tenant_id');
-            const storedIsSuperAdmin = localStorage.getItem('m360_is_super_admin');
-            const storedOriginalSession = localStorage.getItem('m360_original_session');
-
-            if (storedUser) setCurrentUser(JSON.parse(storedUser));
-            if (storedTenantId) setCurrentTenantId(storedTenantId);
-            if (storedIsSuperAdmin) setIsSuperAdmin(storedIsSuperAdmin === 'true');
-            if (storedOriginalSession) setOriginalSession(JSON.parse(storedOriginalSession));
-
-            const storedSidebar = localStorage.getItem('m360_sidebar_collapsed');
-            if (storedSidebar) setIsSidebarCollapsed(storedSidebar === 'true');
-        }
+        setIsHydrated(true);
     }, []);
 
     // 2. Persistence: Save to LocalStorage
@@ -638,7 +649,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 id: `email-${Date.now()}`,
                 to: newUser.email,
                 subject: `Bienvenido a Maturity360 - ${newUser.tenantId !== 'global' ? 'Tenant Invitation' : 'Platform Access'}`,
-                body: `Hola ${newUser.name},\n\nTu cuenta ha sido creada. Tu contraseña temporal es: Temp123!\nIngresa en: https://${newUser.tenantId}.maturity360.com`,
+                body: `Hola ${newUser.name},\n\nTu cuenta ha sido creada. Tu contraseña temporal es: Temp123!\nIngresa en: https://${newUser.tenantId}.maturity.online`,
                 status: 'SENT',
                 sentAt: new Date().toISOString()
             });
@@ -737,7 +748,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                     id: `email-${Date.now()}`,
                     to: user.email,
                     subject: `Resend: Bienvenido a Maturity360`,
-                    body: `Hola ${user.name},\n\nAqui tienes tu enlace de acceso: https://${user.tenantId}.maturity360.com\nCredenciales temporales: Temp123!`,
+                    body: `Hola ${user.name},\n\nAqui tienes tu enlace de acceso: https://${user.tenantId}.maturity.online\nCredenciales temporales: Temp123!`,
                     status: 'SENT',
                     sentAt: new Date().toISOString()
                 });
@@ -1025,7 +1036,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <AppContext.Provider value={{
-            currentUser, currentTenantId, currentTenant, isSuperAdmin, version: forceUpdate,
+            currentUser, currentTenantId, currentTenant, isSuperAdmin, isHydrated, version: forceUpdate,
             originalSession, impersonateUser, stopImpersonation,
             login, logout, updateUser, createTenant, updateTenant, deleteTenant,
             createUnit, updateUnit, deleteUnit, updateLevelPermissions,

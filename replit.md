@@ -71,6 +71,17 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
 - `next.config.ts`: Next.js configuration with allowed dev origins for Replit environment
 - `tsconfig.json`: TypeScript configuration with path aliases (@/*)
 
+## Domain Architecture
+- **Production Domain**: maturity.online
+- **Main Domain**: maturity.online - Shows superadmin login only
+- **Tenant Subdomains**: {tenant-id}.maturity.online - Tenant-specific login with SSO options
+- Domain configuration managed in `lib/config.ts`
+
+## Authentication
+- **Superadmin credentials**: superadmin@maturity.online / Admin2024!
+- Session persistence with localStorage (synchronized hydration to prevent logout on refresh)
+- Tenant users authenticate through their subdomain
+
 ## Recent Changes
 - December 2024: Imported from GitHub and configured for Replit environment
 - Added missing library files (data.ts, chatService.ts, i18n.ts, etc.)
@@ -85,3 +96,8 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
   - Fixed ChatService method signatures (muteConversation, updateNotificationSettings, reportContent)
   - Fixed mime_type null checks in attachment rendering
   - Created types/chat.ts for centralized chat type exports
+- December 22, 2025: Domain and login configuration
+  - Migrated domain from localhost:3000 to maturity.online
+  - Main domain shows superadmin login only (no tenant finder form)
+  - Fixed session persistence (synchronous localStorage hydration)
+  - Improved subdomain detection for maturity.online
