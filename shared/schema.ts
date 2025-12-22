@@ -129,7 +129,7 @@ export const surveys = pgTable("surveys", {
 
 export const tenantEmailConfigs = pgTable("tenant_email_configs", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).references(() => tenants.id),
+  tenantId: varchar("tenant_id", { length: 255 }),
   provider: varchar("provider", { length: 50 }).notNull().default("SMTP"),
   smtpHost: varchar("smtp_host", { length: 255 }),
   smtpPort: integer("smtp_port").default(587),
