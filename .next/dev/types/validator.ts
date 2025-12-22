@@ -371,6 +371,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../app/api/admin/storage-config/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/storage-config">> = Specific
+  const handler = {} as typeof import("../../../app/api/admin/storage-config/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/api/admin/storage-config/test/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/storage-config/test">> = Specific
+  const handler = {} as typeof import("../../../app/api/admin/storage-config/test/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/api/notifications/send/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/notifications/send">> = Specific

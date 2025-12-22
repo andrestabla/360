@@ -15,14 +15,17 @@ import {
     HardDrives,
     FloppyDisk,
     Eye,
-    EyeSlash
+    EyeSlash,
+    MagicWand
 } from '@phosphor-icons/react';
 import AdminGuide from '@/components/AdminGuide';
 import { storageGuide } from '@/lib/adminGuides';
+import StorageSetupWizard, { StorageConfigData } from '@/components/storage/StorageSetupWizard';
 
 export default function TenantStorageConfigPage() {
     const { currentTenantId } = useApp();
     const tenant = DB.tenants.find(t => t.id === currentTenantId);
+    const [showWizard, setShowWizard] = useState(false);
 
     const [selectedProvider, setSelectedProvider] = useState<StorageProvider>(
         tenant?.storageConfig?.provider || 'LOCAL'
@@ -93,6 +96,14 @@ export default function TenantStorageConfigPage() {
         };
 
         tenant.storageConfig = storageConfig;
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+    };
+
+    const handleWizardComplete = (wizardConfig: StorageConfigData) => {
+        setSelectedProvider(wizardConfig.provider as StorageProvider);
+        setConfig(wizardConfig.config);
+        setTestResult({ status: 'success', message: 'Configuración guardada desde el asistente' });
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
     };
@@ -343,14 +354,23 @@ export default function TenantStorageConfigPage() {
 
     return (
         <div className="p-8 max-w-6xl mx-auto">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-800 mb-2 flex items-center gap-3">
-                    <CloudArrowUp size={36} className="text-blue-600" />
-                    Configuración de Almacenamiento
-                </h1>
-                <p className="text-slate-600">
-                    Configura el proveedor de almacenamiento en la nube donde se guardarán todos los documentos del sistema.
-                </p>
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-800 mb-2 flex items-center gap-3">
+                        <CloudArrowUp size={36} className="text-blue-600" />
+                        Configuración de Almacenamiento
+                    </h1>
+                    <p className="text-slate-600">
+                        Configura el proveedor de almacenamiento en la nube donde se guardarán todos los documentos del sistema.
+                    </p>
+                </div>
+                <button
+                    onClick={() => setShowWizard(true)}
+                    className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+                >
+                    <MagicWand size={20} weight="bold" />
+                    Asistente de Configuración
+                </button>
             </div>
 
             {/* Provider Selection */}
@@ -469,6 +489,19 @@ export default function TenantStorageConfigPage() {
 
             {/* Admin Guide */}
             <AdminGuide {...storageGuide as any} />
+
+            {/* Storage Setup Wizard */}
+            <StorageSetupWizard
+                isOpen={showWizard}
+                onClose={() => setShowWizard(false)}
+                onComplete={handleWizardComplete}
+                existingConfig={tenant?.storageConfig ? {
+                    provider: tenant.storageConfig.provider,
+                    config: tenant.storageConfig.config || {},
+                    enabled: tenant.storageConfig.enabled
+                } : null}
+                tenantId={currentTenantId || ''}
+            />
         </div>
     );
 }

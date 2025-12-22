@@ -136,6 +136,23 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
   - Responsive CSS media queries for tablets (<1024px) and phones (<640px)
   - Cards, buttons, and content areas adapt to smaller screens
   - Tables become horizontally scrollable on mobile
+- December 22, 2025: Storage configuration wizard
+  - Added StorageSetupWizard component for guided storage provider configuration
+  - Provider presets for Google Drive, Dropbox, OneDrive, SharePoint, Amazon S3, Local Storage
+  - Step-by-step instructions with provider-specific documentation links
+  - Connection verification before saving configuration
+  - Credentials encrypted with AES-256-GCM before storage (same as email)
+  - API endpoints: `/api/admin/storage-config` and `/api/admin/storage-config/test`
+  - Admin UI: Dashboard > Admin > Almacenamiento > "Asistente de Configuración" button
+
+## Storage Configuration (Tenant-Specific)
+- Each tenant configures their own storage provider settings
+- Supported providers: Google Drive, Dropbox, OneDrive, SharePoint, Amazon S3, Local Storage
+- Storage credentials encrypted with AES-256-GCM before storage
+- Production requires `STORAGE_ENCRYPTION_KEY` or `EMAIL_ENCRYPTION_KEY` environment variable
+- Configuration stored in `tenant.storageConfig` with encrypted credentials in `encryptedConfig`
+- Encryption service: `lib/services/storageEncryption.ts`
+- Provider presets: `lib/config/storageProviderPresets.ts`
 
 ## Tenant Data Isolation
 All data tables include a `tenant_id` foreign key referencing the `tenants` table:

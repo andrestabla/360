@@ -15,20 +15,42 @@ const translations = {
         workflows: 'Flujos de Trabajo',
         repository: 'Repositorio',
         chat: 'Chat',
-        analytics: 'Analiticas',
+        analytics: 'Analíticas',
         surveys: 'Encuestas',
         profile: 'Perfil',
-        settings: 'Configuracion',
-        logout: 'Cerrar Sesion',
-        admin: 'Administracion',
+        settings: 'Configuración',
+        logout: 'Cerrar Sesión',
+        admin: 'Administración',
         users: 'Usuarios',
         units: 'Unidades',
         roles: 'Roles',
         storage: 'Almacenamiento',
         communications: 'Comunicaciones',
-        audit: 'Auditoria',
+        audit: 'Auditoría',
         tenants: 'Organizaciones',
         platform: 'Plataforma',
+        nav_operation: 'OPERACIÓN',
+        nav_governance: 'GOBERNANZA',
+        nav_management: 'GESTIÓN',
+        nav_platform: 'PLATAFORMA',
+        nav_dashboard: 'Inicio',
+        nav_chat: 'Chat',
+        nav_chat0: 'Chat',
+        nav_repository: 'Repositorio',
+        nav_workflows: 'Mis Flujos',
+        nav_analytics: 'Analíticas',
+        nav_surveys: 'Encuestas',
+        nav_admin: 'Administración',
+        nav_units: 'Unidades',
+        nav_roles: 'Roles',
+        nav_users: 'Usuarios',
+        nav_comms: 'Comunicaciones',
+        nav_unit: 'Mi Unidad',
+        nav_settings: 'Configuración',
+        nav_storage: 'Almacenamiento',
+        nav_audit: 'Auditoría',
+        nav_projects: 'Proyectos',
+        nav_requests: 'Solicitudes',
         search: 'Buscar',
         save: 'Guardar',
         cancel: 'Cancelar',
@@ -40,9 +62,9 @@ const translations = {
         confirm: 'Confirmar',
         loading: 'Cargando...',
         error: 'Error',
-        success: 'Exito',
+        success: 'Éxito',
         warning: 'Advertencia',
-        info: 'Informacion',
+        info: 'Información',
         welcome: 'Bienvenido',
         documents: 'Documentos',
         projects: 'Proyectos',
@@ -63,14 +85,14 @@ const translations = {
         upload: 'Subir',
         view: 'Ver',
         details: 'Detalles',
-        description: 'Descripcion',
+        description: 'Descripción',
         name: 'Nombre',
         email: 'Correo',
-        phone: 'Telefono',
+        phone: 'Teléfono',
         date: 'Fecha',
         time: 'Hora',
         type: 'Tipo',
-        category: 'Categoria',
+        category: 'Categoría',
         tags: 'Etiquetas',
         comments: 'Comentarios',
         likes: 'Me gusta',
@@ -87,18 +109,150 @@ const translations = {
         myProjects: 'Mis Proyectos',
         myTasks: 'Mis Tareas',
         recentActivity: 'Actividad Reciente',
-        quickActions: 'Acciones Rapidas',
+        quickActions: 'Acciones Rápidas',
         overview: 'Resumen',
         reports: 'Reportes',
         help: 'Ayuda',
         support: 'Soporte',
-        documentation: 'Documentacion',
-        version: 'Version',
+        documentation: 'Documentación',
+        version: 'Versión',
         language: 'Idioma',
         theme: 'Tema',
         dark: 'Oscuro',
         light: 'Claro',
-        auto: 'Automatico'
+        auto: 'Automático',
+        wf_title_requests: 'Solicitudes',
+        wf_title_projects: 'Proyectos',
+        wf_desc_requests: 'Gestiona las solicitudes de tu equipo',
+        wf_desc_projects: 'Organiza y da seguimiento a tus proyectos',
+        wf_new_request: 'Nueva Solicitud',
+        wf_new_project: 'Nuevo Proyecto',
+        wf_new_folder: 'Nueva Carpeta',
+        wf_import: 'Importar',
+        surveys_title: 'Encuestas',
+        surveys_desc: 'Crea y gestiona encuestas para tu organización',
+        surveys_create_btn: 'Nueva Encuesta',
+        surveys_tab_active: 'Activas',
+        surveys_tab_drafts: 'Borradores',
+        surveys_tab_closed: 'Cerradas',
+        surveys_cancel: 'Cancelar',
+        surveys_template_title: 'Crear desde Plantilla',
+        surveys_template_subtitle: 'Selecciona una plantilla para comenzar',
+        survey_yes: 'Sí',
+        survey_no: 'No',
+        survey_next_btn: 'Siguiente',
+        survey_prev_btn: 'Anterior',
+        survey_finish_btn: 'Finalizar',
+        survey_next_dim_btn: 'Siguiente Dimensión',
+        survey_dropdown_placeholder: 'Selecciona una opción',
+        survey_required: 'Requerido',
+        survey_respond_btn: 'Responder',
+        survey_view_results: 'Ver Resultados',
+        survey_completed: 'Completada',
+        survey_completed_btn: 'Completada',
+        survey_exit: 'Salir',
+        survey_saving: 'Guardando...',
+        survey_saved: 'Guardado',
+        survey_questions_count: 'preguntas',
+        survey_sections: 'secciones',
+        survey_page_info: 'Página',
+        survey_page_of: 'de',
+        survey_audience_global: 'Global',
+        survey_audience_unit: 'Por Unidad',
+        survey_global_progress: 'Progreso Global',
+        survey_empty_title: 'No hay encuestas',
+        survey_empty_create_first: 'Crea tu primera encuesta',
+        survey_thank_you_title: '¡Gracias!',
+        survey_thank_you_desc: 'Tu respuesta ha sido registrada',
+        survey_text_placeholder: 'Escribe tu respuesta aquí...',
+        survey_likert_agree: 'Totalmente de acuerdo',
+        survey_likert_disagree: 'Totalmente en desacuerdo',
+        survey_nps_likely: 'Muy probable',
+        survey_nps_unlikely: 'Muy improbable',
+        builder_tab_design: 'Diseño',
+        builder_tab_settings: 'Configuración',
+        builder_publish: 'Publicar',
+        builder_question_types: 'Tipos de Pregunta',
+        builder_new_question: 'Nueva Pregunta',
+        builder_no_questions: 'Sin preguntas',
+        builder_ph_title: 'Título de la encuesta',
+        builder_ph_desc: 'Descripción de la encuesta',
+        builder_q_ph: 'Escribe tu pregunta...',
+        builder_required: 'Requerida',
+        builder_delete_q: 'Eliminar',
+        builder_select_type: 'Selecciona tipo',
+        builder_add_option: 'Agregar opción',
+        builder_text_help: 'Texto de ayuda',
+        builder_settings_header: 'Configuración',
+        builder_audience_label: 'Audiencia',
+        builder_audience_global_btn: 'Global',
+        builder_audience_unit_btn: 'Por Unidad',
+        builder_type_free_text: 'Texto Libre',
+        builder_type_likert: 'Escala Likert',
+        builder_type_nps_full: 'NPS (0-10)',
+        builder_type_multi: 'Opción Múltiple',
+        builder_type_check: 'Casillas',
+        builder_type_yesno: 'Sí/No',
+        builder_type_rating: 'Calificación',
+        builder_type_dropdown: 'Desplegable',
+        builder_type_ranking: 'Ranking',
+        builder_type_date: 'Fecha',
+        builder_type_file: 'Archivo',
+        results_tab_general: 'General',
+        results_tab_dimensions: 'Dimensiones',
+        results_tab_analytics: 'Análisis',
+        results_tab_actions: 'Acciones',
+        results_aiq: 'AIQ',
+        results_aiq_desc: 'Índice de Agilidad',
+        results_dq: 'DQ',
+        results_dq_desc: 'Índice Digital',
+        results_benchmark_title: 'Benchmark',
+        results_benchmark_sector: 'Sector',
+        results_benchmark_expected: 'Esperado',
+        badge_high: 'Alto',
+        badge_medium: 'Medio',
+        badge_low: 'Bajo',
+        profile_title: 'Mi Perfil',
+        profile_tab_info: 'Información',
+        profile_tab_security: 'Seguridad',
+        profile_name: 'Nombre',
+        profile_bio: 'Biografía',
+        profile_phone: 'Teléfono',
+        profile_location: 'Ubicación',
+        profile_lang: 'Idioma',
+        profile_timezone: 'Zona Horaria',
+        profile_regional: 'Regional',
+        profile_level: 'Nivel',
+        profile_last_access: 'Último Acceso',
+        profile_today: 'Hoy',
+        profile_active: 'Activo',
+        profile_save_btn: 'Guardar Cambios',
+        profile_saved: 'Guardado',
+        profile_change_photo: 'Cambiar Foto',
+        security_password_title: 'Cambiar Contraseña',
+        security_current_pass: 'Contraseña Actual',
+        security_new_pass: 'Nueva Contraseña',
+        security_confirm_pass: 'Confirmar Contraseña',
+        security_change_btn: 'Cambiar Contraseña',
+        security_pass_mismatch: 'Las contraseñas no coinciden',
+        security_mfa_title: 'Autenticación de Dos Factores',
+        security_mfa_desc: 'Agrega una capa extra de seguridad',
+        security_mfa_enable: 'Habilitar 2FA',
+        security_activity_title: 'Actividad Reciente',
+        security_activity_desc: 'Historial de sesiones',
+        repo_upload_title: 'Subir Archivo',
+        repo_upload_btn: 'Subir',
+        repo_search_placeholder: 'Buscar documentos...',
+        repo_filter_type: 'Tipo',
+        repo_filter_favorites: 'Favoritos',
+        repo_filter_clear: 'Limpiar',
+        repo_empty_title: 'Sin documentos',
+        repo_empty_desc: 'Sube tu primer documento',
+        repo_tab_file: 'Archivo',
+        repo_tab_link: 'Enlace',
+        repo_tab_embed: 'Incrustado',
+        doc_viewer_comments: 'Comentarios',
+        doc_viewer_upload_new: 'Subir Nueva Versión'
     },
     en: {
         dashboard: 'Dashboard',
@@ -120,6 +274,28 @@ const translations = {
         audit: 'Audit',
         tenants: 'Organizations',
         platform: 'Platform',
+        nav_operation: 'OPERATION',
+        nav_governance: 'GOVERNANCE',
+        nav_management: 'MANAGEMENT',
+        nav_platform: 'PLATFORM',
+        nav_dashboard: 'Dashboard',
+        nav_chat: 'Chat',
+        nav_chat0: 'Chat',
+        nav_repository: 'Repository',
+        nav_workflows: 'My Workflows',
+        nav_analytics: 'Analytics',
+        nav_surveys: 'Surveys',
+        nav_admin: 'Admin',
+        nav_units: 'Units',
+        nav_roles: 'Roles',
+        nav_users: 'Users',
+        nav_comms: 'Communications',
+        nav_unit: 'My Unit',
+        nav_settings: 'Settings',
+        nav_storage: 'Storage',
+        nav_audit: 'Audit',
+        nav_projects: 'Projects',
+        nav_requests: 'Requests',
         search: 'Search',
         save: 'Save',
         cancel: 'Cancel',
@@ -189,7 +365,139 @@ const translations = {
         theme: 'Theme',
         dark: 'Dark',
         light: 'Light',
-        auto: 'Auto'
+        auto: 'Auto',
+        wf_title_requests: 'Requests',
+        wf_title_projects: 'Projects',
+        wf_desc_requests: 'Manage your team requests',
+        wf_desc_projects: 'Organize and track your projects',
+        wf_new_request: 'New Request',
+        wf_new_project: 'New Project',
+        wf_new_folder: 'New Folder',
+        wf_import: 'Import',
+        surveys_title: 'Surveys',
+        surveys_desc: 'Create and manage surveys for your organization',
+        surveys_create_btn: 'New Survey',
+        surveys_tab_active: 'Active',
+        surveys_tab_drafts: 'Drafts',
+        surveys_tab_closed: 'Closed',
+        surveys_cancel: 'Cancel',
+        surveys_template_title: 'Create from Template',
+        surveys_template_subtitle: 'Select a template to get started',
+        survey_yes: 'Yes',
+        survey_no: 'No',
+        survey_next_btn: 'Next',
+        survey_prev_btn: 'Previous',
+        survey_finish_btn: 'Finish',
+        survey_next_dim_btn: 'Next Dimension',
+        survey_dropdown_placeholder: 'Select an option',
+        survey_required: 'Required',
+        survey_respond_btn: 'Respond',
+        survey_view_results: 'View Results',
+        survey_completed: 'Completed',
+        survey_completed_btn: 'Completed',
+        survey_exit: 'Exit',
+        survey_saving: 'Saving...',
+        survey_saved: 'Saved',
+        survey_questions_count: 'questions',
+        survey_sections: 'sections',
+        survey_page_info: 'Page',
+        survey_page_of: 'of',
+        survey_audience_global: 'Global',
+        survey_audience_unit: 'By Unit',
+        survey_global_progress: 'Global Progress',
+        survey_empty_title: 'No surveys',
+        survey_empty_create_first: 'Create your first survey',
+        survey_thank_you_title: 'Thank you!',
+        survey_thank_you_desc: 'Your response has been recorded',
+        survey_text_placeholder: 'Write your answer here...',
+        survey_likert_agree: 'Strongly agree',
+        survey_likert_disagree: 'Strongly disagree',
+        survey_nps_likely: 'Very likely',
+        survey_nps_unlikely: 'Very unlikely',
+        builder_tab_design: 'Design',
+        builder_tab_settings: 'Settings',
+        builder_publish: 'Publish',
+        builder_question_types: 'Question Types',
+        builder_new_question: 'New Question',
+        builder_no_questions: 'No questions',
+        builder_ph_title: 'Survey title',
+        builder_ph_desc: 'Survey description',
+        builder_q_ph: 'Write your question...',
+        builder_required: 'Required',
+        builder_delete_q: 'Delete',
+        builder_select_type: 'Select type',
+        builder_add_option: 'Add option',
+        builder_text_help: 'Help text',
+        builder_settings_header: 'Settings',
+        builder_audience_label: 'Audience',
+        builder_audience_global_btn: 'Global',
+        builder_audience_unit_btn: 'By Unit',
+        builder_type_free_text: 'Free Text',
+        builder_type_likert: 'Likert Scale',
+        builder_type_nps_full: 'NPS (0-10)',
+        builder_type_multi: 'Multiple Choice',
+        builder_type_check: 'Checkboxes',
+        builder_type_yesno: 'Yes/No',
+        builder_type_rating: 'Rating',
+        builder_type_dropdown: 'Dropdown',
+        builder_type_ranking: 'Ranking',
+        builder_type_date: 'Date',
+        builder_type_file: 'File',
+        results_tab_general: 'General',
+        results_tab_dimensions: 'Dimensions',
+        results_tab_analytics: 'Analytics',
+        results_tab_actions: 'Actions',
+        results_aiq: 'AIQ',
+        results_aiq_desc: 'Agility Index',
+        results_dq: 'DQ',
+        results_dq_desc: 'Digital Index',
+        results_benchmark_title: 'Benchmark',
+        results_benchmark_sector: 'Sector',
+        results_benchmark_expected: 'Expected',
+        badge_high: 'High',
+        badge_medium: 'Medium',
+        badge_low: 'Low',
+        profile_title: 'My Profile',
+        profile_tab_info: 'Information',
+        profile_tab_security: 'Security',
+        profile_name: 'Name',
+        profile_bio: 'Bio',
+        profile_phone: 'Phone',
+        profile_location: 'Location',
+        profile_lang: 'Language',
+        profile_timezone: 'Timezone',
+        profile_regional: 'Regional',
+        profile_level: 'Level',
+        profile_last_access: 'Last Access',
+        profile_today: 'Today',
+        profile_active: 'Active',
+        profile_save_btn: 'Save Changes',
+        profile_saved: 'Saved',
+        profile_change_photo: 'Change Photo',
+        security_password_title: 'Change Password',
+        security_current_pass: 'Current Password',
+        security_new_pass: 'New Password',
+        security_confirm_pass: 'Confirm Password',
+        security_change_btn: 'Change Password',
+        security_pass_mismatch: 'Passwords do not match',
+        security_mfa_title: 'Two-Factor Authentication',
+        security_mfa_desc: 'Add an extra layer of security',
+        security_mfa_enable: 'Enable 2FA',
+        security_activity_title: 'Recent Activity',
+        security_activity_desc: 'Session history',
+        repo_upload_title: 'Upload File',
+        repo_upload_btn: 'Upload',
+        repo_search_placeholder: 'Search documents...',
+        repo_filter_type: 'Type',
+        repo_filter_favorites: 'Favorites',
+        repo_filter_clear: 'Clear',
+        repo_empty_title: 'No documents',
+        repo_empty_desc: 'Upload your first document',
+        repo_tab_file: 'File',
+        repo_tab_link: 'Link',
+        repo_tab_embed: 'Embed',
+        doc_viewer_comments: 'Comments',
+        doc_viewer_upload_new: 'Upload New Version'
     }
 };
 function useTranslation(locale = 'es') {
@@ -236,6 +544,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$CaretRight$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@phosphor-icons/react/dist/csr/CaretRight.es.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Globe$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@phosphor-icons/react/dist/csr/Globe.es.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$CloudArrowUp$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@phosphor-icons/react/dist/csr/CloudArrowUp.es.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$X$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@phosphor-icons/react/dist/csr/X.es.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
@@ -246,17 +555,21 @@ var _s = __turbopack_context__.k.signature();
 ;
 function Sidebar() {
     _s();
-    const { currentUser, isSuperAdmin, currentTenant, isSidebarCollapsed, toggleSidebar, unreadChatCount } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$context$2f$AppContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useApp"])();
+    const { currentUser, isSuperAdmin, currentTenant, isSidebarCollapsed, toggleSidebar, unreadChatCount, isMobileMenuOpen, closeMobileMenu } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$context$2f$AppContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useApp"])();
     const { t } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$i18n$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTranslation"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const pathname = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"])();
     if (!currentUser) return null;
+    const handleNavigation = (path)=>{
+        router.push(path);
+        closeMobileMenu();
+    };
     const NavItem = ({ icon: Icon, label, path, badge })=>{
         const isActive = pathname === path;
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
             id: `nav-item-${path.replace(/\//g, '-')}`,
             className: `nav-item ${isActive ? 'active' : ''} ${isSidebarCollapsed ? 'justify-center px-0' : ''}`,
-            onClick: ()=>router.push(path),
+            onClick: ()=>handleNavigation(path),
             title: isSidebarCollapsed ? label : '',
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(Icon, {
@@ -264,7 +577,7 @@ function Sidebar() {
                     weight: isActive ? 'bold' : 'regular'
                 }, void 0, false, {
                     fileName: "[project]/components/Sidebar.tsx",
-                    lineNumber: 28,
+                    lineNumber: 33,
                     columnNumber: 17
                 }, this),
                 !isSidebarCollapsed && label,
@@ -273,440 +586,486 @@ function Sidebar() {
                     children: badge
                 }, void 0, false, {
                     fileName: "[project]/components/Sidebar.tsx",
-                    lineNumber: 30,
+                    lineNumber: 35,
                     columnNumber: 65
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/components/Sidebar.tsx",
-            lineNumber: 22,
+            lineNumber: 27,
             columnNumber: 13
         }, this);
     };
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("aside", {
-        id: "sidebar",
-        className: `${isSuperAdmin ? 'super-mode' : ''} ${isSidebarCollapsed ? 'collapsed w-[80px]' : 'w-[260px]'} transition-all duration-300`,
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: `brand flex items-center ${isSidebarCollapsed ? 'justify-center p-4' : 'justify-between p-5'}`,
+            isMobileMenuOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "fixed inset-0 bg-black/50 z-40 lg:hidden",
+                onClick: closeMobileMenu
+            }, void 0, false, {
+                fileName: "[project]/components/Sidebar.tsx",
+                lineNumber: 43,
+                columnNumber: 17
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("aside", {
+                id: "sidebar",
+                className: `
+                    ${isSuperAdmin ? 'super-mode' : ''} 
+                    ${isSidebarCollapsed ? 'collapsed w-[80px]' : 'w-[260px]'} 
+                    transition-all duration-300
+                    fixed lg:relative
+                    h-full
+                    z-50
+                    ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                `,
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex items-center gap-3",
+                        className: `brand flex items-center ${isSidebarCollapsed ? 'justify-center p-4' : 'justify-between p-5'}`,
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "brand-logo flex-shrink-0",
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$SquaresFour$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SquaresFour"], {
-                                    weight: "bold"
-                                }, void 0, false, {
-                                    fileName: "[project]/components/Sidebar.tsx",
-                                    lineNumber: 39,
-                                    columnNumber: 63
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/components/Sidebar.tsx",
-                                lineNumber: 39,
-                                columnNumber: 21
-                            }, this),
-                            !isSidebarCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "animate-fadeIn",
+                                className: "flex items-center gap-3",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        style: {
-                                            fontWeight: 700,
-                                            color: 'white',
-                                            fontSize: '15px',
-                                            letterSpacing: '-0.02em'
-                                        },
-                                        children: isSuperAdmin ? 'Antigravity DB' : currentTenant?.branding?.app_title || 'Maturity360'
+                                        className: "brand-logo flex-shrink-0",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$SquaresFour$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SquaresFour"], {
+                                            weight: "bold"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/Sidebar.tsx",
+                                            lineNumber: 62,
+                                            columnNumber: 67
+                                        }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/Sidebar.tsx",
-                                        lineNumber: 42,
-                                        columnNumber: 29
+                                        lineNumber: 62,
+                                        columnNumber: 25
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        style: {
-                                            fontSize: 10,
-                                            opacity: 0.5,
-                                            fontWeight: 600,
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.05em'
-                                        },
-                                        id: "tenant-label",
-                                        children: isSuperAdmin ? 'Global View' : currentTenant?.name
-                                    }, void 0, false, {
+                                    !isSidebarCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "animate-fadeIn",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                style: {
+                                                    fontWeight: 700,
+                                                    color: 'white',
+                                                    fontSize: '15px',
+                                                    letterSpacing: '-0.02em'
+                                                },
+                                                children: isSuperAdmin ? 'Antigravity DB' : currentTenant?.branding?.app_title || 'Maturity360'
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/Sidebar.tsx",
+                                                lineNumber: 65,
+                                                columnNumber: 33
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                style: {
+                                                    fontSize: 10,
+                                                    opacity: 0.5,
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.05em'
+                                                },
+                                                id: "tenant-label",
+                                                children: isSuperAdmin ? 'Global View' : currentTenant?.name
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/Sidebar.tsx",
+                                                lineNumber: 68,
+                                                columnNumber: 33
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
                                         fileName: "[project]/components/Sidebar.tsx",
-                                        lineNumber: 45,
+                                        lineNumber: 64,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/Sidebar.tsx",
-                                lineNumber: 41,
-                                columnNumber: 25
+                                lineNumber: 61,
+                                columnNumber: 21
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex items-center gap-1",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        onClick: closeMobileMenu,
+                                        className: "text-white/40 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 lg:hidden",
+                                        title: "Cerrar Menú",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$X$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["X"], {
+                                            size: 18,
+                                            weight: "bold"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/Sidebar.tsx",
+                                            lineNumber: 80,
+                                            columnNumber: 29
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/Sidebar.tsx",
+                                        lineNumber: 75,
+                                        columnNumber: 25
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        onClick: toggleSidebar,
+                                        className: `text-white/40 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 hidden lg:block ${isSidebarCollapsed ? 'hidden' : ''}`,
+                                        title: "Contraer Menú",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$CaretLeft$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CaretLeft"], {
+                                            size: 16,
+                                            weight: "bold"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/Sidebar.tsx",
+                                            lineNumber: 87,
+                                            columnNumber: 29
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/Sidebar.tsx",
+                                        lineNumber: 82,
+                                        columnNumber: 25
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/components/Sidebar.tsx",
+                                lineNumber: 74,
+                                columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/Sidebar.tsx",
-                        lineNumber: 38,
+                        lineNumber: 60,
                         columnNumber: 17
                     }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                        onClick: toggleSidebar,
-                        className: `text-white/40 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 ${isSidebarCollapsed ? 'hidden' : ''}`,
-                        title: "Contraer Menú",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$CaretLeft$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CaretLeft"], {
-                            size: 16,
-                            weight: "bold"
+                    isSidebarCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "hidden lg:flex justify-center p-2 border-b border-white/5",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            onClick: toggleSidebar,
+                            className: "text-white/40 hover:text-white transition-colors p-2 rounded-xl hover:bg-white/10",
+                            title: "Expandir Menú",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$CaretRight$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CaretRight"], {
+                                size: 20,
+                                weight: "bold"
+                            }, void 0, false, {
+                                fileName: "[project]/components/Sidebar.tsx",
+                                lineNumber: 99,
+                                columnNumber: 29
+                            }, this)
                         }, void 0, false, {
                             fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 56,
-                            columnNumber: 21
+                            lineNumber: 94,
+                            columnNumber: 25
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/Sidebar.tsx",
-                        lineNumber: 51,
-                        columnNumber: 17
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/components/Sidebar.tsx",
-                lineNumber: 37,
-                columnNumber: 13
-            }, this),
-            isSidebarCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex justify-center p-2 border-b border-white/5",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                    onClick: toggleSidebar,
-                    className: "text-white/40 hover:text-white transition-colors p-2 rounded-xl hover:bg-white/10",
-                    title: "Expandir Menú",
-                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$CaretRight$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CaretRight"], {
-                        size: 20,
-                        weight: "bold"
-                    }, void 0, false, {
-                        fileName: "[project]/components/Sidebar.tsx",
-                        lineNumber: 67,
-                        columnNumber: 25
-                    }, this)
-                }, void 0, false, {
-                    fileName: "[project]/components/Sidebar.tsx",
-                    lineNumber: 62,
-                    columnNumber: 21
-                }, this)
-            }, void 0, false, {
-                fileName: "[project]/components/Sidebar.tsx",
-                lineNumber: 61,
-                columnNumber: 17
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
-                className: "nav",
-                id: "nav-menu",
-                children: isSuperAdmin ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "nav-header",
-                            children: t('nav_platform')
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 75,
-                            columnNumber: 25
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Planet$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Planet"],
-                            label: "Global Dashboard",
-                            path: "/dashboard"
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 76,
-                            columnNumber: 25
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Buildings$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Buildings"],
-                            label: "Tenants",
-                            path: "/dashboard/tenants"
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 77,
-                            columnNumber: 25
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$UsersThree$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["UsersThree"],
-                            label: "Users & Permissions",
-                            path: "/dashboard/admin/users"
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 78,
-                            columnNumber: 25
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Globe$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Globe"],
-                            label: "Platform Params",
-                            path: "/dashboard/platform"
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 79,
-                            columnNumber: 25
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ShieldCheck$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ShieldCheck"],
-                            label: "Audit Global",
-                            path: "/dashboard/audit"
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 80,
-                            columnNumber: 25
-                        }, this)
-                    ]
-                }, void 0, true) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: `nav-header ${isSidebarCollapsed ? 'text-center opacity-30 text-[9px]' : ''}`,
-                            children: isSidebarCollapsed ? '•••' : t('nav_operation')
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 84,
-                            columnNumber: 25
-                        }, this),
-                        (currentTenant?.features?.includes('DASHBOARD') || !currentTenant) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$SquaresFour$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SquaresFour"],
-                            label: t('nav_dashboard'),
-                            path: "/dashboard"
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 89,
-                            columnNumber: 29
-                        }, this),
-                        currentTenant?.features?.includes('CHAT') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ChatCircleDots$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ChatCircleDots"],
-                            label: t('nav_chat'),
-                            path: "/dashboard/chat",
-                            badge: unreadChatCount
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 93,
-                            columnNumber: 29
-                        }, this),
-                        currentTenant?.features?.includes('REPOSITORY') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Files$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Files"],
-                            label: t('nav_repository'),
-                            path: "/dashboard/repository"
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 96,
-                            columnNumber: 29
-                        }, this),
-                        currentTenant?.features?.includes('WORKFLOWS') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Kanban$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Kanban"],
-                            label: t('nav_workflows'),
-                            path: "/dashboard/workflows"
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 99,
-                            columnNumber: 29
-                        }, this),
-                        currentTenant?.features?.includes('ANALYTICS') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ChartPieSlice$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ChartPieSlice"],
-                            label: t('nav_analytics'),
-                            path: "/dashboard/analytics"
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 102,
-                            columnNumber: 29
-                        }, this),
-                        currentTenant?.features?.includes('SURVEYS') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ClipboardText$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ClipboardText"],
-                            label: t('nav_surveys'),
-                            path: "/dashboard/surveys"
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 105,
-                            columnNumber: 29
-                        }, this),
-                        currentUser.level <= 2 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                        lineNumber: 93,
+                        columnNumber: 21
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
+                        className: "nav",
+                        id: "nav-menu",
+                        children: isSuperAdmin ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "nav-header",
-                                    children: currentUser.level === 1 ? t('nav_governance') : t('nav_management')
+                                    children: t('nav_platform')
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 107,
+                                    columnNumber: 29
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Planet$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Planet"],
+                                    label: "Global Dashboard",
+                                    path: "/dashboard"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 108,
+                                    columnNumber: 29
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Buildings$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Buildings"],
+                                    label: "Tenants",
+                                    path: "/dashboard/tenants"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 109,
+                                    columnNumber: 29
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$UsersThree$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["UsersThree"],
+                                    label: "Users & Permissions",
+                                    path: "/dashboard/admin/users"
                                 }, void 0, false, {
                                     fileName: "[project]/components/Sidebar.tsx",
                                     lineNumber: 110,
-                                    columnNumber: 33
+                                    columnNumber: 29
                                 }, this),
-                                currentUser.level === 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Gear$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Gear"],
-                                            label: t('nav_admin'),
-                                            path: "/dashboard/admin"
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/Sidebar.tsx",
-                                            lineNumber: 113,
-                                            columnNumber: 41
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$TreeStructure$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TreeStructure"],
-                                            label: t('nav_units'),
-                                            path: "/dashboard/admin/units"
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/Sidebar.tsx",
-                                            lineNumber: 114,
-                                            columnNumber: 41
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ShieldCheck$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ShieldCheck"],
-                                            label: t('nav_roles'),
-                                            path: "/dashboard/admin/roles"
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/Sidebar.tsx",
-                                            lineNumber: 115,
-                                            columnNumber: 41
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$UsersThree$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["UsersThree"],
-                                            label: t('nav_users'),
-                                            path: "/dashboard/admin/users"
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/Sidebar.tsx",
-                                            lineNumber: 116,
-                                            columnNumber: 41
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Megaphone$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Megaphone"],
-                                            label: t('nav_comms'),
-                                            path: "/dashboard/admin/communications"
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/Sidebar.tsx",
-                                            lineNumber: 117,
-                                            columnNumber: 41
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$GitPullRequest$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["GitPullRequest"],
-                                            label: "Configuración Técnica",
-                                            path: "/dashboard/admin/settings"
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/Sidebar.tsx",
-                                            lineNumber: 118,
-                                            columnNumber: 41
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$CloudArrowUp$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CloudArrowUp"],
-                                            label: "Almacenamiento",
-                                            path: "/dashboard/admin/storage"
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/Sidebar.tsx",
-                                            lineNumber: 119,
-                                            columnNumber: 41
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ChartPieSlice$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ChartPieSlice"],
-                                            label: "Dashboard Storage",
-                                            path: "/dashboard/admin/storage-dashboard"
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/Sidebar.tsx",
-                                            lineNumber: 120,
-                                            columnNumber: 41
-                                        }, this)
-                                    ]
-                                }, void 0, true),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
-                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$UsersThree$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["UsersThree"],
-                                    label: t('nav_unit'),
-                                    path: "/dashboard/unit"
+                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Globe$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Globe"],
+                                    label: "Platform Params",
+                                    path: "/dashboard/platform"
                                 }, void 0, false, {
                                     fileName: "[project]/components/Sidebar.tsx",
-                                    lineNumber: 123,
-                                    columnNumber: 33
+                                    lineNumber: 111,
+                                    columnNumber: 29
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ShieldCheck$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ShieldCheck"],
+                                    label: "Audit Global",
+                                    path: "/dashboard/audit"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 112,
+                                    columnNumber: 29
                                 }, this)
                             ]
+                        }, void 0, true) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: `nav-header ${isSidebarCollapsed ? 'text-center opacity-30 text-[9px]' : ''}`,
+                                    children: isSidebarCollapsed ? '•••' : t('nav_operation')
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 116,
+                                    columnNumber: 29
+                                }, this),
+                                (currentTenant?.features?.includes('DASHBOARD') || !currentTenant) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$SquaresFour$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SquaresFour"],
+                                    label: t('nav_dashboard'),
+                                    path: "/dashboard"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 121,
+                                    columnNumber: 33
+                                }, this),
+                                currentTenant?.features?.includes('CHAT') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ChatCircleDots$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ChatCircleDots"],
+                                    label: t('nav_chat'),
+                                    path: "/dashboard/chat",
+                                    badge: unreadChatCount
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 125,
+                                    columnNumber: 33
+                                }, this),
+                                currentTenant?.features?.includes('REPOSITORY') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Files$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Files"],
+                                    label: t('nav_repository'),
+                                    path: "/dashboard/repository"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 128,
+                                    columnNumber: 33
+                                }, this),
+                                currentTenant?.features?.includes('WORKFLOWS') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Kanban$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Kanban"],
+                                    label: t('nav_workflows'),
+                                    path: "/dashboard/workflows"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 131,
+                                    columnNumber: 33
+                                }, this),
+                                currentTenant?.features?.includes('ANALYTICS') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ChartPieSlice$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ChartPieSlice"],
+                                    label: t('nav_analytics'),
+                                    path: "/dashboard/analytics"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 134,
+                                    columnNumber: 33
+                                }, this),
+                                currentTenant?.features?.includes('SURVEYS') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ClipboardText$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ClipboardText"],
+                                    label: t('nav_surveys'),
+                                    path: "/dashboard/surveys"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 137,
+                                    columnNumber: 33
+                                }, this),
+                                currentUser.level <= 2 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "nav-header",
+                                            children: currentUser.level === 1 ? t('nav_governance') : t('nav_management')
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/Sidebar.tsx",
+                                            lineNumber: 142,
+                                            columnNumber: 37
+                                        }, this),
+                                        currentUser.level === 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Gear$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Gear"],
+                                                    label: t('nav_admin'),
+                                                    path: "/dashboard/admin"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/Sidebar.tsx",
+                                                    lineNumber: 145,
+                                                    columnNumber: 45
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$TreeStructure$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TreeStructure"],
+                                                    label: t('nav_units'),
+                                                    path: "/dashboard/admin/units"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/Sidebar.tsx",
+                                                    lineNumber: 146,
+                                                    columnNumber: 45
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ShieldCheck$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ShieldCheck"],
+                                                    label: t('nav_roles'),
+                                                    path: "/dashboard/admin/roles"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/Sidebar.tsx",
+                                                    lineNumber: 147,
+                                                    columnNumber: 45
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$UsersThree$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["UsersThree"],
+                                                    label: t('nav_users'),
+                                                    path: "/dashboard/admin/users"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/Sidebar.tsx",
+                                                    lineNumber: 148,
+                                                    columnNumber: 45
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Megaphone$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Megaphone"],
+                                                    label: t('nav_comms'),
+                                                    path: "/dashboard/admin/communications"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/Sidebar.tsx",
+                                                    lineNumber: 149,
+                                                    columnNumber: 45
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$GitPullRequest$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["GitPullRequest"],
+                                                    label: "Configuración Técnica",
+                                                    path: "/dashboard/admin/settings"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/Sidebar.tsx",
+                                                    lineNumber: 150,
+                                                    columnNumber: 45
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$CloudArrowUp$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CloudArrowUp"],
+                                                    label: "Almacenamiento",
+                                                    path: "/dashboard/admin/storage"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/Sidebar.tsx",
+                                                    lineNumber: 151,
+                                                    columnNumber: 45
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                                    icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ChartPieSlice$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ChartPieSlice"],
+                                                    label: "Dashboard Storage",
+                                                    path: "/dashboard/admin/storage-dashboard"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/Sidebar.tsx",
+                                                    lineNumber: 152,
+                                                    columnNumber: 45
+                                                }, this)
+                                            ]
+                                        }, void 0, true),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(NavItem, {
+                                            icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$UsersThree$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["UsersThree"],
+                                            label: t('nav_unit'),
+                                            path: "/dashboard/unit"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/Sidebar.tsx",
+                                            lineNumber: 155,
+                                            columnNumber: 37
+                                        }, this)
+                                    ]
+                                }, void 0, true)
+                            ]
                         }, void 0, true)
-                    ]
-                }, void 0, true)
-            }, void 0, false, {
-                fileName: "[project]/components/Sidebar.tsx",
-                lineNumber: 72,
-                columnNumber: 13
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: `user-profile ${isSidebarCollapsed ? 'justify-center p-3' : ''}`,
-                onClick: ()=>router.push('/dashboard/profile'),
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "avatar",
-                        id: "u-avatar",
-                        children: currentUser.initials
                     }, void 0, false, {
                         fileName: "[project]/components/Sidebar.tsx",
-                        lineNumber: 132,
+                        lineNumber: 104,
                         columnNumber: 17
                     }, this),
-                    !isSidebarCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        style: {
-                            flex: 1,
-                            overflow: 'hidden'
-                        },
-                        className: "animate-fadeIn",
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: `user-profile ${isSidebarCollapsed ? 'justify-center p-3' : ''}`,
+                        onClick: ()=>handleNavigation('/dashboard/profile'),
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                id: "u-name",
-                                style: {
-                                    fontWeight: 600,
-                                    color: 'white'
-                                },
-                                children: currentUser.name
+                                className: "avatar",
+                                id: "u-avatar",
+                                children: currentUser.initials
                             }, void 0, false, {
                                 fileName: "[project]/components/Sidebar.tsx",
-                                lineNumber: 135,
+                                lineNumber: 164,
+                                columnNumber: 21
+                            }, this),
+                            !isSidebarCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                style: {
+                                    flex: 1,
+                                    overflow: 'hidden'
+                                },
+                                className: "animate-fadeIn",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        id: "u-name",
+                                        style: {
+                                            fontWeight: 600,
+                                            color: 'white'
+                                        },
+                                        children: currentUser.name
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/Sidebar.tsx",
+                                        lineNumber: 167,
+                                        columnNumber: 29
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        id: "u-role",
+                                        style: {
+                                            fontSize: 11,
+                                            opacity: 0.6
+                                        },
+                                        children: currentUser.role
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/Sidebar.tsx",
+                                        lineNumber: 168,
+                                        columnNumber: 29
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/components/Sidebar.tsx",
+                                lineNumber: 166,
                                 columnNumber: 25
                             }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                id: "u-role",
+                            !isSidebarCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                className: "btn btn-ghost",
                                 style: {
-                                    fontSize: 11,
-                                    opacity: 0.6
+                                    color: 'white',
+                                    padding: 4
                                 },
-                                children: currentUser.role
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Gear$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Gear"], {
+                                    size: 16
+                                }, void 0, false, {
+                                    fileName: "[project]/components/Sidebar.tsx",
+                                    lineNumber: 173,
+                                    columnNumber: 29
+                                }, this)
                             }, void 0, false, {
                                 fileName: "[project]/components/Sidebar.tsx",
-                                lineNumber: 136,
+                                lineNumber: 172,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/Sidebar.tsx",
-                        lineNumber: 134,
-                        columnNumber: 21
-                    }, this),
-                    !isSidebarCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                        className: "btn btn-ghost",
-                        style: {
-                            color: 'white',
-                            padding: 4
-                        },
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Gear$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Gear"], {
-                            size: 16
-                        }, void 0, false, {
-                            fileName: "[project]/components/Sidebar.tsx",
-                            lineNumber: 141,
-                            columnNumber: 25
-                        }, this)
-                    }, void 0, false, {
-                        fileName: "[project]/components/Sidebar.tsx",
-                        lineNumber: 140,
-                        columnNumber: 21
+                        lineNumber: 163,
+                        columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/Sidebar.tsx",
-                lineNumber: 131,
+                lineNumber: 48,
                 columnNumber: 13
             }, this)
         ]
-    }, void 0, true, {
-        fileName: "[project]/components/Sidebar.tsx",
-        lineNumber: 36,
-        columnNumber: 9
-    }, this);
+    }, void 0, true);
 }
-_s(Sidebar, "ot5DGPEgbfkP6QpeeAf7cSHfcAw=", false, function() {
+_s(Sidebar, "niFzGemkQyCodLYBcErwHYe/oko=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$context$2f$AppContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useApp"],
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$i18n$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTranslation"],
@@ -733,6 +1092,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$context$2f$AppContext$2e$tsx
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ChatCircleDots$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@phosphor-icons/react/dist/csr/ChatCircleDots.es.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Moon$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@phosphor-icons/react/dist/csr/Moon.es.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$SignOut$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@phosphor-icons/react/dist/csr/SignOut.es.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$List$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@phosphor-icons/react/dist/csr/List.es.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
@@ -742,10 +1102,9 @@ var _s = __turbopack_context__.k.signature();
 ;
 function Topbar() {
     _s();
-    const { currentUser, isSuperAdmin, logout } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$context$2f$AppContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useApp"])();
+    const { currentUser, isSuperAdmin, logout, toggleMobileMenu } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$context$2f$AppContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useApp"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const pathname = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"])();
-    // Determine title based on path
     const getTitle = ()=>{
         if (pathname === '/dashboard') return isSuperAdmin ? 'GLOBAL DASHBOARD' : 'DASHBOARD';
         if (pathname.includes('/analytics')) return 'ANALÍTICA';
@@ -764,54 +1123,69 @@ function Topbar() {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("header", {
         className: "topbar",
         children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                id: "page-title",
-                style: {
-                    fontSize: 18,
-                    fontWeight: 600
-                },
-                children: getTitle()
-            }, void 0, false, {
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "flex items-center gap-3",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        className: "btn btn-ghost lg:hidden p-2",
+                        onClick: toggleMobileMenu,
+                        "aria-label": "Abrir menú",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$List$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["List"], {
+                            size: 24,
+                            weight: "bold"
+                        }, void 0, false, {
+                            fileName: "[project]/components/Topbar.tsx",
+                            lineNumber: 36,
+                            columnNumber: 21
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/components/Topbar.tsx",
+                        lineNumber: 31,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                        id: "page-title",
+                        className: "text-base sm:text-lg font-semibold truncate",
+                        children: getTitle()
+                    }, void 0, false, {
+                        fileName: "[project]/components/Topbar.tsx",
+                        lineNumber: 38,
+                        columnNumber: 17
+                    }, this)
+                ]
+            }, void 0, true, {
                 fileName: "[project]/components/Topbar.tsx",
-                lineNumber: 31,
+                lineNumber: 30,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                style: {
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 16
-                },
+                className: "flex items-center gap-2 sm:gap-4",
                 children: [
                     isSuperAdmin && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        className: "badge bg-super",
+                        className: "badge bg-super hidden sm:inline-flex",
                         children: "SUPER ADMIN"
                     }, void 0, false, {
                         fileName: "[project]/components/Topbar.tsx",
-                        lineNumber: 33,
+                        lineNumber: 41,
                         columnNumber: 34
                     }, this),
                     !isSuperAdmin && currentUser?.level === 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        className: "badge bg-warning",
+                        className: "badge bg-warning hidden sm:inline-flex",
                         children: "ADMIN"
                     }, void 0, false, {
                         fileName: "[project]/components/Topbar.tsx",
-                        lineNumber: 34,
+                        lineNumber: 42,
                         columnNumber: 63
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                        className: "btn btn-ghost",
-                        style: {
-                            padding: 8,
-                            position: 'relative'
-                        },
+                        className: "btn btn-ghost p-2",
                         onClick: ()=>router.push('/dashboard/chat'),
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$ChatCircleDots$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ChatCircleDots"], {
                                 size: 20
                             }, void 0, false, {
                                 fileName: "[project]/components/Topbar.tsx",
-                                lineNumber: 37,
+                                lineNumber: 45,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -826,63 +1200,60 @@ function Topbar() {
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/components/Topbar.tsx",
-                                lineNumber: 38,
+                                lineNumber: 46,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/Topbar.tsx",
-                        lineNumber: 36,
+                        lineNumber: 44,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                        className: "btn btn-ghost",
-                        style: {
-                            padding: 8
-                        },
+                        className: "btn btn-ghost p-2 hidden sm:flex",
                         onClick: toggleDark,
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$Moon$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Moon"], {
                             size: 20
                         }, void 0, false, {
                             fileName: "[project]/components/Topbar.tsx",
-                            lineNumber: 42,
+                            lineNumber: 50,
                             columnNumber: 21
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/Topbar.tsx",
-                        lineNumber: 41,
+                        lineNumber: 49,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                        className: "btn btn-ghost",
+                        className: "btn btn-ghost p-2",
                         onClick: logout,
                         title: "Salir",
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$phosphor$2d$icons$2f$react$2f$dist$2f$csr$2f$SignOut$2e$es$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SignOut"], {
                             size: 20
                         }, void 0, false, {
                             fileName: "[project]/components/Topbar.tsx",
-                            lineNumber: 46,
+                            lineNumber: 54,
                             columnNumber: 21
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/Topbar.tsx",
-                        lineNumber: 45,
+                        lineNumber: 53,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/Topbar.tsx",
-                lineNumber: 32,
+                lineNumber: 40,
                 columnNumber: 13
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/Topbar.tsx",
-        lineNumber: 30,
+        lineNumber: 29,
         columnNumber: 9
     }, this);
 }
-_s(Topbar, "QCzoEaNidlWiNCH15N4pQOPFhws=", false, function() {
+_s(Topbar, "klWHJLLDSktpKJhXhfY3dcphAIk=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$context$2f$AppContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useApp"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"],
@@ -2013,11 +2384,7 @@ function DashboardLayout({ children }) {
                 columnNumber: 17
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                style: {
-                    display: 'flex',
-                    flex: 1,
-                    overflow: 'hidden'
-                },
+                className: "flex flex-1 overflow-hidden",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Sidebar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                         fileName: "[project]/app/dashboard/layout.tsx",
@@ -2025,13 +2392,7 @@ function DashboardLayout({ children }) {
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
-                        style: {
-                            flex: 1,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            overflow: 'hidden',
-                            position: 'relative'
-                        },
+                        className: "flex-1 flex flex-col overflow-hidden relative w-full lg:w-auto",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$Topbar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                                 fileName: "[project]/app/dashboard/layout.tsx",

@@ -390,7 +390,8 @@ export interface S3Config {
 export interface TenantStorageConfig {
   provider: StorageProvider;
   enabled: boolean;
-  config: GoogleDriveConfig | DropboxConfig | OneDriveConfig | SharePointConfig | S3Config;
+  config: GoogleDriveConfig | DropboxConfig | OneDriveConfig | SharePointConfig | S3Config | Record<string, any>;
+  encryptedConfig?: string;
   lastTested?: string;
   testStatus?: 'success' | 'failed';
   testMessage?: string;
