@@ -1,14 +1,13 @@
 'use client';
 import { useApp } from '@/context/AppContext';
-import { ChatCircleDots, Moon, SignOut } from '@phosphor-icons/react';
+import { ChatCircleDots, Moon, SignOut, List } from '@phosphor-icons/react';
 import { usePathname, useRouter } from 'next/navigation';
 
 export default function Topbar() {
-    const { currentUser, isSuperAdmin, logout } = useApp();
+    const { currentUser, isSuperAdmin, logout, toggleMobileMenu } = useApp();
     const router = useRouter();
     const pathname = usePathname();
 
-    // Determine title based on path
     const getTitle = () => {
         if (pathname === '/dashboard') return isSuperAdmin ? 'GLOBAL DASHBOARD' : 'DASHBOARD';
         if (pathname.includes('/analytics')) return 'ANALÍTICA';
@@ -28,21 +27,30 @@ export default function Topbar() {
 
     return (
         <header className="topbar">
-            <h2 id="page-title" style={{ fontSize: 18, fontWeight: 600 }}>{getTitle()}</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                {isSuperAdmin && <span className="badge bg-super">SUPER ADMIN</span>}
-                {!isSuperAdmin && currentUser?.level === 1 && <span className="badge bg-warning">ADMIN</span>}
+            <div className="flex items-center gap-3">
+                <button 
+                    className="btn btn-ghost lg:hidden p-2" 
+                    onClick={toggleMobileMenu}
+                    aria-label="Abrir menú"
+                >
+                    <List size={24} weight="bold" />
+                </button>
+                <h2 id="page-title" className="text-base sm:text-lg font-semibold truncate">{getTitle()}</h2>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-4">
+                {isSuperAdmin && <span className="badge bg-super hidden sm:inline-flex">SUPER ADMIN</span>}
+                {!isSuperAdmin && currentUser?.level === 1 && <span className="badge bg-warning hidden sm:inline-flex">ADMIN</span>}
 
-                <button className="btn btn-ghost" style={{ padding: 8, position: 'relative' }} onClick={() => router.push('/dashboard/chat')}>
+                <button className="btn btn-ghost p-2" onClick={() => router.push('/dashboard/chat')}>
                     <ChatCircleDots size={20} />
                     <span className="nav-badge" style={{ top: 8, right: 6, width: 8, height: 8, padding: 0, display: 'block' }}></span>
                 </button>
 
-                <button className="btn btn-ghost" style={{ padding: 8 }} onClick={toggleDark}>
+                <button className="btn btn-ghost p-2 hidden sm:flex" onClick={toggleDark}>
                     <Moon size={20} />
                 </button>
 
-                <button className="btn btn-ghost" onClick={logout} title="Salir">
+                <button className="btn btn-ghost p-2" onClick={logout} title="Salir">
                     <SignOut size={20} />
                 </button>
             </div>

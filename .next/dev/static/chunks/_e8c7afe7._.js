@@ -732,6 +732,7 @@ function AppProvider({ children }) {
     const [isSuperAdmin, setIsSuperAdmin] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(initialState.superAdmin);
     const [forceUpdate, setForceUpdate] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(initialState.sidebarCollapsed);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [unreadChatCount, setUnreadChatCount] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
     const [isHydrated, setIsHydrated] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(("TURBOPACK compile-time value", "object") !== 'undefined');
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
@@ -1668,6 +1669,8 @@ function AppProvider({ children }) {
         }
     };
     const toggleSidebar = ()=>setIsSidebarCollapsed((v)=>!v);
+    const toggleMobileMenu = ()=>setIsMobileMenuOpen((v)=>!v);
+    const closeMobileMenu = ()=>setIsMobileMenuOpen(false);
     const updatePlatformSettings = (settings)=>{
         Object.assign(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].platformSettings, settings);
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
@@ -1717,6 +1720,9 @@ function AppProvider({ children }) {
             deleteProjectFolder,
             isSidebarCollapsed,
             toggleSidebar,
+            isMobileMenuOpen,
+            toggleMobileMenu,
+            closeMobileMenu,
             unreadChatCount,
             refreshUnreadCount,
             updatePlatformSettings,
@@ -1727,11 +1733,11 @@ function AppProvider({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/context/AppContext.tsx",
-        lineNumber: 1033,
+        lineNumber: 1039,
         columnNumber: 9
     }, this);
 }
-_s(AppProvider, "CorlXs3doVweKBU16RnSFLTqSE0=", false, function() {
+_s(AppProvider, "KIVPdy4AzYQIAZPJCAOceEWdv3A=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];

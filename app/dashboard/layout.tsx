@@ -40,9 +40,9 @@ export default function DashboardLayout({
                     </button>
                 </div>
             )}
-            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+            <div className="flex flex-1 overflow-hidden">
                 <Sidebar />
-                <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+                <main className="flex-1 flex flex-col overflow-hidden relative w-full lg:w-auto">
                     <Topbar />
                     <div className="content">
                         {children}

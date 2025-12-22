@@ -55,6 +55,9 @@ interface AppContextType {
     deleteRepoFolder: (id: string) => void;
     isSidebarCollapsed: boolean;
     toggleSidebar: () => void;
+    isMobileMenuOpen: boolean;
+    toggleMobileMenu: () => void;
+    closeMobileMenu: () => void;
     unreadChatCount: number;
     refreshUnreadCount: () => Promise<void>;
     adminCreateWorkflow: (data: Partial<WorkflowDefinition>) => void;
@@ -93,6 +96,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [isSuperAdmin, setIsSuperAdmin] = useState(initialState.superAdmin);
     const [forceUpdate, setForceUpdate] = useState(0);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(initialState.sidebarCollapsed);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [unreadChatCount, setUnreadChatCount] = useState(0);
     const [isHydrated, setIsHydrated] = useState(typeof window !== 'undefined');
     const router = useRouter();
@@ -1022,6 +1026,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     const toggleSidebar = () => setIsSidebarCollapsed(v => !v);
+    const toggleMobileMenu = () => setIsMobileMenuOpen(v => !v);
+    const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
     const updatePlatformSettings = (settings: Partial<PlatformSettings>) => {
         Object.assign(DB.platformSettings, settings);
@@ -1044,6 +1050,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             updateProjectFolder,
             deleteProjectFolder,
             isSidebarCollapsed, toggleSidebar,
+            isMobileMenuOpen, toggleMobileMenu, closeMobileMenu,
             unreadChatCount, refreshUnreadCount,
             updatePlatformSettings,
             createRepoFolder,
