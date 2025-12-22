@@ -65,7 +65,13 @@ npm run db:studio  # Open Drizzle Studio for database management
 ### Database Schema
 The schema is defined in `shared/schema.ts` using Drizzle ORM. The database connection is configured in `server/db.ts`.
 
-**Note:** The app also maintains a mock in-memory database (`lib/data.ts`) with localStorage persistence for demo/prototype features.
+**Important:** The app uses PostgreSQL as the primary data source. The mock database (`lib/data.ts`) is deprecated and should NOT be used. All new development should use real database API calls.
+
+### Data Architecture
+- **Primary Data Source**: PostgreSQL database via Drizzle ORM
+- **Type Definitions**: `lib/types.ts` (centralized types)
+- **API Endpoints**: All data operations go through `/api/*` routes
+- **Deprecated**: `lib/data.ts` DB object (mock data - do not use)
 
 ## Configuration
 - `next.config.ts`: Next.js configuration with allowed dev origins for Replit environment
@@ -144,6 +150,13 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
   - Credentials encrypted with AES-256-GCM before storage (same as email)
   - API endpoints: `/api/admin/storage-config` and `/api/admin/storage-config/test`
   - Admin UI: Dashboard > Admin > Almacenamiento > "Asistente de Configuración" button
+- December 22, 2025: Database-first architecture
+  - Created `/api/tenants/[slug]` API for tenant lookup from PostgreSQL
+  - Updated AuthScreen to fetch tenants from real database instead of mock data
+  - Updated landing page tenant search to use real database API
+  - Created `lib/types.ts` with centralized type definitions
+  - Marked `lib/data.ts` as deprecated (mock data should not be used)
+  - All authentication now uses PostgreSQL with bcrypt password hashing
 
 ## Storage Configuration (Tenant-Specific)
 - Each tenant configures their own storage provider settings
