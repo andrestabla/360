@@ -49,7 +49,7 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
         const t = DB.tenants.find(ten => ten.slug?.toLowerCase() === workspaceDomain.toLowerCase());
         if (t) {
             // Redirect to path-based tenant URL
-            router.push(`/tenant/${t.slug}`);
+            router.push(`/${t.slug}`);
         } else {
             alert('Espacio de trabajo no encontrado. Verifica el nombre de tu empresa.');
         }

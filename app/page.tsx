@@ -22,7 +22,7 @@ export default function Page() {
     if (tenantSlug.trim()) {
       const t = DB.tenants.find(ten => ten.slug?.toLowerCase() === tenantSlug.toLowerCase().trim());
       if (t) {
-        router.push(`/tenant/${t.slug}`);
+        router.push(`/${t.slug}`);
       } else {
         alert('Espacio de trabajo no encontrado. Verifica el nombre de tu empresa.');
       }

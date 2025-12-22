@@ -74,12 +74,12 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
 ## Domain Architecture
 - **Production Domain**: maturity.online
 - **Main Domain**: maturity.online - Shows landing page with tenant finder
-- **Tenant Access**: Via path-based routing `/tenant/{slug}` (no DNS configuration required)
-  - Example: maturity.online/tenant/demo, maturity.online/tenant/alpha
+- **Tenant Access**: Via path-based routing `/{slug}` (no DNS configuration required)
+  - Example: maturity.online/demo, maturity.online/alpha
 - Domain configuration managed in `lib/config.ts`
 
 ### Multi-Tenant Routing
-- Path-based routing: `/tenant/[slug]` routes to tenant-specific login
+- Path-based routing: `/[slug]` routes to tenant-specific login
 - Each tenant has: `id` (internal), `slug` (URL path), `domains` (full domain list)
 - Sample tenants: `demo` (T1), `alpha` (T2)
 - After login, users are redirected to the shared `/dashboard` with tenant context stored in session
