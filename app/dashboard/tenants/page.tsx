@@ -39,7 +39,14 @@ export default function TenantsPage() {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await fetch('/api/admin/tenants');
+            
+            const sessionToken = typeof window !== 'undefined' ? localStorage.getItem('m360_session_token') : null;
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (sessionToken) {
+                headers['Authorization'] = `Bearer ${sessionToken}`;
+            }
+            
+            const response = await fetch('/api/admin/tenants', { headers });
             const data = await response.json();
             if (data.success) {
                 setTenants(data.tenants || []);
