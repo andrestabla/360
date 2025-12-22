@@ -15,7 +15,7 @@ interface AppContextType {
     originalSession: User | null; // For Impersonation
     impersonateUser: (userId: string, tenantId: string) => void;
     stopImpersonation: () => void;
-    login: (role: string, tenantId?: string, email?: string) => void;
+    login: (role: string, tenantId?: string, email?: string, token?: string) => void;
     logout: () => void;
     updateUser: (updates: Partial<User>) => void;
     createTenant: (data: Omit<Partial<Tenant>, 'branding' | 'policies'> & { branding?: Partial<TenantBranding>, policies?: Partial<TenantPolicy> }) => void;
