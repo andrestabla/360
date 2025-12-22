@@ -1,7 +1,6 @@
 'use client';
 import { useApp } from '@/context/AppContext';
 import { Cube, Planet, Buildings, User, GoogleLogo, WindowsLogo, LockKey, Envelope, Eye, EyeSlash, SpinnerGap } from '@phosphor-icons/react';
-import { DB } from '@/lib/data';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -21,7 +20,8 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-
+    const [tenantLoading, setTenantLoading] = useState(false);
+    const [tenantError, setTenantError] = useState('');
 
     // Multi-tenant Logic - Default to LOGIN for main domain (superadmin)
     const [mode, setMode] = useState<'FIND' | 'LOGIN'>('LOGIN');
@@ -32,13 +32,27 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
     useEffect(() => {
         setMounted(true);
         
-        // If tenantSlug is provided via props (from /tenant/[slug] route), use it directly
+        // If tenantSlug is provided via props (from /[slug] route), fetch from API
         if (tenantSlug) {
-            const t = DB.tenants.find(ten => ten.slug?.toLowerCase() === tenantSlug.toLowerCase());
-            if (t) {
-                setDetectedTenant(t);
-                setMode('LOGIN');
-            }
+            setTenantLoading(true);
+            setTenantError('');
+            
+            fetch(`/api/tenants/${tenantSlug}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.found && data.tenant) {
+                        setDetectedTenant(data.tenant);
+                        setMode('LOGIN');
+                    } else {
+                        setTenantError('Empresa no encontrada');
+                    }
+                })
+                .catch(() => {
+                    setTenantError('Error al cargar la empresa');
+                })
+                .finally(() => {
+                    setTenantLoading(false);
+                });
             return;
         }
         
@@ -46,14 +60,23 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
         setMode('LOGIN');
     }, [forceLoginMode, tenantSlug]);
 
-    const handleFindWorkspace = (e: React.FormEvent) => {
+    const handleFindWorkspace = async (e: React.FormEvent) => {
         e.preventDefault();
-        const t = DB.tenants.find(ten => ten.slug?.toLowerCase() === workspaceDomain.toLowerCase());
-        if (t) {
-            // Redirect to path-based tenant URL
-            router.push(`/${t.slug}`);
-        } else {
-            alert('Espacio de trabajo no encontrado. Verifica el nombre de tu empresa.');
+        setTenantLoading(true);
+        
+        try {
+            const res = await fetch(`/api/tenants/${workspaceDomain.toLowerCase()}`);
+            const data = await res.json();
+            
+            if (data.found && data.tenant) {
+                router.push(`/${data.tenant.slug}`);
+            } else {
+                alert('Espacio de trabajo no encontrado. Verifica el nombre de tu empresa.');
+            }
+        } catch {
+            alert('Error de conexión. Intenta de nuevo.');
+        } finally {
+            setTenantLoading(false);
         }
     };
 
@@ -112,6 +135,27 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
             <div className="absolute top-0 left-0 w-full h-1.5 z-50 transition-colors duration-500" style={{ backgroundColor: primaryColor }}></div>
 
             <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl z-10 overflow-hidden border border-slate-100 m-4 animate-scaleIn">
+                {tenantLoading ? (
+                    <div className="p-10 text-center">
+                        <SpinnerGap className="w-12 h-12 animate-spin text-slate-400 mx-auto mb-4" />
+                        <p className="text-slate-500">Cargando empresa...</p>
+                    </div>
+                ) : tenantError ? (
+                    <div className="p-10 text-center">
+                        <div className="w-16 h-16 rounded-full bg-red-100 mx-auto mb-4 grid place-items-center">
+                            <Buildings className="w-8 h-8 text-red-500" weight="fill" />
+                        </div>
+                        <h2 className="text-xl font-bold text-slate-900 mb-2">Empresa no encontrada</h2>
+                        <p className="text-slate-500 text-sm mb-6">No se encontró una empresa con el identificador "{tenantSlug}"</p>
+                        <button
+                            onClick={() => router.push('/')}
+                            className="px-6 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
+                        >
+                            Volver al inicio
+                        </button>
+                    </div>
+                ) : (
+                <>
                 <div className="p-10 pb-6 text-center">
                     {/* Dynamic Logo */}
                     <div
@@ -234,8 +278,8 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
                         </div>
                     )}
                 </div>
-
-
+                </>
+                )}
             </div>
 
             {/* Simulation Info */}
