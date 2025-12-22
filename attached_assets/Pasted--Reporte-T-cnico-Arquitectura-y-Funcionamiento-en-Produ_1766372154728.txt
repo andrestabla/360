@@ -1,0 +1,96 @@
+# Reporte Técnico: Arquitectura y Funcionamiento en Producción para Maturity 360
+
+Este documento detalla la arquitectura técnica, estrategia de despliegue y flujo de funcionamiento requeridos para llevar la plataforma **Maturity 360** de su estado actual (prototipo de alta fidelidad con datos simulados) a un entorno de producción web totalmente funcional.
+
+---
+
+## 1. Resumen de Arquitectura
+
+La plataforma está diseñada como una aplicación web moderna, modular y escalable, utilizando **Next.js** como framework principal. Para producción, se debe transicionar de la persistencia local (`LocalStorage`) a una arquitectura de tres capas robusta.
+
+### Stack Tecnológico Recomendado
+*   **Frontend / BFF (Backend-for-Frontend):** Next.js 14+ (App Router, React Server Components).
+*   **Base de Datos:** PostgreSQL (Relacional, ideal para estructuras multi-tenant y transaccionalidad estricta).
+*   **ORM:** Prisma o Drizzle (Type-safety para interactuar con la DB).
+*   **Autenticación:** Auth.js (NextAuth), Clerk, o Supabase Auth.
+*   **Almacenamiento de Archivos:** AWS S3, Google Cloud Storage, o Azure Blob Storage.
+*   **Infraestructura:** Vercel (recomendado por optimización nativa) o AWS (Amplify/ECS).
+
+---
+
+## 2. Estrategia Multi-Tenant (Multi-inquilino)
+
+La característica central de Maturity 360 es su capacidad de servir a múltiples organizaciones (Tenants) desde una sola instalación de software.
+
+### Enrutamiento y Dominios
+*   **Subdominios:** La estrategia actual de detección por subdominio (`t1.plataforma.com`) debe implementarse mediante un **Middleware** en Next.js.
+    *   El middleware intercepta la petición, extrae el subdominio y reescribe la ruta interna (e.g., `/app/[tenantId]/...`).
+*   **Resolución Dinámica:** El sistema debe consultar una caché rápida (Redis) o la DB para validar que el subdominio existe y obtener la configuración de *branding* (logo, colores) antes de renderizar la página de login.
+
+### Aislamiento de Datos
+*   **Row-Level Security (RLS) Lógico:** Todas las tablas de la base de datos ( Usuarios, Documentos, Workflows) DEBEN tener una columna `tenantId` indexada.
+*   **Middleware de Base de Datos:** Cada consulta a la base de datos debe inyectar automáticamente el `tenantId` de la sesión actual para prevenir fugas de información entre clientes.
+
+---
+
+## 3. Módulos Clave: De Mock a Realidad
+
+A continuación se describe cómo debe comportarse técnicamente cada módulo clave en la web:
+
+### A. Autenticación y Seguridad
+*   **Estado Actual:** Simulado con `AppContext` y `LocalStorage`.
+*   **Producción:**
+    *   Implementación de **JWT (JSON Web Tokens)** encriptados en cookies `HttpOnly`.
+    *   Las credenciales (contraseñas) nunca deben almacenarse en texto plano; usar *hashing* (bcrypt/argon2).
+    *   **Gestión de Permisos:** El objeto `User` en sesión debe contener los `scopes` o `permisos` calculados en el backend, no confiados al cliente.
+
+### B. Repositorio Documental & Almacenamiento
+*   **Estado Actual:** Simulado.
+*   **Producción:**
+    *   **Subida:** El cliente solicita una *Presigned URL* al backend. El archivo se sube directamente del navegador a la nube (S3) para no saturar el servidor.
+    *   **Descarga/Visualización:** Los enlaces a documentos deben ser temporales y firmados, validando que el usuario tenga permisos de lectura en *ese* tenant específico antes de generar la URL.
+
+### C. Motor de Flujos de Trabajo (Workflows) y Formularios
+*   **Validación Estricta:** El esquema JSON definido en `WorkflowDefinition` debe usarse para validar las entradas tanto en el frontend (UX) como en el backend (Seguridad) usando librerías como `zod`.
+*   **Persistencia:**
+    *   `WorkflowDefinition`: Almacena la estructura del formulario y lógica.
+    *   `WorkflowCase`: Almacena los datos de la instancia (`data: JSONB` en Postgres) y el estado actual.
+*   **Notificaciones:** Al cambiar de estado, un *worker* asíncrono debe procesar el envío de correos electrónicos (SendGrid/Resend) a los responsables.
+
+### D. Chat y Comunicación
+*   **Tiempo Real:** Implementar **WebSockets** (vía Pusher o Socket.io) para mensajería instantánea. El *polling* actual no es escalable.
+*   **Persistencia:** Historial de chat almacenado en base de datos para auditoría y recuperación.
+
+---
+
+## 4. Flujo de Despliegue (CI/CD)
+
+Para mantener la plataforma estable y actualizada:
+
+1.  **Entornos:**
+    *   **Staging:** Espejo de producción para pruebas de QA (con base de datos anonimizada).
+    *   **Producción:** Entorno vivo para clientes finales.
+2.  **Pipeline Automatizado (GitHub Actions):**
+    *   Al hacer *push* a `main`:
+        1.  Ejecutar *Linters* y *Type Check*.
+        2.  Ejecutar Tests Unitarios e Integrales.
+        3.  Construir la imagen/bundle de Next.js.
+        4.  Aplicar migraciones de base de datos (si las hay).
+        5.  Desplegar sin tiempo de inactividad (*Zero-downtime deployment*).
+
+---
+
+## 5. Requerimientos de Infraestructura
+
+Para soportar la carga inicial de tenants como Acme Corp y Globex:
+
+*   **Servidor Web:** Instancias "Serverless" o Contenedores Docker (Node.js 18+) con auto-escalado horizontal.
+*   **Base de Datos:** Instancia gestionada (e.g., AWS RDS) con backups automáticos diarios y Point-in-Time Recovery.
+*   **Storage:** Bucket S3 privado, con políticas de ciclo de vida para archivar documentos antiguos (si aplica).
+*   **CDN:** Cloudflare o Vercel Edge Network para servir archivos estáticos (JS, CSS, Imágenes públicas) globalmente con baja latencia.
+*   **Certificados SSL:** Wildcard (`*.plataforma.com`) para cubrir todos los subdominios de tenants automáticamente.
+
+---
+
+### Conclusión
+La base de código actual (`maturity-360-v1.0`) es un excelente *frontend* prototipado. El trabajo restante para "publicar en la web" es principalmente **backend**: conectar las maquetas visuales a servicios reales de base de datos, autenticación y almacenamiento en la nube, asegurando que la lógica multi-tenant sea inviolable en el servidor.

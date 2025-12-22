@@ -74,8 +74,15 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
 ## Domain Architecture
 - **Production Domain**: maturity.online
 - **Main Domain**: maturity.online - Shows superadmin login only
-- **Tenant Subdomains**: {tenant-id}.maturity.online - Tenant-specific login with SSO options
+- **Tenant Subdomains**: {slug}.maturity.online - Each tenant gets a subdomain based on their slug
+  - Example: demo.maturity.online, alpha.maturity.online
 - Domain configuration managed in `lib/config.ts`
+- Next.js middleware (`middleware.ts`) handles subdomain detection and routing
+
+### Multi-Tenant Routing
+- Subdomain is extracted from hostname and matched against tenant `slug` field
+- Each tenant has: `id` (internal), `slug` (subdomain), `domains` (full domain list)
+- Sample tenants: `demo` (T1), `alpha` (T2)
 
 ## Authentication
 - **Superadmin credentials**: superadmin@maturity.online / Admin2024!

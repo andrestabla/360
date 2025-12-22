@@ -40,7 +40,7 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding }: 
             }
 
             if (subdomain) {
-                const t = DB.tenants.find(ten => ten.id.toLowerCase() === subdomain.toLowerCase());
+                const t = DB.tenants.find(ten => ten.slug?.toLowerCase() === subdomain.toLowerCase());
                 if (t) {
                     setDetectedTenant(t);
                     setMode('LOGIN');
@@ -54,15 +54,16 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding }: 
 
     const handleFindWorkspace = (e: React.FormEvent) => {
         e.preventDefault();
-        const t = DB.tenants.find(ten => ten.id.toLowerCase() === workspaceDomain.toLowerCase());
+        const t = DB.tenants.find(ten => ten.slug?.toLowerCase() === workspaceDomain.toLowerCase());
         if (t) {
-            // In a real app we would redirect to t.id.domain.com
-            // For this local demo without DNS config, we just switch state to simulate "arriving" at the tenant login
-            // Ideally: window.location.href = `http://${t.id}.${rootDomain}`;
-            setDetectedTenant(t);
-            setMode('LOGIN');
+            if (typeof window !== 'undefined' && t.slug) {
+                window.location.href = `https://${t.slug}.maturity.online`;
+            } else {
+                setDetectedTenant(t);
+                setMode('LOGIN');
+            }
         } else {
-            alert('Espacio de trabajo no encontrado. Prueba con "T1" o "T2".');
+            alert('Espacio de trabajo no encontrado. Verifica el nombre de tu empresa.');
         }
     };
 
