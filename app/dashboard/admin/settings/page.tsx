@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import {
-    ShieldCheck, LockKey, Globe, Plugs, Plus, Trash, CheckCircle, Warning, FloppyDisk
+    ShieldCheck, LockKey, Globe, Plugs, Plus, Trash, CheckCircle, Warning, FloppyDisk, Envelope, PaperPlaneTilt, CircleNotch, XCircle
 } from '@phosphor-icons/react';
 import { TenantIntegration } from '@/lib/data';
 import AdminGuide from '@/components/AdminGuide';
@@ -11,7 +11,7 @@ import { technicalSettingsGuide } from '@/lib/adminGuides';
 
 export default function TenantSettingsPage() {
     const { currentTenant, updateTenant, isSuperAdmin } = useApp();
-    const [activeTab, setActiveTab] = useState<'auth' | 'integrations' | 'security'>('auth');
+    const [activeTab, setActiveTab] = useState<'auth' | 'integrations' | 'security' | 'email'>('auth');
 
     // Auth State
     const [ssoEnabled, setSsoEnabled] = useState(false);
@@ -32,6 +32,23 @@ export default function TenantSettingsPage() {
     const [newIntegration, setNewIntegration] = useState<any>({ type: 'REST', enabled: true });
     const [showIntModal, setShowIntModal] = useState(false);
 
+    // Email State
+    const [emailConfig, setEmailConfig] = useState({
+        smtpHost: '',
+        smtpPort: '587',
+        smtpUser: '',
+        smtpPassword: '',
+        smtpSecure: false,
+        fromName: '',
+        fromEmail: '',
+        replyToEmail: ''
+    });
+    const [emailConfigLoaded, setEmailConfigLoaded] = useState(false);
+    const [emailSaving, setEmailSaving] = useState(false);
+    const [emailTesting, setEmailTesting] = useState(false);
+    const [emailTestResult, setEmailTestResult] = useState<{ success: boolean; message: string } | null>(null);
+    const [testEmailAddress, setTestEmailAddress] = useState('');
+
     // Load initial data
     useEffect(() => {
         if (currentTenant) {
@@ -49,8 +66,96 @@ export default function TenantSettingsPage() {
             });
             // Integrations
             setIntegrations(currentTenant.integrations || []);
+            // Load email config
+            loadEmailConfig();
         }
     }, [currentTenant]);
+
+    const loadEmailConfig = async () => {
+        if (!currentTenant) return;
+        try {
+            const tenantId = isSuperAdmin ? 'platform' : currentTenant.id;
+            const res = await fetch(`/api/admin/email-config?tenantId=${tenantId}`);
+            const data = await res.json();
+            if (data.success && data.config) {
+                setEmailConfig({
+                    smtpHost: data.config.smtpHost || '',
+                    smtpPort: String(data.config.smtpPort || 587),
+                    smtpUser: data.config.smtpUser || '',
+                    smtpPassword: '',
+                    smtpSecure: data.config.smtpSecure || false,
+                    fromName: data.config.fromName || '',
+                    fromEmail: data.config.fromEmail || '',
+                    replyToEmail: data.config.replyToEmail || ''
+                });
+            }
+            setEmailConfigLoaded(true);
+        } catch (error) {
+            console.error('Error loading email config:', error);
+            setEmailConfigLoaded(true);
+        }
+    };
+
+    const handleSaveEmail = async () => {
+        if (!currentTenant) return;
+        if (!emailConfig.smtpHost || !emailConfig.smtpUser || !emailConfig.fromEmail) {
+            alert('Por favor completa los campos obligatorios: Servidor SMTP, Usuario y Email de envío.');
+            return;
+        }
+        setEmailSaving(true);
+        setEmailTestResult(null);
+        try {
+            const tenantId = isSuperAdmin ? 'platform' : currentTenant.id;
+            const res = await fetch('/api/admin/email-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tenantId,
+                    ...emailConfig,
+                    createdBy: 'admin'
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('Configuración de correo guardada correctamente.');
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+        } catch (error: any) {
+            alert(`Error al guardar: ${error.message}`);
+        } finally {
+            setEmailSaving(false);
+        }
+    };
+
+    const handleTestEmail = async () => {
+        if (!currentTenant) return;
+        setEmailTesting(true);
+        setEmailTestResult(null);
+        try {
+            const tenantId = isSuperAdmin ? 'platform' : currentTenant.id;
+            const res = await fetch('/api/admin/email-config/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tenantId,
+                    sendTestTo: testEmailAddress || null
+                })
+            });
+            const data = await res.json();
+            setEmailTestResult({
+                success: data.success,
+                message: data.message || data.error || 'Test completado'
+            });
+        } catch (error: any) {
+            setEmailTestResult({
+                success: false,
+                message: error.message
+            });
+        } finally {
+            setEmailTesting(false);
+        }
+    };
 
     if (!currentTenant) return <div className="p-8">Cargando configuración...</div>;
 
@@ -148,6 +253,12 @@ export default function TenantSettingsPage() {
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'security' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                     <div className="flex items-center gap-2"><ShieldCheck size={16} /> Políticas de Acceso</div>
+                </button>
+                <button
+                    onClick={() => setActiveTab('email')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'email' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    <div className="flex items-center gap-2"><Envelope size={16} /> Correo Saliente</div>
                 </button>
             </div>
 
@@ -376,6 +487,196 @@ export default function TenantSettingsPage() {
                                 <FloppyDisk size={18} /> Actualizar Políticas
                             </button>
                         </div>
+                    </div>
+                )}
+
+                {/* --- EMAIL TAB --- */}
+                {activeTab === 'email' && (
+                    <div className="space-y-6 max-w-3xl">
+                        <div className="border-b border-slate-100 pb-6">
+                            <h3 className="font-bold text-slate-900 text-lg">Configuración de Correo Saliente</h3>
+                            <p className="text-slate-500 text-sm">Configura el servidor SMTP para enviar notificaciones por email a los usuarios.</p>
+                        </div>
+
+                        {!emailConfigLoaded ? (
+                            <div className="flex items-center justify-center py-12">
+                                <CircleNotch size={32} className="animate-spin text-indigo-500" />
+                            </div>
+                        ) : (
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="md:col-span-2 bg-blue-50 border border-blue-100 rounded-lg p-4">
+                                        <div className="flex items-start gap-3">
+                                            <Envelope size={20} className="text-blue-600 mt-0.5 shrink-0" />
+                                            <div>
+                                                <p className="font-medium text-blue-800 text-sm">Servidor SMTP</p>
+                                                <p className="text-xs text-blue-600 mt-1">
+                                                    Puedes usar servicios como Gmail SMTP, SendGrid, Mailgun, Amazon SES, o tu propio servidor SMTP.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                                            Servidor SMTP <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 font-mono text-sm"
+                                            placeholder="smtp.gmail.com"
+                                            value={emailConfig.smtpHost}
+                                            onChange={e => setEmailConfig({ ...emailConfig, smtpHost: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">Puerto</label>
+                                        <input
+                                            type="number"
+                                            className="w-full border border-slate-200 rounded-lg px-3 py-2"
+                                            placeholder="587"
+                                            value={emailConfig.smtpPort}
+                                            onChange={e => setEmailConfig({ ...emailConfig, smtpPort: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                                            Usuario SMTP <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 font-mono text-sm"
+                                            placeholder="tu-email@empresa.com"
+                                            value={emailConfig.smtpUser}
+                                            onChange={e => setEmailConfig({ ...emailConfig, smtpUser: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                                            Contraseña SMTP
+                                        </label>
+                                        <input
+                                            type="password"
+                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 font-mono text-sm"
+                                            placeholder="••••••••••••"
+                                            value={emailConfig.smtpPassword}
+                                            onChange={e => setEmailConfig({ ...emailConfig, smtpPassword: e.target.value })}
+                                        />
+                                        <p className="text-xs text-slate-400 mt-1">Dejar vacío para mantener la contraseña actual</p>
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="flex items-center gap-3 p-4 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                className="w-5 h-5 text-indigo-600 rounded"
+                                                checked={emailConfig.smtpSecure}
+                                                onChange={e => setEmailConfig({ ...emailConfig, smtpSecure: e.target.checked })}
+                                            />
+                                            <div>
+                                                <div className="font-bold text-slate-800">Usar SSL/TLS</div>
+                                                <div className="text-xs text-slate-500">Activar para puerto 465 (SSL). Desactivar para STARTTLS en puerto 587.</div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div className="md:col-span-2 pt-4 border-t border-slate-100">
+                                        <h4 className="font-bold text-slate-800 mb-4">Información del Remitente</h4>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">Nombre de Remitente</label>
+                                        <input
+                                            className="w-full border border-slate-200 rounded-lg px-3 py-2"
+                                            placeholder="Maturity 360"
+                                            value={emailConfig.fromName}
+                                            onChange={e => setEmailConfig({ ...emailConfig, fromName: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                                            Email de Envío <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 font-mono text-sm"
+                                            placeholder="noreply@empresa.com"
+                                            value={emailConfig.fromEmail}
+                                            onChange={e => setEmailConfig({ ...emailConfig, fromEmail: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">Email de Respuesta (Reply-To)</label>
+                                        <input
+                                            type="email"
+                                            className="w-full border border-slate-200 rounded-lg px-3 py-2 font-mono text-sm"
+                                            placeholder="soporte@empresa.com (opcional)"
+                                            value={emailConfig.replyToEmail}
+                                            onChange={e => setEmailConfig({ ...emailConfig, replyToEmail: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Test Section */}
+                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 mt-6">
+                                    <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                        <PaperPlaneTilt size={20} /> Probar Configuración
+                                    </h4>
+                                    <div className="flex flex-col md:flex-row gap-4">
+                                        <input
+                                            type="email"
+                                            className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                                            placeholder="Email para prueba (opcional)"
+                                            value={testEmailAddress}
+                                            onChange={e => setTestEmailAddress(e.target.value)}
+                                        />
+                                        <button
+                                            onClick={handleTestEmail}
+                                            disabled={emailTesting}
+                                            className="px-6 py-2 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-800 disabled:opacity-50 flex items-center gap-2"
+                                        >
+                                            {emailTesting ? (
+                                                <>
+                                                    <CircleNotch size={18} className="animate-spin" /> Probando...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <PaperPlaneTilt size={18} /> Probar Conexión
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                    {emailTestResult && (
+                                        <div className={`mt-4 p-4 rounded-lg flex items-start gap-3 ${emailTestResult.success ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                                            {emailTestResult.success ? (
+                                                <CheckCircle size={20} className="shrink-0 mt-0.5" weight="fill" />
+                                            ) : (
+                                                <XCircle size={20} className="shrink-0 mt-0.5" weight="fill" />
+                                            )}
+                                            <div>
+                                                <p className="font-medium text-sm">{emailTestResult.success ? 'Conexión exitosa' : 'Error de conexión'}</p>
+                                                <p className="text-xs mt-1">{emailTestResult.message}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="pt-6 border-t border-slate-100 flex justify-end">
+                                    <button
+                                        onClick={handleSaveEmail}
+                                        disabled={emailSaving}
+                                        className="btn btn-primary flex items-center gap-2"
+                                    >
+                                        {emailSaving ? (
+                                            <>
+                                                <CircleNotch size={18} className="animate-spin" /> Guardando...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FloppyDisk size={18} /> Guardar Configuración
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
             </div>

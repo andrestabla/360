@@ -3,13 +3,29 @@ import { db } from '@/server/db';
 import { tenantEmailConfigs, tenants } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
 
-const ENCRYPTION_KEY = process.env.EMAIL_ENCRYPTION_KEY || 'maturity360-default-key-change-in-production';
+function getEncryptionKey(): string {
+  const key = process.env.EMAIL_ENCRYPTION_KEY;
+  if (!key) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('EMAIL_ENCRYPTION_KEY must be set in production');
+    }
+    return 'dev-only-key-not-for-production';
+  }
+  return key;
+}
 
 function encryptPassword(password: string): string {
-  return Buffer.from(password).toString('base64');
+  const key = getEncryptionKey();
+  const combined = `${key}:${password}`;
+  return Buffer.from(combined).toString('base64');
 }
 
 function decryptPassword(encrypted: string): string {
+  const key = getEncryptionKey();
+  const decoded = Buffer.from(encrypted, 'base64').toString('utf-8');
+  if (decoded.startsWith(`${key}:`)) {
+    return decoded.substring(key.length + 1);
+  }
   return Buffer.from(encrypted, 'base64').toString('utf-8');
 }
 
