@@ -1,3 +1,18 @@
+/**
+ * @deprecated This file contains mock data for development/demo purposes only.
+ * 
+ * IMPORTANT: 
+ * - The DB object should NOT be used in production.
+ * - All data operations should use the PostgreSQL database via API endpoints.
+ * - For type definitions, import from '@/lib/types' instead.
+ * 
+ * The mock data (DB object) will be removed in a future version.
+ * Migrate all DB.* usages to real database API calls.
+ */
+
+// Re-export types from the centralized types file for backward compatibility
+export * from './types';
+
 export type Permission =
   | 'MANAGE_UNITS'
   | 'MANAGE_USERS'

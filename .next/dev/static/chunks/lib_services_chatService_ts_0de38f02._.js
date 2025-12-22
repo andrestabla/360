@@ -6,25 +6,25 @@ __turbopack_context__.s([
     "ChatService",
     ()=>ChatService
 ]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/data.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/lib/data.ts [app-client] (ecmascript) <locals>");
 ;
 const ChatService = {
     getConversations: async (userId, tenantId)=>{
-        const conversations = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.filter((c)=>c.tenant_id === tenantId && c.participants.includes(userId));
+        const conversations = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.filter((c)=>c.tenant_id === tenantId && c.participants.includes(userId));
         return {
             success: true,
             data: conversations
         };
     },
     getConversation: async (conversationId)=>{
-        const conversation = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.find((c)=>c.id === conversationId) || null;
+        const conversation = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.find((c)=>c.id === conversationId) || null;
         return {
             success: true,
             data: conversation
         };
     },
     getMessages: async (conversationId, cursor, limit = 50)=>{
-        let messages = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].messages.filter((m)=>m.conversation_id === conversationId);
+        let messages = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].messages.filter((m)=>m.conversation_id === conversationId);
         messages.sort((a, b)=>new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         const hasMore = messages.length > limit;
         if (hasMore) {
@@ -38,8 +38,8 @@ const ChatService = {
         };
     },
     sendMessage: async (conversationId, senderId, body, tempId, replyToMessageId, attachments)=>{
-        const sender = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].users.find((u)=>u.id === senderId);
-        const conversation = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.find((c)=>c.id === conversationId);
+        const sender = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].users.find((u)=>u.id === senderId);
+        const conversation = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.find((c)=>c.id === conversationId);
         const message = {
             id: `msg-${Date.now()}`,
             tenant_id: conversation?.tenant_id || '',
@@ -54,14 +54,14 @@ const ChatService = {
             tempId,
             status: 'sent'
         };
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].messages.push(message);
+        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].messages.push(message);
         if (conversation) {
             conversation.lastMessage = body;
             conversation.lastMessageAt = message.created_at;
             conversation.last_message_at = message.created_at;
             conversation.lastMessagePreview = body.substring(0, 50);
         }
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
+        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].save();
         return message;
     },
     createConversation: async (tenantId, type, participants, name)=>{
@@ -74,40 +74,40 @@ const ChatService = {
             createdAt: new Date().toISOString(),
             unreadCount: 0
         };
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.push(conversation);
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
+        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.push(conversation);
+        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].save();
         return {
             success: true,
             data: conversation
         };
     },
     markAsRead: async (conversationId, userId)=>{
-        const conversation = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.find((c)=>c.id === conversationId);
+        const conversation = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.find((c)=>c.id === conversationId);
         if (conversation) {
             conversation.unreadCount = 0;
         }
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
+        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].save();
         return {
             success: true,
             data: true
         };
     },
     getUsers: async (tenantId)=>{
-        const users = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].users.filter((u)=>u.tenantId === tenantId && u.status === 'ACTIVE');
+        const users = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].users.filter((u)=>u.tenantId === tenantId && u.status === 'ACTIVE');
         return {
             success: true,
             data: users
         };
     },
     checkNewMessages: async (userId, tenantId, since)=>{
-        const userConversations = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.filter((c)=>c.tenant_id === tenantId && c.participants.includes(userId));
+        const userConversations = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.filter((c)=>c.tenant_id === tenantId && c.participants.includes(userId));
         const conversationIds = userConversations.map((c)=>c.id);
-        const newMessages = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].messages.filter((m)=>conversationIds.includes(m.conversation_id) && m.sender_id !== userId && new Date(m.created_at) > new Date(since));
+        const newMessages = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].messages.filter((m)=>conversationIds.includes(m.conversation_id) && m.sender_id !== userId && new Date(m.created_at) > new Date(since));
         return newMessages;
     },
     searchMessages: async (tenantId, query, conversationId)=>{
         const lowerQuery = query.toLowerCase();
-        let messages = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].messages.filter((m)=>m.tenant_id === tenantId);
+        let messages = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].messages.filter((m)=>m.tenant_id === tenantId);
         if (conversationId) {
             messages = messages.filter((m)=>m.conversation_id === conversationId);
         }
@@ -115,20 +115,20 @@ const ChatService = {
     },
     searchConversations: async (tenantId, userId, query)=>{
         const lowerQuery = query.toLowerCase();
-        return __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.filter((c)=>c.tenant_id === tenantId && c.participants.includes(userId) && (c.name?.toLowerCase().includes(lowerQuery) || c.title?.toLowerCase().includes(lowerQuery)));
+        return __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.filter((c)=>c.tenant_id === tenantId && c.participants.includes(userId) && (c.name?.toLowerCase().includes(lowerQuery) || c.title?.toLowerCase().includes(lowerQuery)));
     },
     searchUsers: async (tenantId, query)=>{
         const lowerQuery = query.toLowerCase();
-        return __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].users.filter((u)=>u.tenantId === tenantId && u.status === 'ACTIVE' && (u.name.toLowerCase().includes(lowerQuery) || u.email?.toLowerCase().includes(lowerQuery)));
+        return __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].users.filter((u)=>u.tenantId === tenantId && u.status === 'ACTIVE' && (u.name.toLowerCase().includes(lowerQuery) || u.email?.toLowerCase().includes(lowerQuery)));
     },
     createDM: async (tenantId, userId1, userId2)=>{
-        const existing = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.find((c)=>c.tenant_id === tenantId && c.type === 'dm' && c.participants.includes(userId1) && c.participants.includes(userId2));
+        const existing = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.find((c)=>c.tenant_id === tenantId && c.type === 'dm' && c.participants.includes(userId1) && c.participants.includes(userId2));
         if (existing) return {
             success: true,
             data: existing
         };
-        const user2 = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].users.find((u)=>u.id === userId2);
-        const user1 = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].users.find((u)=>u.id === userId1);
+        const user2 = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].users.find((u)=>u.id === userId2);
+        const user1 = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].users.find((u)=>u.id === userId1);
         const conversation = {
             id: `conv-${Date.now()}`,
             tenant_id: tenantId,
@@ -141,8 +141,8 @@ const ChatService = {
             avatar: user2?.initials || 'U',
             createdAt: new Date().toISOString()
         };
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.push(conversation);
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversationMembers.push({
+        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.push(conversation);
+        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversationMembers.push({
             id: `cm-${Date.now()}-1`,
             conversation_id: conversation.id,
             user_id: userId1,
@@ -153,7 +153,7 @@ const ChatService = {
             user_id: userId2,
             joinedAt: conversation.createdAt
         });
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
+        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].save();
         return {
             success: true,
             data: conversation
@@ -172,20 +172,20 @@ const ChatService = {
             ],
             createdAt: new Date().toISOString()
         };
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.push(conversation);
+        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.push(conversation);
         const allMembers = [
             creatorId,
             ...memberIds
         ];
         allMembers.forEach((userId, idx)=>{
-            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversationMembers.push({
+            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversationMembers.push({
                 id: `cm-${Date.now()}-${idx}`,
                 conversation_id: conversation.id,
                 user_id: userId,
                 joinedAt: conversation.createdAt
             });
         });
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
+        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].save();
         return {
             success: true,
             data: conversation
@@ -201,10 +201,10 @@ const ChatService = {
         return true;
     },
     editMessage: async (messageId, userId, newBody)=>{
-        const message = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].messages.find((m)=>m.id === messageId && m.sender_id === userId);
+        const message = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].messages.find((m)=>m.id === messageId && m.sender_id === userId);
         if (message) {
             message.body = newBody;
-            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
+            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].save();
             return {
                 success: true,
                 data: message
@@ -217,10 +217,10 @@ const ChatService = {
         };
     },
     deleteMessage: async (messageId, userId)=>{
-        const idx = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].messages.findIndex((m)=>m.id === messageId && m.sender_id === userId);
+        const idx = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].messages.findIndex((m)=>m.id === messageId && m.sender_id === userId);
         if (idx > -1) {
-            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].messages.splice(idx, 1);
-            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
+            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].messages.splice(idx, 1);
+            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].save();
             return {
                 success: true,
                 data: true
@@ -253,10 +253,10 @@ const ChatService = {
         };
     },
     leaveGroup: async (conversationId, userId)=>{
-        const conv = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.find((c)=>c.id === conversationId);
+        const conv = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.find((c)=>c.id === conversationId);
         if (conv) {
             conv.participants = conv.participants.filter((p)=>p !== userId);
-            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
+            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].save();
             return {
                 success: true,
                 data: true
@@ -282,9 +282,9 @@ const ChatService = {
         return true;
     },
     getGroupMembers: async (conversationId)=>{
-        const conv = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.find((c)=>c.id === conversationId);
+        const conv = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].conversations.find((c)=>c.id === conversationId);
         if (!conv) return [];
-        return __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].users.filter((u)=>conv.participants.includes(u.id));
+        return __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].users.filter((u)=>conv.participants.includes(u.id));
     },
     reportContent: async (userId, tenantId, report)=>{
         return {

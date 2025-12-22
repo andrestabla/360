@@ -1,30 +1,37 @@
 'use client';
 import { useState, useEffect } from 'react';
 import AuthScreen from '@/components/AuthScreen';
-import { DB } from '@/lib/data';
 import { useRouter } from 'next/navigation';
-import { Planet, ArrowRight, CheckCircle, Buildings } from '@phosphor-icons/react';
+import { Planet, ArrowRight, CheckCircle, Buildings, SpinnerGap } from '@phosphor-icons/react';
 import LandingNavbar from '@/components/landing/LandingNavbar';
 import LandingFooter from '@/components/landing/LandingFooter';
-import { getSubdomain, isMainDomain } from '@/lib/config';
 
 export default function Page() {
   const [mounted, setMounted] = useState(false);
   const [tenantSlug, setTenantSlug] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleTenantSearch = (e: React.FormEvent) => {
+  const handleTenantSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (tenantSlug.trim()) {
-      const t = DB.tenants.find(ten => ten.slug?.toLowerCase() === tenantSlug.toLowerCase().trim());
-      if (t) {
-        router.push(`/${t.slug}`);
-      } else {
-        alert('Espacio de trabajo no encontrado. Verifica el nombre de tu empresa.');
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/tenants/${tenantSlug.toLowerCase().trim()}`);
+        const data = await res.json();
+        if (data.found && data.tenant) {
+          router.push(`/${data.tenant.slug}`);
+        } else {
+          alert('Espacio de trabajo no encontrado. Verifica el nombre de tu empresa.');
+        }
+      } catch {
+        alert('Error de conexión. Intenta de nuevo.');
+      } finally {
+        setIsSearching(false);
       }
     }
   };
@@ -76,8 +83,8 @@ export default function Page() {
                 className="w-full pl-12 pr-4 py-4 bg-slate-900 border border-slate-700 rounded-2xl text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
               />
             </div>
-            <button type="submit" className="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl shadow-blue-600/20 transition-all hover:-translate-y-1 whitespace-nowrap">
-              Ir a mi Empresa <ArrowRight weight="bold" />
+            <button type="submit" disabled={isSearching} className="px-8 py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/70 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl shadow-blue-600/20 transition-all hover:-translate-y-1 whitespace-nowrap disabled:cursor-not-allowed">
+              {isSearching ? <><SpinnerGap className="w-5 h-5 animate-spin" /> Buscando...</> : <>Ir a mi Empresa <ArrowRight weight="bold" /></>}
             </button>
           </form>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

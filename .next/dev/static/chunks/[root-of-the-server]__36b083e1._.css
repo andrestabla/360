@@ -6816,6 +6816,16 @@
     }
   }
 
+  .disabled\:bg-blue-600\/70:disabled {
+    background-color: #155dfcb3;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .disabled\:bg-blue-600\/70:disabled {
+      background-color: color-mix(in oklab, var(--color-blue-600) 70%, transparent);
+    }
+  }
+
   .disabled\:bg-green-600\/50:disabled {
     background-color: #00a54480;
   }
