@@ -1,0 +1,65 @@
+# Maturity 360
+
+## Overview
+Maturity 360 is an organizational maturity management platform built with Next.js. It provides tools for managing organizational processes, documents, workflows, and team communication.
+
+## Tech Stack
+- **Framework**: Next.js 16 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4
+- **Icons**: Phosphor Icons
+- **PDF Handling**: react-pdf
+
+## Project Structure
+```
+/app                 # Next.js App Router pages
+  /admin             # Super admin pages
+  /auth              # Authentication pages
+  /dashboard         # Main dashboard and features
+  /features          # Features landing page
+  /login             # Login page
+  /pricing           # Pricing page
+/components          # Reusable React components
+  /chat              # Chat feature components
+  /landing           # Landing page components
+  /onboarding        # User onboarding components
+/context             # React context providers
+/lib                 # Core library files
+  /services          # Service layer (chat, storage)
+  /templates         # Survey templates
+/public              # Static assets
+```
+
+## Key Features
+- Multi-tenant architecture with organization management
+- User management with role-based access control
+- Document repository with version control
+- Workflow automation
+- Real-time chat
+- Surveys and diagnostics
+- Analytics dashboard
+
+## Running the Application
+The development server runs on port 5000:
+```bash
+npm run dev -- -H 0.0.0.0 -p 5000
+```
+
+## Data Layer
+The application uses a mock in-memory database (`lib/data.ts`) with localStorage persistence for demo purposes. Key entities include:
+- Tenants (organizations)
+- Users
+- Units (organizational structure)
+- Documents
+- Projects
+- Workflows
+- Conversations/Messages
+
+## Configuration
+- `next.config.ts`: Next.js configuration with allowed dev origins for Replit environment
+- `tsconfig.json`: TypeScript configuration with path aliases (@/*)
+
+## Recent Changes
+- December 2024: Imported from GitHub and configured for Replit environment
+- Added missing library files (data.ts, chatService.ts, i18n.ts, etc.)
+- Configured allowedDevOrigins for Replit proxy compatibility
