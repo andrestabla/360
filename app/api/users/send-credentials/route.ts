@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendUserCredentialsEmail, resendCredentialsEmail } from '@/lib/services/tenantEmailService';
 import { DB } from '@/lib/data';
+import { db } from '@/server/db';
+import { tenants } from '@/shared/schema';
+import { eq } from 'drizzle-orm';
 
 function generateTemporaryPassword(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
   let password = '';
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 12; i++) {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return password;
@@ -29,9 +32,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'El usuario no tiene email configurado' }, { status: 400 });
     }
 
-    const tenant = DB.tenants.find(t => t.id === user.tenantId);
-    const tenantName = tenant?.name || 'Maturity 360';
-    const tenantSlug = tenant?.slug || user.tenantId;
+    let tenantName = 'Maturity 360';
+    let tenantSlug = user.tenantId;
+
+    const memTenant = DB.tenants.find(t => t.id === user.tenantId);
+    if (memTenant) {
+      tenantName = memTenant.name;
+      tenantSlug = memTenant.slug || user.tenantId;
+    }
+    
+    try {
+      const dbTenants = await db.select().from(tenants).where(eq(tenants.id, user.tenantId));
+      if (dbTenants.length > 0) {
+        tenantName = dbTenants[0].name;
+        tenantSlug = dbTenants[0].slug || user.tenantId;
+      }
+    } catch (dbError) {
+      console.log('Using in-memory tenant data');
+    }
 
     const baseUrl = process.env.REPLIT_DEV_DOMAIN 
       ? `https://${process.env.REPLIT_DEV_DOMAIN}`

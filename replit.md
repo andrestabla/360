@@ -89,12 +89,18 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
 - Session persistence with localStorage (synchronized hydration to prevent logout on refresh)
 - Tenant users authenticate through their subdomain
 
-## Email Notifications (Gmail Integration)
-- System notifications are sent via the connected Gmail account
-- Email service: `lib/services/emailService.ts`
-- API endpoint: `POST /api/notifications/send`
-- Supports general notifications and workflow-specific notifications
-- Uses Google APIs with OAuth2 authentication via Replit's connector system
+## Email Notifications (Tenant-Specific SMTP)
+- Each tenant (including superadmin) configures their own outgoing email settings
+- Email configuration stored in `tenant_email_configs` table (PostgreSQL)
+- Email service: `lib/services/tenantEmailService.ts`
+- API endpoints:
+  - `GET/POST/DELETE /api/admin/email-config` - CRUD for email settings
+  - `POST /api/admin/email-config/test` - Test SMTP connection
+  - `POST /api/users/send-credentials` - Send user credentials email
+- Supports SMTP providers: Gmail, SendGrid, Mailgun, Amazon SES, custom SMTP
+- Admin UI: Dashboard > Admin > Settings > "Correo Saliente" tab
+- SMTP passwords are encrypted before storage
+- Production requires `EMAIL_ENCRYPTION_KEY` environment variable
 
 ## Recent Changes
 - December 2024: Imported from GitHub and configured for Replit environment

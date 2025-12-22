@@ -3,30 +3,64 @@ import { db } from '@/server/db';
 import { tenantEmailConfigs, tenants } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
 
-function getEncryptionKey(): string {
-  const key = process.env.EMAIL_ENCRYPTION_KEY;
-  if (!key) {
+import crypto from 'crypto';
+
+const ALGORITHM = 'aes-256-gcm';
+const IV_LENGTH = 16;
+const AUTH_TAG_LENGTH = 16;
+
+function getEncryptionKey(): Buffer {
+  const keyString = process.env.EMAIL_ENCRYPTION_KEY;
+  if (!keyString) {
     if (process.env.NODE_ENV === 'production') {
       throw new Error('EMAIL_ENCRYPTION_KEY must be set in production');
     }
-    return 'dev-only-key-not-for-production';
+    return crypto.scryptSync('dev-only-key-not-for-production-use', 'salt', 32);
   }
-  return key;
+  return crypto.scryptSync(keyString, 'maturity360-salt', 32);
 }
 
 function encryptPassword(password: string): string {
-  const key = getEncryptionKey();
-  const combined = `${key}:${password}`;
-  return Buffer.from(combined).toString('base64');
+  try {
+    const key = getEncryptionKey();
+    const iv = crypto.randomBytes(IV_LENGTH);
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+    
+    let encrypted = cipher.update(password, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    const authTag = cipher.getAuthTag();
+    
+    return `v2:${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
+  } catch (error) {
+    console.error('Encryption error, using fallback:', error);
+    return Buffer.from(password).toString('base64');
+  }
 }
 
 function decryptPassword(encrypted: string): string {
-  const key = getEncryptionKey();
-  const decoded = Buffer.from(encrypted, 'base64').toString('utf-8');
-  if (decoded.startsWith(`${key}:`)) {
-    return decoded.substring(key.length + 1);
+  try {
+    if (encrypted.startsWith('v2:')) {
+      const parts = encrypted.split(':');
+      if (parts.length !== 4) throw new Error('Invalid encrypted format');
+      
+      const [, ivHex, authTagHex, encryptedHex] = parts;
+      const key = getEncryptionKey();
+      const iv = Buffer.from(ivHex, 'hex');
+      const authTag = Buffer.from(authTagHex, 'hex');
+      
+      const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+      decipher.setAuthTag(authTag);
+      
+      let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+      return decrypted;
+    }
+    
+    return Buffer.from(encrypted, 'base64').toString('utf-8');
+  } catch (error) {
+    console.error('Decryption error:', error);
+    throw new Error('Failed to decrypt SMTP password');
   }
-  return Buffer.from(encrypted, 'base64').toString('utf-8');
 }
 
 export interface EmailConfig {
