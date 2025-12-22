@@ -8,6 +8,7 @@ import {
 import { TenantIntegration } from '@/lib/data';
 import AdminGuide from '@/components/AdminGuide';
 import { technicalSettingsGuide } from '@/lib/adminGuides';
+import EmailSetupWizard from '@/components/email/EmailSetupWizard';
 
 export default function TenantSettingsPage() {
     const { currentTenant, updateTenant, isSuperAdmin } = useApp();
@@ -48,6 +49,7 @@ export default function TenantSettingsPage() {
     const [emailTesting, setEmailTesting] = useState(false);
     const [emailTestResult, setEmailTestResult] = useState<{ success: boolean; message: string } | null>(null);
     const [testEmailAddress, setTestEmailAddress] = useState('');
+    const [showEmailWizard, setShowEmailWizard] = useState(false);
 
     // Load initial data
     useEffect(() => {
@@ -493,9 +495,18 @@ export default function TenantSettingsPage() {
                 {/* --- EMAIL TAB --- */}
                 {activeTab === 'email' && (
                     <div className="space-y-6 max-w-3xl">
-                        <div className="border-b border-slate-100 pb-6">
-                            <h3 className="font-bold text-slate-900 text-lg">Configuración de Correo Saliente</h3>
-                            <p className="text-slate-500 text-sm">Configura el servidor SMTP para enviar notificaciones por email a los usuarios.</p>
+                        <div className="border-b border-slate-100 pb-6 flex items-start justify-between">
+                            <div>
+                                <h3 className="font-bold text-slate-900 text-lg">Configuración de Correo Saliente</h3>
+                                <p className="text-slate-500 text-sm">Configura el servidor SMTP para enviar notificaciones por email a los usuarios.</p>
+                            </div>
+                            <button
+                                onClick={() => setShowEmailWizard(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                            >
+                                <Envelope size={18} />
+                                Asistente de Configuración
+                            </button>
                         </div>
 
                         {!emailConfigLoaded ? (
@@ -745,6 +756,36 @@ export default function TenantSettingsPage() {
 
             {/* Admin Guide */}
             <AdminGuide {...technicalSettingsGuide as any} />
+
+            {/* Email Setup Wizard */}
+            <EmailSetupWizard
+                isOpen={showEmailWizard}
+                onClose={() => setShowEmailWizard(false)}
+                onComplete={(config) => {
+                    setEmailConfig({
+                        smtpHost: config.smtpHost,
+                        smtpPort: String(config.smtpPort),
+                        smtpUser: config.smtpUser,
+                        smtpPassword: '',
+                        smtpSecure: config.smtpSecure,
+                        fromName: config.fromName,
+                        fromEmail: config.fromEmail,
+                        replyToEmail: ''
+                    });
+                    loadEmailConfig();
+                }}
+                existingConfig={emailConfig.smtpHost ? {
+                    provider: 'custom',
+                    smtpHost: emailConfig.smtpHost,
+                    smtpPort: parseInt(emailConfig.smtpPort) || 587,
+                    smtpSecure: emailConfig.smtpSecure,
+                    smtpUser: emailConfig.smtpUser,
+                    smtpPassword: emailConfig.smtpPassword,
+                    fromEmail: emailConfig.fromEmail,
+                    fromName: emailConfig.fromName
+                } : null}
+                tenantId={isSuperAdmin ? 'platform' : (currentTenant?.id || 'platform')}
+            />
         </div>
     );
 }
