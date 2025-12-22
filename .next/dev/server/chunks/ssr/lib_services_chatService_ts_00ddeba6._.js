@@ -143,13 +143,15 @@ const ChatService = {
         };
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DB"].conversations.push(conversation);
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DB"].conversationMembers.push({
+            id: `cm-${Date.now()}-1`,
             conversation_id: conversation.id,
             user_id: userId1,
-            joined_at: conversation.createdAt
+            joinedAt: conversation.createdAt
         }, {
+            id: `cm-${Date.now()}-2`,
             conversation_id: conversation.id,
             user_id: userId2,
-            joined_at: conversation.createdAt
+            joinedAt: conversation.createdAt
         });
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DB"].save();
         return {
@@ -175,11 +177,12 @@ const ChatService = {
             creatorId,
             ...memberIds
         ];
-        allMembers.forEach((userId)=>{
+        allMembers.forEach((userId, idx)=>{
             __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DB"].conversationMembers.push({
+                id: `cm-${Date.now()}-${idx}`,
                 conversation_id: conversation.id,
                 user_id: userId,
-                joined_at: conversation.createdAt
+                joinedAt: conversation.createdAt
             });
         });
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DB"].save();

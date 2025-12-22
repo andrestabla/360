@@ -165,8 +165,8 @@ export const ChatService = {
     DB.conversations.push(conversation);
 
     DB.conversationMembers.push(
-      { conversation_id: conversation.id, user_id: userId1, joined_at: conversation.createdAt },
-      { conversation_id: conversation.id, user_id: userId2, joined_at: conversation.createdAt }
+      { id: `cm-${Date.now()}-1`, conversation_id: conversation.id, user_id: userId1, joinedAt: conversation.createdAt },
+      { id: `cm-${Date.now()}-2`, conversation_id: conversation.id, user_id: userId2, joinedAt: conversation.createdAt }
     );
 
     DB.save();
@@ -186,11 +186,12 @@ export const ChatService = {
     DB.conversations.push(conversation);
 
     const allMembers = [creatorId, ...memberIds];
-    allMembers.forEach(userId => {
+    allMembers.forEach((userId, idx) => {
       DB.conversationMembers.push({
+        id: `cm-${Date.now()}-${idx}`,
         conversation_id: conversation.id,
         user_id: userId,
-        joined_at: conversation.createdAt
+        joinedAt: conversation.createdAt
       });
     });
 
