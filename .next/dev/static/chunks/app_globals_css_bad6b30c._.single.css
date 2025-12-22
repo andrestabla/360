@@ -6784,6 +6784,10 @@
     opacity: .5;
   }
 
+  .disabled\:opacity-70:disabled {
+    opacity: .7;
+  }
+
   .disabled\:shadow-none:disabled {
     --tw-shadow: 0 0 #0000;
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);

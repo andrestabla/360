@@ -1,6 +1,6 @@
 'use client';
 import { useApp } from '@/context/AppContext';
-import { Cube, Planet, Buildings, User, GoogleLogo, WindowsLogo, LockKey, Envelope, Eye, EyeSlash } from '@phosphor-icons/react';
+import { Cube, Planet, Buildings, User, GoogleLogo, WindowsLogo, LockKey, Envelope, Eye, EyeSlash, SpinnerGap } from '@phosphor-icons/react';
 import { DB } from '@/lib/data';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -19,6 +19,8 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
 
 
     // Multi-tenant Logic - Default to LOGIN for main domain (superadmin)
@@ -55,26 +57,40 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
         }
     };
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
+        setIsLoading(true);
 
-        // 1. Tenant Login
-        if (detectedTenant) {
-            // Find user in DB if exists to determine exact role
-            const user = DB.users.find(u => u.tenantId === detectedTenant.id && u.email?.toLowerCase() === email.toLowerCase());
-            const role = user ? (user.level === 1 ? 'admin' : 'user') : (email.toLowerCase().includes('admin') ? 'admin' : 'user');
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    tenantId: detectedTenant?.id,
+                    isSuperAdmin: !detectedTenant,
+                }),
+            });
 
-            login(role, detectedTenant.id, email);
-        } else {
-            // 2. Main Domain -> Super Admin Login
-            // Check in platform admins OR fallback to string check
-            const isPlatformAdmin = DB.platformAdmins.some(a => a.email.toLowerCase() === email.toLowerCase());
+            const data = await response.json();
 
-            if (isPlatformAdmin || email.toLowerCase().includes('admin')) {
-                login('superadmin', undefined, email);
-            } else {
-                alert('En el dominio principal solo pueden ingresar Super Admins. Para ingresar a una empresa, usa su subdominio.');
+            if (!data.success) {
+                setError(data.error || 'Error de autenticación');
+                return;
             }
+
+            if (detectedTenant) {
+                const role = data.user.role === 'Admin Global' ? 'admin' : 'user';
+                login(role, detectedTenant.id, email);
+            } else {
+                login('superadmin', undefined, email);
+            }
+        } catch (err) {
+            setError('Error de conexión. Intenta de nuevo.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -168,12 +184,26 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
                                 </div>
                             </div>
 
+                            {error && (
+                                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                                    {error}
+                                </div>
+                            )}
+
                             <button
                                 type="submit"
-                                className="w-full text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 active:scale-[0.98] hover:brightness-110"
+                                disabled={isLoading}
+                                className="w-full text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 active:scale-[0.98] hover:brightness-110 disabled:opacity-70 disabled:cursor-not-allowed"
                                 style={{ backgroundColor: primaryColor, boxShadow: `0 10px 15px -3px ${primaryColor}40` }}
                             >
-                                {detectedTenant ? 'Iniciar Sesión' : 'Acceder al Panel'}
+                                {isLoading ? (
+                                    <>
+                                        <SpinnerGap className="w-5 h-5 animate-spin" />
+                                        Verificando...
+                                    </>
+                                ) : (
+                                    detectedTenant ? 'Iniciar Sesión' : 'Acceder al Panel'
+                                )}
                             </button>
 
                             {effectiveBranding?.support_message && (
