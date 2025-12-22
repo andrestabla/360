@@ -127,6 +127,27 @@ export const surveys = pgTable("surveys", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const tenantEmailConfigs = pgTable("tenant_email_configs", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  tenantId: varchar("tenant_id", { length: 255 }).references(() => tenants.id),
+  provider: varchar("provider", { length: 50 }).notNull().default("SMTP"),
+  smtpHost: varchar("smtp_host", { length: 255 }),
+  smtpPort: integer("smtp_port").default(587),
+  smtpUser: varchar("smtp_user", { length: 255 }),
+  smtpPasswordEncrypted: text("smtp_password_encrypted"),
+  smtpSecure: boolean("smtp_secure").default(false),
+  fromName: varchar("from_name", { length: 255 }),
+  fromEmail: varchar("from_email", { length: 255 }),
+  replyToEmail: varchar("reply_to_email", { length: 255 }),
+  isEnabled: boolean("is_enabled").default(false),
+  lastTestedAt: timestamp("last_tested_at"),
+  lastTestResult: boolean("last_test_result"),
+  lastTestError: text("last_test_error"),
+  createdBy: varchar("created_by", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const auditLogs = pgTable("audit_logs", {
   id: serial("id").primaryKey(),
   tenantId: varchar("tenant_id", { length: 255 }).notNull(),
@@ -221,3 +242,5 @@ export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
 export type PlatformAdmin = typeof platformAdmins.$inferSelect;
 export type InsertPlatformAdmin = typeof platformAdmins.$inferInsert;
+export type TenantEmailConfig = typeof tenantEmailConfigs.$inferSelect;
+export type InsertTenantEmailConfig = typeof tenantEmailConfigs.$inferInsert;
