@@ -46,14 +46,26 @@ npm run dev -- -H 0.0.0.0 -p 5000
 ```
 
 ## Data Layer
-The application uses a mock in-memory database (`lib/data.ts`) with localStorage persistence for demo purposes. Key entities include:
+The application uses PostgreSQL database with Drizzle ORM. Key entities include:
 - Tenants (organizations)
 - Users
 - Units (organizational structure)
 - Documents
-- Projects
-- Workflows
 - Conversations/Messages
+- Workflows
+- Surveys
+- Audit Logs
+
+### Database Commands
+```bash
+npm run db:push    # Push schema changes to database
+npm run db:studio  # Open Drizzle Studio for database management
+```
+
+### Database Schema
+The schema is defined in `shared/schema.ts` using Drizzle ORM. The database connection is configured in `server/db.ts`.
+
+**Note:** The app also maintains a mock in-memory database (`lib/data.ts`) with localStorage persistence for demo/prototype features.
 
 ## Configuration
 - `next.config.ts`: Next.js configuration with allowed dev origins for Replit environment
