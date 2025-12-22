@@ -178,14 +178,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             logout();
         }
 
-        // Case C: Super Admin on Tenant Domain (without Impersonation) -> Invalid
-        if (subdomain && isSuperAdmin && !currentTenantId) {
-            // If I am strictly Super Admin (no tenant context) but on a subdomain, 
-            // ideally I should be redirected to main, or allowed to login as tenant admin.
-            // For now, warn but maybe don't kill session to prevent loops during dev.
-            console.warn('Security: Super Admin detected on Tenant Domain.');
-            // logout(); // Disabled for smoother dev experience
-        }
+        // Case C: Super Admin on Tenant Domain (without Impersonation) -> Allowed for flexibility
+        // Super admins can access any domain for administration purposes
+        // No action needed - this is valid behavior
     }, [currentUser, currentTenantId, isSuperAdmin]);
 
     // Apply Branding
