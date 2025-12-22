@@ -109,7 +109,10 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
                 login(role, detectedTenant.id, email);
             } else {
                 if (data.sessionToken) {
+                    console.log('[Auth] Session token received, storing in localStorage');
                     localStorage.setItem('m360_session_token', data.sessionToken);
+                } else {
+                    console.warn('[Auth] No session token received from login API');
                 }
                 login('superadmin', undefined, email);
             }

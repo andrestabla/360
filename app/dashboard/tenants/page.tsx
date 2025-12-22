@@ -41,6 +41,8 @@ export default function TenantsPage() {
             setError(null);
             
             const sessionToken = typeof window !== 'undefined' ? localStorage.getItem('m360_session_token') : null;
+            console.log('[Tenants] Session token from localStorage:', sessionToken ? `${sessionToken.substring(0, 20)}...` : 'null');
+            
             const headers: Record<string, string> = { 'Content-Type': 'application/json' };
             if (sessionToken) {
                 headers['Authorization'] = `Bearer ${sessionToken}`;

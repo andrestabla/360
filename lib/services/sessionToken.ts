@@ -30,12 +30,14 @@ export function verifySessionToken(token: string): SessionPayload | null {
     const [payloadBase64, signature] = token.split('.');
     
     if (!payloadBase64 || !signature) {
+      console.log('[SessionToken] Invalid token format - missing parts');
       return null;
     }
 
     const expectedSignature = crypto.createHmac('sha256', SESSION_SECRET).update(payloadBase64).digest('hex');
     
-    if (!crypto.timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expectedSignature, 'hex'))) {
+    if (signature !== expectedSignature) {
+      console.log('[SessionToken] Signature mismatch');
       return null;
     }
 
@@ -45,11 +47,14 @@ export function verifySessionToken(token: string): SessionPayload | null {
     const sessionAge = Date.now() - payload.timestamp;
     const MAX_SESSION_AGE = 24 * 60 * 60 * 1000;
     if (sessionAge > MAX_SESSION_AGE) {
+      console.log('[SessionToken] Token expired');
       return null;
     }
 
+    console.log('[SessionToken] Token verified successfully for:', payload.email);
     return payload;
-  } catch {
+  } catch (error) {
+    console.error('[SessionToken] Verification error:', error);
     return null;
   }
 }

@@ -10,12 +10,16 @@ const SALT_ROUNDS = 12;
 async function validateSuperAdmin(request: NextRequest): Promise<{ valid: boolean; error?: string; admin?: { id: string; email: string } }> {
   const authHeader = request.headers.get('authorization');
   
+  console.log('[Admin API] Auth header present:', !!authHeader);
+  
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log('[Admin API] No Bearer token in authorization header');
     return { valid: false, error: 'Authorization required' };
   }
 
   try {
     const token = authHeader.substring(7);
+    console.log('[Admin API] Token received, length:', token.length);
     const payload = verifySessionToken(token);
     
     if (!payload) {
