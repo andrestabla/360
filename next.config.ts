@@ -6,7 +6,9 @@ const nextConfig: NextConfig = {
     '*.repl.co',
     '*.worf.replit.dev',
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    'maturity.online',
+    '*.maturity.online'
   ],
   async headers() {
     return [

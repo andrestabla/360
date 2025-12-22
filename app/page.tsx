@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Planet, ArrowRight, CheckCircle, Buildings } from '@phosphor-icons/react';
 import LandingNavbar from '@/components/landing/LandingNavbar';
 import LandingFooter from '@/components/landing/LandingFooter';
+import { getSubdomain, isMainDomain } from '@/lib/config';
 
 export default function Page() {
   const [isTenant, setIsTenant] = useState(false);
@@ -16,13 +17,9 @@ export default function Page() {
     setMounted(true);
     if (typeof window !== 'undefined') {
       const host = window.location.hostname;
-      const parts = host.split('.');
-      let subdomain = '';
-      // Localhost vs Prod Logic
-      if (parts.length > (host.includes('localhost') ? 1 : 2)) {
-        subdomain = parts[0];
-      }
-      if (subdomain && subdomain !== 'www' && DB.tenants.find(t => t.id.toLowerCase() === subdomain.toLowerCase())) {
+      const subdomain = getSubdomain(host);
+      
+      if (subdomain && DB.tenants.find(t => t.id.toLowerCase() === subdomain.toLowerCase())) {
         setIsTenant(true);
       }
     }
