@@ -121,3 +121,8 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
   - Main domain shows superadmin login only (no tenant finder form)
   - Fixed session persistence (synchronous localStorage hydration)
   - Improved subdomain detection for maturity.online
+- December 22, 2025: Email configuration wizard
+  - Added EmailSetupWizard component for guided SMTP configuration
+  - Provider presets for Gmail, Outlook, SendGrid, Mailgun, Amazon SES
+  - Step-by-step instructions with provider-specific guidance
+  - Connection verification before saving configuration
