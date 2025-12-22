@@ -9,7 +9,8 @@
     "lint": "eslint",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "npx tsx scripts/seed-database.ts"
+    "db:seed": "npx tsx scripts/seed-database.ts",
+    "db:seed:prod": "npx tsx scripts/seed-production.ts"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
