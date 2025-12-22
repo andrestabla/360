@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:prod": "next build && drizzle-kit push && tsx scripts/seed-production.ts",
     "start": "next start",
     "lint": "eslint",
     "db:push": "drizzle-kit push",
