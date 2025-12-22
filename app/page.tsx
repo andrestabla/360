@@ -9,30 +9,28 @@ import LandingFooter from '@/components/landing/LandingFooter';
 import { getSubdomain, isMainDomain } from '@/lib/config';
 
 export default function Page() {
-  const [isTenant, setIsTenant] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [tenantSlug, setTenantSlug] = useState('');
   const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
-    if (typeof window !== 'undefined') {
-      const host = window.location.hostname;
-      const subdomain = getSubdomain(host);
-      
-      if (subdomain && DB.tenants.find(t => t.id.toLowerCase() === subdomain.toLowerCase())) {
-        setIsTenant(true);
-      }
-    }
   }, []);
 
-  if (!mounted) {
-    // Simple loading state or null
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400">Loading...</div>;
-  }
+  const handleTenantSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (tenantSlug.trim()) {
+      const t = DB.tenants.find(ten => ten.slug?.toLowerCase() === tenantSlug.toLowerCase().trim());
+      if (t) {
+        router.push(`/tenant/${t.slug}`);
+      } else {
+        alert('Espacio de trabajo no encontrado. Verifica el nombre de tu empresa.');
+      }
+    }
+  };
 
-  // TENANT SUBDOMAIN: Render Auth Screen directly
-  if (isTenant) {
-    return <AuthScreen />;
+  if (!mounted) {
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400">Loading...</div>;
   }
 
   // MAIN DOMAIN: Render Landing Page
@@ -64,13 +62,32 @@ export default function Page() {
           Maturity 360 centraliza proyectos, documentos, flujos de trabajo y comunicación en una sola plataforma segura y escalable.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center animate-fadeIn delay-200">
-          <button onClick={() => router.push('/login')} className="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl shadow-blue-600/20 transition-all hover:-translate-y-1">
-            Comenzar Ahora <ArrowRight weight="bold" />
-          </button>
-          <button onClick={() => window.open('https://api.whatsapp.com/send/?phone=573044544525', '_blank')} className="px-8 py-4 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all hover:-translate-y-1">
-            <Buildings size={20} className="text-slate-400" /> Agendar Demo
-          </button>
+        <div className="flex flex-col gap-6 w-full max-w-lg mx-auto animate-fadeIn delay-200">
+          <form onSubmit={handleTenantSearch} className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
+                <Buildings size={20} />
+              </div>
+              <input
+                type="text"
+                value={tenantSlug}
+                onChange={(e) => setTenantSlug(e.target.value)}
+                placeholder="tu-empresa"
+                className="w-full pl-12 pr-4 py-4 bg-slate-900 border border-slate-700 rounded-2xl text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+              />
+            </div>
+            <button type="submit" className="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl shadow-blue-600/20 transition-all hover:-translate-y-1 whitespace-nowrap">
+              Ir a mi Empresa <ArrowRight weight="bold" />
+            </button>
+          </form>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button onClick={() => router.push('/login')} className="px-6 py-3 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
+              <Planet size={18} className="text-blue-400" /> Soy Super Admin
+            </button>
+            <button onClick={() => window.open('https://api.whatsapp.com/send/?phone=573044544525', '_blank')} className="px-6 py-3 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
+              Agendar Demo
+            </button>
+          </div>
         </div>
 
         {/* Features Grid */}

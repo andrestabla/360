@@ -7,7 +7,13 @@ import { useRouter } from 'next/navigation';
 
 import { TenantBranding } from '@/lib/data';
 
-export default function AuthScreen({ forceLoginMode = false, previewBranding }: { forceLoginMode?: boolean, previewBranding?: Partial<TenantBranding> }) {
+interface AuthScreenProps {
+    forceLoginMode?: boolean;
+    previewBranding?: Partial<TenantBranding>;
+    tenantSlug?: string;
+}
+
+export default function AuthScreen({ forceLoginMode = false, previewBranding, tenantSlug }: AuthScreenProps) {
     const { login } = useApp();
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
@@ -23,45 +29,27 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding }: 
 
     useEffect(() => {
         setMounted(true);
-        // Detect subdomain logic
-        if (typeof window !== 'undefined') {
-            const host = window.location.hostname;
-            const parts = host.split('.');
-            let subdomain = '';
-
-            // Detect subdomain for maturity.online or localhost
-            if (host.endsWith('maturity.online')) {
-                const withoutDomain = host.replace('.maturity.online', '').replace('maturity.online', '');
-                subdomain = withoutDomain && withoutDomain !== 'www' ? withoutDomain : '';
-            } else if (host.includes('localhost') && parts.length > 1) {
-                subdomain = parts[0];
-            } else if (parts.length > 2) {
-                subdomain = parts[0] !== 'www' ? parts[0] : '';
-            }
-
-            if (subdomain) {
-                const t = DB.tenants.find(ten => ten.slug?.toLowerCase() === subdomain.toLowerCase());
-                if (t) {
-                    setDetectedTenant(t);
-                    setMode('LOGIN');
-                }
-            } else {
-                // Main domain: always show superadmin login directly
+        
+        // If tenantSlug is provided via props (from /tenant/[slug] route), use it directly
+        if (tenantSlug) {
+            const t = DB.tenants.find(ten => ten.slug?.toLowerCase() === tenantSlug.toLowerCase());
+            if (t) {
+                setDetectedTenant(t);
                 setMode('LOGIN');
             }
+            return;
         }
-    }, [forceLoginMode]);
+        
+        // Main domain: always show superadmin login directly
+        setMode('LOGIN');
+    }, [forceLoginMode, tenantSlug]);
 
     const handleFindWorkspace = (e: React.FormEvent) => {
         e.preventDefault();
         const t = DB.tenants.find(ten => ten.slug?.toLowerCase() === workspaceDomain.toLowerCase());
         if (t) {
-            if (typeof window !== 'undefined' && t.slug) {
-                window.location.href = `https://${t.slug}.maturity.online`;
-            } else {
-                setDetectedTenant(t);
-                setMode('LOGIN');
-            }
+            // Redirect to path-based tenant URL
+            router.push(`/tenant/${t.slug}`);
         } else {
             alert('Espacio de trabajo no encontrado. Verifica el nombre de tu empresa.');
         }
@@ -130,8 +118,8 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding }: 
 
                 <div className="px-8 pb-8">
                         <form onSubmit={handleLogin} className="space-y-4 animate-slideLeft">
-                            {detectedTenant && typeof window !== 'undefined' && !window.location.host.includes(detectedTenant.id.toLowerCase()) && (
-                                <button type="button" onClick={() => { setDetectedTenant(null); setMode('LOGIN'); }} className="text-xs text-blue-600 hover:underline mb-2 block mx-auto">
+                            {detectedTenant && tenantSlug && (
+                                <button type="button" onClick={() => router.push('/')} className="text-xs text-blue-600 hover:underline mb-2 block mx-auto">
                                     ← Volver al inicio
                                 </button>
                             )}
