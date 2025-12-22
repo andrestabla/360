@@ -4,6 +4,10 @@ export interface SectorBenchmark {
   averageMaturity: number;
   dimensions: Record<string, number>;
   industryStandards?: string[];
+  maturity?: { metric: number };
+  practices?: string[];
+  leaders?: string[];
+  priorities?: string[];
 }
 
 export const SECTOR_BENCHMARKS: Record<string, SectorBenchmark> = {
@@ -148,3 +152,5 @@ export function compareToBenchmark(sector: string, currentScore: number): {
 
   return { difference, status, message };
 }
+
+export const SECTOR_BENCHMARKS_LIST: SectorBenchmark[] = Object.values(SECTOR_BENCHMARKS);

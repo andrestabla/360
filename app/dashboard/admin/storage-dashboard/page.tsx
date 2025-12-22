@@ -38,8 +38,10 @@ export default function StorageDashboardPage() {
         try {
             const service = getStorageService(currentTenantId);
             if (service) {
-                const storageStats = await service.getStats();
-                setStats(storageStats);
+                const result = await service.getStats(currentTenantId);
+                if (result.success && result.stats) {
+                    setStats(result.stats);
+                }
             }
         } catch (error) {
             console.error('Error loading stats:', error);
@@ -128,7 +130,7 @@ export default function StorageDashboardPage() {
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        {tenant.storageConfig.testStatus === 'SUCCESS' ? (
+                        {tenant.storageConfig.testStatus === 'success' ? (
                             <CheckCircle size={48} weight="fill" className="text-green-300" />
                         ) : (
                             <Warning size={48} weight="fill" className="text-yellow-300" />
@@ -184,16 +186,16 @@ export default function StorageDashboardPage() {
                             </div>
                             <div>
                                 <div className="text-sm text-slate-500 font-medium">Uso del Almacenamiento</div>
-                                <div className="text-2xl font-bold text-slate-800">{stats.usedPercentage.toFixed(1)}%</div>
+                                <div className="text-2xl font-bold text-slate-800">{(stats.usedPercentage ?? 0).toFixed(1)}%</div>
                             </div>
                         </div>
                         <div className="w-full bg-slate-200 rounded-full h-2">
                             <div
-                                className={`h-2 rounded-full transition-all ${stats.usedPercentage > 80 ? 'bg-red-500' :
-                                    stats.usedPercentage > 60 ? 'bg-yellow-500' :
+                                className={`h-2 rounded-full transition-all ${(stats.usedPercentage ?? 0) > 80 ? 'bg-red-500' :
+                                    (stats.usedPercentage ?? 0) > 60 ? 'bg-yellow-500' :
                                         'bg-green-500'
                                     }`}
-                                style={{ width: `${Math.min(stats.usedPercentage, 100)}%` }}
+                                style={{ width: `${Math.min(stats.usedPercentage ?? 0, 100)}%` }}
                             ></div>
                         </div>
                     </div>
@@ -310,7 +312,7 @@ export default function StorageDashboardPage() {
             )}
 
             {/* Admin Guide */}
-            <AdminGuide {...storageDashboardGuide} />
+            <AdminGuide {...storageDashboardGuide as any} />
         </div>
     );
 }

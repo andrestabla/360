@@ -1,15 +1,17 @@
 'use client';
 import { useUI } from '@/context/UIContext';
 import { useApp } from '@/context/AppContext';
-import { DB, ChatMessage } from '@/lib/data';
+import { DB } from '@/lib/data';
 import { X, PaperPlaneRight } from '@phosphor-icons/react';
 import { useState, useEffect, KeyboardEvent } from 'react';
+
+type ContextChatMessage = { text: string; type: string };
 
 export default function SlideOver() {
     const { isSlideOpen, slideType, slideData, closeSlide, openViewer } = useUI();
     const { currentUser } = useApp();
     const [activeTab, setActiveTab] = useState<'detail' | 'chat'>('detail');
-    const [chatMsgs, setChatMsgs] = useState<ChatMessage[]>([]);
+    const [chatMsgs, setChatMsgs] = useState<ContextChatMessage[]>([]);
     const [chatInput, setChatInput] = useState('');
     const [forceUpdate, setForceUpdate] = useState(0);
 
@@ -29,7 +31,7 @@ export default function SlideOver() {
     const sendContextMessage = () => {
         if (!chatInput.trim() || !slideData) return;
 
-        const newMsg: ChatMessage = { text: chatInput, type: 'self' }; // In real app, user ID
+        const newMsg: ContextChatMessage = { text: chatInput, type: 'self' }; // In real app, user ID
         DB.contextChats[slideData.id].push(newMsg);
         setChatMsgs([...DB.contextChats[slideData.id]]);
         setChatInput('');
@@ -44,7 +46,7 @@ export default function SlideOver() {
         const { id, title } = slideData;
 
         if (slideType === 'doc') {
-            const comments = DB.publicComments[id] || [];
+            const comments = DB.publicComments.filter(c => c.docId === id) || [];
             return (
                 <div>
                     <h2>{title}</h2>
@@ -59,7 +61,7 @@ export default function SlideOver() {
                     <h4>Comentarios</h4>
                     {comments.map((c, i) => (
                         <div key={i} className="comment-item" style={{ marginBottom: 10 }}>
-                            <strong>{c.user}</strong>: {c.text}
+                            <strong>{c.authorName}</strong>: {c.content}
                         </div>
                     ))}
                 </div>

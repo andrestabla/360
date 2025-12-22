@@ -214,7 +214,7 @@ export default function ChatWindow() {
             conversation_id: activeId,
             sender_id: currentUser.id,
             body: input || (attachments.length ? 'Archivo adjunto' : ''),
-            body_type: attachments.length ? (attachments[0].mime_type.startsWith('image/') ? 'image' : 'file') : 'text',
+            body_type: attachments.length ? ((attachments[0].mime_type || attachments[0].type || '').startsWith('image/') ? 'image' : 'file') : 'text',
             created_at: new Date().toISOString(),
             senderName: currentUser.name,
             reply_to_message_id: replyingTo?.id,
@@ -593,7 +593,7 @@ export default function ChatWindow() {
                                             <div className="mb-2 space-y-2">
                                                 {msg.attachments.map(att => (
                                                     <div key={att.id}>
-                                                        {att.mime_type.startsWith('image/') ? (
+                                                        {(att.mime_type || att.type || '').startsWith('image/') ? (
                                                             <div className="rounded-lg overflow-hidden border border-black/10">
                                                                 <img src={att.url || 'https://via.placeholder.com/300'} alt="Attachment" className="max-w-full max-h-[300px] object-cover" />
                                                             </div>
@@ -717,7 +717,7 @@ export default function ChatWindow() {
                         <div className="max-w-4xl mx-auto mb-2 flex gap-2 overflow-x-auto pb-1">
                             {attachments.map((att, i) => (
                                 <div key={i} className="relative group shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
-                                    {att.mime_type.startsWith('image/') ? (
+                                    {(att.mime_type || att.type || '').startsWith('image/') ? (
                                         <img src={att.url} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full bg-gray-50 flex flex-col items-center justify-center p-1">

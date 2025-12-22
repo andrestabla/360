@@ -130,7 +130,7 @@ export default function RolesPage() {
             </div>
 
             {/* Admin Guide */}
-            <AdminGuide {...rolesGuide} />
+            <AdminGuide {...rolesGuide as any} />
         </div>
     );
 }

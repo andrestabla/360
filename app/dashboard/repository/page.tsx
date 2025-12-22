@@ -141,8 +141,8 @@ export default function RepositoryPage() {
         if (currentUser && currentUser.level > 1) {
             d = d.filter(doc => {
                 if (doc.authorId === currentUser.id) return true;
-                if (doc.visibility === 'GLOBAL') return true;
-                if (doc.visibility === 'UNIT' && doc.unit === currentUser.unit) return true;
+                if (doc.visibility === 'public') return true;
+                if (doc.visibility === 'unit' && doc.unit === currentUser.unit) return true;
                 return false;
             });
         }
@@ -193,8 +193,8 @@ export default function RepositoryPage() {
             const file = e.dataTransfer.files[0];
             uploadDoc({
                 tenantId: currentTenantId!, title: file.name,
-                unit: currentUser?.unit || 'General', visibility: 'UNIT',
-                version: '1.0', status: 'DRAFT', type: file.name.split('.').pop() || 'file',
+                unit: currentUser?.unit || 'General', visibility: 'unit',
+                version: '1.0', status: 'pending', type: file.name.split('.').pop() || 'file',
                 size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
                 authorId: currentUser?.id || 'unknown',
                 tags: [],
@@ -507,12 +507,12 @@ export default function RepositoryPage() {
                     folders={DB.repoFolders.filter(f => f.tenantId === currentTenantId && f.unit === docToMove.unit)}
                     onClose={() => { setShowMoveModal(false); setDocToMove(null); }}
                     onMove={(folderId: string | null) => {
-                        updateDoc(docToMove.id, { folderId });
+                        updateDoc(docToMove.id, { folderId: folderId ?? undefined });
                         setShowMoveModal(false);
                         setDocToMove(null);
                         // If selected doc is the one moved, update local state if needed
                         if (selectedDoc?.id === docToMove.id) {
-                            setSelectedDoc({ ...selectedDoc, folderId });
+                            setSelectedDoc({ ...selectedDoc, folderId: folderId ?? undefined });
                         }
                     }}
                 />
@@ -621,7 +621,7 @@ function DetailPanel({ doc, onClose, currentUser, onUpdate, onDelete, onLike, on
     const [showMoreActions, setShowMoreActions] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({ ...doc });
-    const comments = DB.publicComments[doc.id] || [];
+    const comments = DB.publicComments.filter((c: any) => c.docId === doc.id) || [];
     const dummyRef = useRef<HTMLDivElement>(null);
 
     // Update editData when doc changes

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Plus, Buildings, Trash, Power, CheckCircle, Warning, MagnifyingGlass, CaretRight, CaretDown, Factory } from '@phosphor-icons/react';
 import { Tenant, TenantBranding, TenantPolicy, DB } from '@/lib/data';
-import { SECTOR_BENCHMARKS } from '@/lib/benchmark';
+import { SECTOR_BENCHMARKS_LIST } from '@/lib/benchmark';
 
 const SUBSCRIPTION_PLANS = [
     { id: 'custom', name: 'Personalizado', features: [] },
@@ -42,7 +42,7 @@ export default function TenantsPage() {
         branding: { primary_color: '#2563eb', accent_color: '#1d4ed8' },
         policies: { max_failed_logins: 3 },
         features: ['DASHBOARD', 'WORKFLOWS', 'REPOSITORY', 'CHAT', 'ANALYTICS', 'SURVEYS'],
-        sector: SECTOR_BENCHMARKS[0].sector,
+        sector: SECTOR_BENCHMARKS_LIST[0]?.sector || 'technology',
         contactName: '',
         contactEmail: '',
         contactPhone: ''
@@ -65,7 +65,7 @@ export default function TenantsPage() {
             branding: { primary_color: '#2563eb', accent_color: '#1d4ed8' },
             policies: { max_failed_logins: 3 },
             features: [...defaultModules],
-            sector: SECTOR_BENCHMARKS[0].sector,
+            sector: SECTOR_BENCHMARKS_LIST[0]?.sector || 'technology',
             contactName: '', contactEmail: '', contactPhone: ''
         });
         setSelectedPlan('custom');
@@ -81,7 +81,7 @@ export default function TenantsPage() {
             branding: { ...branding },
             policies: { ...policies },
             features: tenant.features || [],
-            sector: tenant.sector || SECTOR_BENCHMARKS[0].sector,
+            sector: tenant.sector || SECTOR_BENCHMARKS_LIST[0]?.sector || 'technology',
             contactName: tenant.contactName || '',
             contactEmail: tenant.contactEmail || '',
             contactPhone: tenant.contactPhone || ''
@@ -275,7 +275,7 @@ export default function TenantsPage() {
                                         value={formData.sector}
                                         onChange={e => setFormData({ ...formData, sector: e.target.value })}
                                     >
-                                        {SECTOR_BENCHMARKS.map((s, i) => (
+                                        {SECTOR_BENCHMARKS_LIST.map((s, i) => (
                                             <option key={i} value={s.sector}>{s.sector}</option>
                                         ))}
                                     </select>

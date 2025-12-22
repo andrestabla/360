@@ -16,7 +16,7 @@ export default function CommunicationsPage() {
     const [analyticsPost, setAnalyticsPost] = useState<Post | null>(null);
 
     // Form State
-    const [formData, setFormData] = useState<Partial<Post>>({
+    const [formData, setFormData] = useState<any>({
         title: '',
         excerpt: '',
         content: '',
@@ -24,8 +24,8 @@ export default function CommunicationsPage() {
         mediaType: 'image',
         mediaUrl: '',
         image: '',
-        status: 'PUBLISHED',
-        audience: 'GLOBAL'
+        status: 'published',
+        audience: 'all'
     });
 
     if (!currentUser || currentUser.level !== 1) {
@@ -52,8 +52,8 @@ export default function CommunicationsPage() {
             mediaType: 'image',
             mediaUrl: '',
             image: '',
-            status: 'PUBLISHED',
-            audience: 'GLOBAL'
+            status: 'published',
+            audience: 'all'
         });
         setShowModal(true);
     };
@@ -102,7 +102,7 @@ export default function CommunicationsPage() {
 
     const handleHide = (post: Post) => {
         if (confirm('¿Deseas ocultar esta publicación? Pasará a estado Archivado.')) {
-            adminUpdatePost(post.id, { status: 'ARCHIVED' });
+            adminUpdatePost(post.id, { status: 'archived' });
         }
     };
 
@@ -154,16 +154,16 @@ export default function CommunicationsPage() {
                                     {getMediaIcon(post.mediaType)}
                                 </td>
                                 <td className="p-4">
-                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${post.status === 'PUBLISHED'
+                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${post.status === 'published'
                                         ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
                                         : 'bg-amber-50 text-amber-700 border-amber-100'
                                         }`}>
-                                        <div className={`w-1.5 h-1.5 rounded-full ${post.status === 'PUBLISHED' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                                        {post.status === 'PUBLISHED' ? 'Publicado' : 'Borrador'}
+                                        <div className={`w-1.5 h-1.5 rounded-full ${post.status === 'published' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                        {post.status === 'published' ? 'Publicado' : 'Borrador'}
                                     </span>
                                 </td>
                                 <td className="p-4 text-sm text-slate-600">
-                                    {post.audience === 'GLOBAL' ? (
+                                    {post.audience === 'all' ? (
                                         <div className="flex items-center gap-1"><Globe size={14} /> Global</div>
                                     ) : (
                                         <div className="flex items-center gap-1" title={Array.isArray(post.audience) ? post.audience.join(', ') : ''}>
@@ -345,7 +345,7 @@ export default function CommunicationsPage() {
                                             const val = e.target.value;
                                             setFormData({
                                                 ...formData,
-                                                audience: val === 'GLOBAL' ? 'GLOBAL' : [val]
+                                                audience: val === 'all' ? 'all' : [val]
                                             });
                                         }}
                                         className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white"
@@ -395,7 +395,7 @@ export default function CommunicationsPage() {
                         <div className="grid grid-cols-3 gap-4 mb-6">
                             <div className="bg-blue-50 p-4 rounded-xl text-center">
                                 <div className="text-blue-600 mb-2 flex justify-center"><Globe size={24} /></div>
-                                <div className="text-2xl font-bold text-slate-800">{analyticsPost.likes * 12 + analyticsPost.comments * 8 + 124}</div>
+                                <div className="text-2xl font-bold text-slate-800">{analyticsPost.likes * 12 + (analyticsPost.commentsCount || 0) * 8 + 124}</div>
                                 <div className="text-xs text-slate-500 font-medium uppercase">Vistas</div>
                             </div>
                             <div className="bg-pink-50 p-4 rounded-xl text-center">
@@ -405,7 +405,7 @@ export default function CommunicationsPage() {
                             </div>
                             <div className="bg-purple-50 p-4 rounded-xl text-center">
                                 <div className="text-purple-600 mb-2 flex justify-center"><FileText size={24} /></div>
-                                <div className="text-2xl font-bold text-slate-800">{analyticsPost.comments}</div>
+                                <div className="text-2xl font-bold text-slate-800">{analyticsPost.commentsCount || 0}</div>
                                 <div className="text-xs text-slate-500 font-medium uppercase">Comentarios</div>
                             </div>
                         </div>
@@ -447,7 +447,7 @@ export default function CommunicationsPage() {
             )}
 
             {/* Admin Guide */}
-            <AdminGuide {...communicationsGuide} />
+            <AdminGuide {...communicationsGuide as any} />
         </div>
     );
 }
@@ -461,7 +461,7 @@ function getCategoryColor(cat: string) {
     }
 }
 
-function getMediaIcon(type: string) {
+function getMediaIcon(type?: string) {
     switch (type) {
         case 'video': return <Video size={20} weight="fill" className="text-purple-500" />;
         case 'audio': return <SpeakerHigh size={20} weight="fill" className="text-indigo-500" />;

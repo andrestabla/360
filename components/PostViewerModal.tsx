@@ -23,7 +23,7 @@ export default function PostViewerModal({ post, onClose }: PostViewerModalProps)
         if (post) {
             setLikes(post.likes);
             setIsLiked(false); // Reset/Mock state
-            setComments(DB.publicComments[post.id] || []);
+            setComments(DB.publicComments.filter(c => c.postId === post.id) || []);
             setShowComments(false);
         }
     }, [post]);
@@ -57,11 +57,14 @@ export default function PostViewerModal({ post, onClose }: PostViewerModalProps)
 
         const comment: PublicComment = {
             id: `c-${Date.now()}`,
+            postId: post.id,
+            authorId: currentUser.id,
+            authorName: currentUser.name,
             userId: currentUser.id,
             userName: currentUser.name,
             content: newComment,
-            date: 'Ahora',
-            likes: 0
+            createdAt: new Date().toISOString(),
+            date: 'Ahora'
         };
 
         // Update local state
@@ -70,9 +73,9 @@ export default function PostViewerModal({ post, onClose }: PostViewerModalProps)
         setNewComment('');
 
         // Update Mock DB
-        DB.publicComments[post.id] = updatedComments;
+        DB.publicComments.push(comment);
         const postInDb = DB.posts.find(p => p.id === post.id);
-        if (postInDb) postInDb.comments = updatedComments.length;
+        if (postInDb) postInDb.commentsCount = updatedComments.length;
     };
 
     return (

@@ -46,7 +46,7 @@ export interface User {
   jobTitle?: string;
   language?: string;
   timezone?: string;
-  status: 'ACTIVE' | 'SUSPENDED' | 'DELETED' | 'PENDING';
+  status: 'ACTIVE' | 'SUSPENDED' | 'DELETED' | 'PENDING' | 'PENDING_INVITE';
   avatar?: string;
   password?: string;
   mustChangePassword?: boolean;
@@ -60,6 +60,8 @@ export interface TenantBranding {
   accent_color: string;
   login_bg_color?: string;
   login_bg_image?: string;
+  login_description?: string;
+  support_message?: string;
   logo_url?: string;
   updated_at: string;
 }
@@ -82,6 +84,9 @@ export interface TenantSSOConfig {
   provider: string;
   clientId: string;
   clientSecret: string;
+  domain?: string;
+  authUrl?: string;
+  tokenUrl?: string;
   enabled: boolean;
 }
 
@@ -90,6 +95,10 @@ export interface TenantIntegration {
   type: string;
   name: string;
   enabled: boolean;
+  active?: boolean;
+  baseUrl?: string;
+  apiKey?: string;
+  description?: string;
   config?: Record<string, unknown>;
 }
 
@@ -104,6 +113,8 @@ export interface Tenant {
   branding: TenantBranding;
   policies: TenantPolicy;
   ssoConfig?: TenantSSOConfig;
+  storageConfig?: TenantStorageConfig;
+  integrations?: TenantIntegration[];
   features: string[];
   sector?: string;
   contactName?: string;
@@ -139,9 +150,10 @@ export interface Post {
   excerpt?: string;
   content: string;
   category: string;
-  mediaType?: 'image' | 'video' | 'none';
+  mediaType?: 'image' | 'video' | 'audio' | 'none' | 'article';
   mediaUrl?: string;
   image?: string;
+  attach?: { name: string; type: string };
   status: 'draft' | 'published' | 'archived';
   audience: 'all' | 'unit' | 'role';
   date: string;
@@ -158,6 +170,14 @@ export interface PublicComment {
   authorName: string;
   content: string;
   createdAt: string;
+  userId?: string;
+  userName?: string;
+  reference?: string;
+  position?: { page: number; x: number; y: number };
+  date?: string;
+  likes?: number;
+  attachment?: string;
+  resolved?: boolean;
 }
 
 export interface Doc {
@@ -167,7 +187,7 @@ export interface Doc {
   type: string;
   size: string;
   version: string;
-  status: 'active' | 'pending' | 'archived' | 'expired';
+  status: 'active' | 'pending' | 'archived' | 'expired' | 'APPROVED' | 'PENDING' | 'ACTIVE' | 'ARCHIVED';
   authorId: string;
   unit: string;
   process?: string;
@@ -201,13 +221,15 @@ export interface ProjectDocument {
   type: string;
   content?: string;
   url?: string;
+  comments?: PublicComment[];
+  versions?: { content: string; date: string; userId: string }[];
 }
 
 export interface ProjectActivity {
   id: string;
   name: string;
   status: string;
-  participants: string[];
+  participants: (string | { userId: string; role?: string })[];
   documents: ProjectDocument[];
   startDate?: string;
   endDate?: string;
@@ -219,6 +241,8 @@ export interface ProjectPhase {
   order: number;
   status: string;
   activities: ProjectActivity[];
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface Project {
@@ -232,11 +256,15 @@ export interface Project {
   creatorId: string;
   createdAt: string;
   updatedAt?: string;
-  participants: string[];
+  participants: (string | { userId: string; role?: string })[];
   phases: ProjectPhase[];
   folderId?: string;
   color?: string;
+  unit?: string;
+  process?: string;
 }
+
+export type ProjectParticipant = string | { userId: string; role?: string };
 
 export interface ProjectFolder {
   id: string;
@@ -291,10 +319,12 @@ export interface WorkflowDefinition {
 
 export interface WorkflowHistoryEntry {
   date: string;
-  action: string;
-  userId: string;
-  userName: string;
+  action?: string;
+  userId?: string;
+  userName?: string;
   comment?: string;
+  status?: string;
+  by?: string;
 }
 
 export interface WorkflowComment {
@@ -310,7 +340,7 @@ export interface WorkflowCase {
   workflowId: string;
   tenantId: string;
   title: string;
-  status: 'open' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'open' | 'in_progress' | 'completed' | 'cancelled' | 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'RECEIVED' | 'PENDING' | 'REJECTED' | 'APPROVED' | 'CLOSED';
   creatorId: string;
   assigneeId?: string;
   unit?: string;
@@ -396,19 +426,32 @@ export interface PlatformSettings {
     allowRegistration: boolean;
     requireEmailVerification: boolean;
     sessionTimeout: number;
+    enforceSSO?: boolean;
+    passwordMinLength?: number;
+    mfaPolicy?: 'none' | 'optional' | 'required';
   };
 }
 
 export interface Attachment {
   id: string;
-  tenant_id: string;
-  message_id: string;
-  file_name: string;
-  mime_type: string;
+  tenant_id?: string;
+  message_id?: string;
+  file_name?: string;
+  mime_type?: string;
   size: number;
-  storage_key: string;
+  storage_key?: string;
   url: string;
   created_at: string;
+  name?: string;
+  type?: string;
+}
+
+export interface MessageReaction {
+  emoji: string;
+  users?: string[];
+  user_id?: string;
+  message_id?: string;
+  created_at?: string;
 }
 
 export interface ChatMessage {
@@ -422,6 +465,21 @@ export interface ChatMessage {
   senderName?: string;
   attachments?: Attachment[];
   read_by?: string[];
+  reply_to_message_id?: string;
+  replyTo?: { id: string; senderName: string; body: string };
+  reactions?: MessageReaction[];
+  status?: 'sending' | 'sent' | 'failed';
+  tempId?: string;
+  deleted_at?: string;
+  edited_at?: string;
+}
+
+export interface ConversationMember {
+  id: string;
+  conversation_id: string;
+  user_id: string;
+  role?: 'admin' | 'member';
+  joinedAt: string;
 }
 
 export interface Conversation {
@@ -429,11 +487,15 @@ export interface Conversation {
   tenant_id: string;
   type: 'dm' | 'group';
   name?: string;
+  title?: string;
   participants: string[];
   lastMessage?: string;
   lastMessageAt?: string;
+  last_message_at?: string;
+  lastMessagePreview?: string;
   unreadCount?: number;
   createdAt: string;
+  avatar?: string;
 }
 
 export interface WorkNote {
@@ -444,6 +506,9 @@ export interface WorkNote {
   content: string;
   color: string;
   pinned: boolean;
+  status?: string;
+  date?: string;
+  isImportant?: boolean;
   reminder?: NoteReminder;
   createdAt: string;
   updatedAt: string;
@@ -451,19 +516,24 @@ export interface WorkNote {
 
 export interface NoteReminder {
   date: string;
-  time: string;
-  notified: boolean;
+  time?: string;
+  channel?: 'internal' | 'email' | 'both';
+  notified?: boolean;
+  sent?: boolean;
 }
 
-export type QuestionType = 'text' | 'number' | 'select' | 'multiselect' | 'scale' | 'boolean';
+export type QuestionType = 'text' | 'number' | 'select' | 'multiselect' | 'scale' | 'boolean' | 'LIKERT' | 'NPS' | 'TEXT' | 'RATING' | 'CHOICE' | 'MULTI_CHOICE' | 'MATRIX' | 'MULTI' | 'CHECKBOX' | 'DROPDOWN' | 'YESNO' | 'DATE' | 'RANKING' | 'FILE';
 
 export interface SurveyQuestion {
   id: string;
-  text: string;
+  text?: string;
+  title?: string;
   type: QuestionType;
   options?: string[];
   required: boolean;
   dimension?: string;
+  section?: string;
+  scale?: number;
 }
 
 export interface Survey {
@@ -471,11 +541,23 @@ export interface Survey {
   tenantId: string;
   title: string;
   description?: string;
-  status: 'draft' | 'active' | 'closed';
+  status: 'draft' | 'active' | 'closed' | 'DRAFT' | 'ACTIVE' | 'CLOSED' | 'OPEN' | 'SCHEDULED' | 'ARCHIVED';
   questions: SurveyQuestion[];
   createdAt: string;
   closedAt?: string;
   targetAudience?: string;
+  isAnonymous?: boolean;
+  audience?: string;
+  unit?: string;
+  process?: string;
+  responses?: number;
+  completionRate?: number;
+  ownerId?: string;
+  deadline?: string;
+  responsesCount?: number;
+  targetUserId?: string | string[];
+  targetUnitId?: string | string[];
+  targetRoleId?: string | string[];
 }
 
 export interface SurveyResponse {
@@ -483,6 +565,7 @@ export interface SurveyResponse {
   surveyId: string;
   tenantId: string;
   userId: string;
+  respondentId?: string;
   answers: Record<string, unknown>;
   submittedAt: string;
 }
@@ -511,6 +594,7 @@ interface Database {
   platformAdmins: PlatformAdmin[];
   platformSettings: PlatformSettings;
   conversations: Conversation[];
+  conversationMembers: ConversationMember[];
   messages: ChatMessage[];
   workNotes: WorkNote[];
   surveyResponses: SurveyResponse[];
@@ -518,6 +602,7 @@ interface Database {
   publicComments: PublicComment[];
   emailOutbox: EmailOutbox[];
   storageConfigs: Record<string, TenantStorageConfig>;
+  contextChats: Record<string, { text: string; type: string }[]>;
   save: () => void;
   load: () => void;
 }
@@ -529,7 +614,10 @@ const defaultPlatformSettings: PlatformSettings = {
   authPolicy: {
     allowRegistration: true,
     requireEmailVerification: true,
-    sessionTimeout: 3600
+    sessionTimeout: 3600,
+    enforceSSO: false,
+    passwordMinLength: 8,
+    mfaPolicy: 'optional'
   }
 };
 
@@ -966,6 +1054,7 @@ export const DB: Database = {
   ],
   platformSettings: defaultPlatformSettings,
   conversations: sampleConversations,
+  conversationMembers: [],
   messages: sampleMessages,
   workNotes: [],
   surveyResponses: [],
@@ -973,6 +1062,7 @@ export const DB: Database = {
   publicComments: [],
   emailOutbox: [],
   storageConfigs: {},
+  contextChats: {},
 
   save: function() {
     if (typeof window !== 'undefined') {

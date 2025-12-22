@@ -77,7 +77,7 @@ export default function UsersPage() {
             }
 
             const matchesSearch = u.name.toLowerCase().includes(search.toLowerCase()) ||
-                u.jobTitle.toLowerCase().includes(search.toLowerCase()) ||
+                (u.jobTitle || '').toLowerCase().includes(search.toLowerCase()) ||
                 u.email?.toLowerCase().includes(search.toLowerCase()); // Added email search
 
             const matchesUnit = filterUnit ? u.unit === filterUnit : true;
@@ -607,7 +607,7 @@ export default function UsersPage() {
                                                             {new Date(log.created_at).toLocaleString()}
                                                         </td>
                                                         <td className="py-2 text-slate-500 max-w-[150px] truncate" title={JSON.stringify(log.metadata)}>
-                                                            {log.metadata?.changes ? log.metadata.changes.join(', ') : '-'}
+                                                            {log.metadata?.changes && Array.isArray(log.metadata.changes) ? log.metadata.changes.join(', ') : '-'}
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -646,7 +646,7 @@ export default function UsersPage() {
             />
 
             {/* Admin Guide */}
-            <AdminGuide {...usersGuide} />
+            <AdminGuide {...usersGuide as any} />
 
         </div >
     );

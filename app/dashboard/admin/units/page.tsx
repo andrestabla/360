@@ -319,7 +319,7 @@ export default function UnitsPage() {
             />
 
             {/* Admin Guide */}
-            <AdminGuide {...unitsGuide} />
+            <AdminGuide {...unitsGuide as any} />
         </div>
     );
 }

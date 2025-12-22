@@ -90,9 +90,9 @@ export default function ImportUsersModal({ isOpen, onClose, onImport, tenantId }
                 jobTitle: row.jobTitle || '',
                 phone: row.phone || '',
                 location: row.location || '',
-                status: (row.status === 'ACTIVE' || row.status === 'SUSPENDED' || row.status === 'PENDING_INVITE' || row.status === 'DELETED'
+                status: (row.status === 'ACTIVE' || row.status === 'SUSPENDED' || row.status === 'PENDING' || row.status === 'DELETED'
                     ? row.status
-                    : 'ACTIVE') as 'ACTIVE' | 'SUSPENDED' | 'PENDING_INVITE' | 'DELETED',
+                    : 'ACTIVE') as 'ACTIVE' | 'SUSPENDED' | 'PENDING' | 'DELETED',
                 initials: row.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
             };
 

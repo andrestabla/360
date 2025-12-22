@@ -118,8 +118,9 @@ interface Dashboard {
 const getPhaseTeam = (phase: ProjectPhase, users: any[]) => {
     const participants = new Set<string>();
     phase.activities?.forEach(a => {
-        a.participants?.forEach(p => {
-            const u = users.find((user: any) => user.id === p.userId);
+        a.participants?.forEach((p: any) => {
+            const userId = typeof p === 'string' ? p : p.userId;
+            const u = users.find((user: any) => user.id === userId);
             if (u) participants.add(u.name);
         });
     });
@@ -295,8 +296,9 @@ const runQuery = (
                         };
 
                         if (act.participants && act.participants.length > 0) {
-                            act.participants.forEach(part => {
-                                const u = context.users.find(u => u.id === part.userId);
+                            act.participants.forEach((part: any) => {
+                                const userId = typeof part === 'string' ? part : part.userId;
+                                const u = context.users.find(u => u.id === userId);
                                 rawRows.push({ ...baseRow, 'Responsable': u ? u.name : 'Desconocido' });
                             });
                         } else {
@@ -560,7 +562,7 @@ export default function AnalyticsModule() {
 
         const processesFromData = new Set<string>();
 
-        allProjects.forEach(p => {
+        allProjects.forEach((p: any) => {
             if (p.process) {
                 if (dashboardFilterUnit === 'ALL' || p.unit === dashboardFilterUnit) {
                     processesFromData.add(p.process);

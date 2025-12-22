@@ -224,7 +224,7 @@ function TenantDashboard() {
     const feed = useMemo(() => {
         if (!currentTenant) return [];
         return DB.posts
-            .filter(p => p.tenantId === currentTenant.id && p.status === 'PUBLISHED')
+            .filter(p => p.tenantId === currentTenant.id && p.status === 'published')
             .slice(0, 5);
     }, [currentTenant]);
 

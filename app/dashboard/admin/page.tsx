@@ -376,7 +376,7 @@ export default function TenantAdminPage() {
             </div>
 
             {/* Admin Guide */}
-            <AdminGuide {...adminGeneralGuide} />
+            <AdminGuide {...adminGeneralGuide as any} />
 
             {/* Login Preview Modal */}
             {showPreview && createPortal(

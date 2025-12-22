@@ -6,6 +6,8 @@ export interface StorageStats {
   availableSize: number;
   fileCount: number;
   byType: Record<string, number>;
+  limit?: number;
+  usedPercentage?: number;
 }
 
 export interface StorageFile {

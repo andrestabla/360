@@ -70,7 +70,9 @@ export default function ConversationList() {
         if (!currentTenantId || !currentUser) return;
         setShowNewChat(false);
         try {
-            const chatId = await ChatService.createDM(currentUser.id, targetUserId, currentTenantId);
+            const result = await ChatService.createDM(currentUser.id, targetUserId, currentTenantId);
+            const chatId = result.data?.id;
+            if (!chatId) throw new Error('Failed to create chat');
 
             // Refresh list to show new chat, then select it
             await loadConversations();
@@ -88,7 +90,9 @@ export default function ConversationList() {
         if (!currentTenantId || !currentUser) return;
         setShowNewGroup(false);
         try {
-            const chatId = await ChatService.createGroup(currentUser.id, currentTenantId, title, memberIds);
+            const result = await ChatService.createGroup(currentUser.id, currentTenantId, title, memberIds);
+            const chatId = result.data?.id;
+            if (!chatId) throw new Error('Failed to create group');
 
             // Refresh list
             await loadConversations();

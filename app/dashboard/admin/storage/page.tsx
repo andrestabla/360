@@ -30,7 +30,7 @@ export default function TenantStorageConfigPage() {
     const [config, setConfig] = useState<any>(tenant?.storageConfig?.config || {});
     const [showSecrets, setShowSecrets] = useState(false);
     const [testing, setTesting] = useState(false);
-    const [testResult, setTestResult] = useState<{ status: 'SUCCESS' | 'FAILED', message: string } | null>(null);
+    const [testResult, setTestResult] = useState<{ status: 'success' | 'failed', message: string } | null>(null);
     const [saved, setSaved] = useState(false);
 
     const providers = [
@@ -53,9 +53,9 @@ export default function TenantStorageConfigPage() {
         const isValid = validateConfig();
 
         if (isValid) {
-            setTestResult({ status: 'SUCCESS', message: 'Conexión exitosa. El proveedor está configurado correctamente.' });
+            setTestResult({ status: 'success', message: 'Conexión exitosa. El proveedor está configurado correctamente.' });
         } else {
-            setTestResult({ status: 'FAILED', message: 'Error de conexión. Verifica las credenciales.' });
+            setTestResult({ status: 'failed', message: 'Error de conexión. Verifica las credenciales.' });
         }
 
         setTesting(false);
@@ -87,7 +87,7 @@ export default function TenantStorageConfigPage() {
             provider: selectedProvider,
             enabled: true,
             config: config,
-            lastTested: testResult?.status === 'SUCCESS' ? new Date().toISOString() : undefined,
+            lastTested: testResult?.status === 'success' ? new Date().toISOString() : undefined,
             testStatus: testResult?.status,
             testMessage: testResult?.message
         };
@@ -416,20 +416,20 @@ export default function TenantStorageConfigPage() {
                 </button>
 
                 {testResult && (
-                    <div className={`mt-4 p-4 rounded-lg flex items-start gap-3 ${testResult.status === 'SUCCESS'
+                    <div className={`mt-4 p-4 rounded-lg flex items-start gap-3 ${testResult.status === 'success'
                         ? 'bg-green-50 border border-green-200'
                         : 'bg-red-50 border border-red-200'
                         }`}>
-                        {testResult.status === 'SUCCESS' ? (
+                        {testResult.status === 'success' ? (
                             <CheckCircle size={24} className="text-green-600 flex-shrink-0" weight="fill" />
                         ) : (
                             <XCircle size={24} className="text-red-600 flex-shrink-0" weight="fill" />
                         )}
                         <div>
-                            <p className={`font-bold ${testResult.status === 'SUCCESS' ? 'text-green-800' : 'text-red-800'}`}>
-                                {testResult.status === 'SUCCESS' ? 'Conexión Exitosa' : 'Error de Conexión'}
+                            <p className={`font-bold ${testResult.status === 'success' ? 'text-green-800' : 'text-red-800'}`}>
+                                {testResult.status === 'success' ? 'Conexión Exitosa' : 'Error de Conexión'}
                             </p>
-                            <p className={`text-sm ${testResult.status === 'SUCCESS' ? 'text-green-700' : 'text-red-700'}`}>
+                            <p className={`text-sm ${testResult.status === 'success' ? 'text-green-700' : 'text-red-700'}`}>
                                 {testResult.message}
                             </p>
                         </div>
@@ -441,7 +441,7 @@ export default function TenantStorageConfigPage() {
             <div className="flex justify-end gap-4">
                 <button
                     onClick={handleSave}
-                    disabled={!validateConfig() || testResult?.status !== 'SUCCESS'}
+                    disabled={!validateConfig() || testResult?.status !== 'success'}
                     className="px-8 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                 >
                     <FloppyDisk size={20} weight="bold" />
@@ -468,7 +468,7 @@ export default function TenantStorageConfigPage() {
             )}
 
             {/* Admin Guide */}
-            <AdminGuide {...storageGuide} />
+            <AdminGuide {...storageGuide as any} />
         </div>
     );
 }

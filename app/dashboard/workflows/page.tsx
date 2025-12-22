@@ -208,7 +208,7 @@ export default function WorkflowsPage() {
 
         if (type === 'GLOBAL') {
             // Avoid duplicates
-            if (updatedProject.participants.some(p => p.userId === user.id)) {
+            if (updatedProject.participants.some(p => typeof p === 'object' && p.userId === user.id)) {
                 alert('El usuario ya es parte del equipo global.');
                 return;
             }
@@ -218,7 +218,7 @@ export default function WorkflowsPage() {
                 if (p.id === phaseId) {
                     const newActivities = p.activities.map(a => {
                         if (a.id === activityId) {
-                            if (a.participants.some(p => p.userId === user.id)) return a;
+                            if (a.participants.some(p => typeof p === 'object' && p.userId === user.id)) return a;
                             return { ...a, participants: [...a.participants, newMember] };
                         }
                         return a;
@@ -1201,14 +1201,14 @@ function ProjectsView({ projects, folders, onSelect, selectedId, forceUpdate, cu
                                                 const folderName = pFolder ? pFolder.name : 'Root';
 
                                                 if (!p.phases || p.phases.length === 0) {
-                                                    rows.push([folderName, p.title, '', '', '', '', p.startDate, p.endDate, '']);
+                                                    rows.push([folderName, p.title, '', '', '', '', p.startDate || '', p.endDate || '', '']);
                                                 } else {
                                                     p.phases.forEach(ph => {
                                                         if (!ph.activities || ph.activities.length === 0) {
                                                             rows.push([folderName, p.title, ph.name, ph.status, '', '', ph.startDate || '', ph.endDate || '', '']);
                                                         } else {
                                                             ph.activities.forEach(act => {
-                                                                const participants = act.participants ? act.participants.map(pt => pt.userId).join('; ') : '';
+                                                                const participants = act.participants ? act.participants.map(pt => typeof pt === 'object' ? pt.userId : pt).join('; ') : '';
                                                                 rows.push([
                                                                     folderName,
                                                                     p.title,
@@ -1357,7 +1357,7 @@ function ProjectsView({ projects, folders, onSelect, selectedId, forceUpdate, cu
 
                                         // If no phases, add project row
                                         if (!p.phases || p.phases.length === 0) {
-                                            rows.push([p.title, '', '', '', '', p.startDate, p.endDate, '']);
+                                            rows.push([p.title, '', '', '', '', p.startDate || '', p.endDate || '', '']);
                                         } else {
                                             p.phases.forEach(ph => {
                                                 // If phase has no activities, just add phase row
@@ -1365,7 +1365,7 @@ function ProjectsView({ projects, folders, onSelect, selectedId, forceUpdate, cu
                                                     rows.push([p.title, ph.name, ph.status, '', '', ph.startDate || '', ph.endDate || '', '']);
                                                 } else {
                                                     ph.activities.forEach(act => {
-                                                        const participants = act.participants ? act.participants.map(pt => pt.userId).join('; ') : '';
+                                                        const participants = act.participants ? act.participants.map(pt => typeof pt === 'object' ? pt.userId : pt).join('; ') : '';
                                                         rows.push([
                                                             p.title,
                                                             ph.name,
@@ -1461,7 +1461,7 @@ function ProjectsView({ projects, folders, onSelect, selectedId, forceUpdate, cu
                         <div className="flex items-center gap-4 text-xs text-slate-400 border-t border-slate-100 pt-3">
                             <div className="flex items-center gap-1">
                                 <Calendar size={14} />
-                                <span>{new Date(p.startDate).toLocaleDateString()}</span>
+                                <span>{p.startDate ? new Date(p.startDate).toLocaleDateString() : '-'}</span>
                             </div>
                             <div className="flex items-center gap-1">
                                 <User size={14} />
@@ -2052,17 +2052,20 @@ function ProjectDrawer({ project, folders, onClose, onSave, currentUser, active,
                         )}
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        {editedProject.participants.map((p, i) => (
+                        {editedProject.participants.map((p, i) => {
+                            const userId = typeof p === 'object' ? p.userId : p;
+                            const role = typeof p === 'object' ? p.role || 'Member' : 'Member';
+                            return (
                             <div key={i} className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm">
                                 <span className="w-6 h-6 bg-gradient-to-br from-purple-100 to-indigo-100 text-purple-700 rounded-full flex items-center justify-center text-[10px] font-bold border border-white shadow-sm">
-                                    {p.role.charAt(0)}
+                                    {role.charAt(0)}
                                 </span>
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-slate-700 leading-tight">User {p.userId.split('-').pop()}</span>
-                                    <span className="text-[9px] text-slate-400 leading-tight">{p.role}</span>
+                                    <span className="text-[10px] font-bold text-slate-700 leading-tight">User {userId.split('-').pop()}</span>
+                                    <span className="text-[9px] text-slate-400 leading-tight">{role}</span>
                                 </div>
                             </div>
-                        ))}
+                        )})}
                     </div>
                 </section>
 
@@ -2645,7 +2648,7 @@ function DocumentEditorModal({ project, target, onClose, onUpdate }: { project: 
     // Update viewing content when doc changes (e.g. after upload)
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
-        setViewingContent(doc.content);
+        setViewingContent(doc.content || '');
         setViewingVersion(null);
     }, [doc.content]);
 
@@ -2722,6 +2725,9 @@ function DocumentEditorModal({ project, target, onClose, onUpdate }: { project: 
             id: `c-${Date.now()}`,
             userId: currentUser?.id || 'anonymous',
             userName: currentUser?.name || 'Usuario',
+            authorId: currentUser?.id || 'anonymous',
+            authorName: currentUser?.name || 'Usuario',
+            createdAt: new Date().toISOString(),
             content: comment,
             reference: commentRef || (pendingPos ? `Pág ${pendingPos.page}` : 'General'),
             position: pendingPos || undefined,
@@ -2878,12 +2884,12 @@ function DocumentEditorModal({ project, target, onClose, onUpdate }: { project: 
                             if (isDataUrl) {
                                 // For Data URLs, trigger download
                                 const link = document.createElement('a');
-                                link.href = doc.content;
+                                link.href = doc.content || '';
                                 link.download = doc.name;
                                 link.click();
                             } else {
                                 // For regular URLs, open in new tab
-                                window.open(doc.content, '_blank');
+                                window.open(doc.content || '', '_blank');
                             }
                         }}
                         className="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-bold hover:bg-black transition-colors"
@@ -2902,7 +2908,7 @@ function DocumentEditorModal({ project, target, onClose, onUpdate }: { project: 
                     {viewingVersion !== null && (
                         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[50] bg-yellow-100 text-yellow-800 px-4 py-1.5 rounded-full text-xs font-bold border border-yellow-200 shadow-sm flex items-center gap-2">
                             <Clock /> Viendo versión histórica {viewingVersion}
-                            <button onClick={() => { setViewingContent(doc.content); setViewingVersion(null); }} className="ml-2 hover:underline">Volver a actual</button>
+                            <button onClick={() => { setViewingContent(doc.content || ''); setViewingVersion(null); }} className="ml-2 hover:underline">Volver a actual</button>
                         </div>
                     )}
 

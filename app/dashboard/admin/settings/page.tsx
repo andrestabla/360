@@ -29,7 +29,7 @@ export default function TenantSettingsPage() {
 
     // Integrations State
     const [integrations, setIntegrations] = useState<TenantIntegration[]>([]);
-    const [newIntegration, setNewIntegration] = useState<Partial<TenantIntegration>>({ type: 'REST', active: true });
+    const [newIntegration, setNewIntegration] = useState<any>({ type: 'REST', enabled: true });
     const [showIntModal, setShowIntModal] = useState(false);
 
     // Load initial data
@@ -96,6 +96,7 @@ export default function TenantSettingsPage() {
             id: `int-${Date.now()}`,
             name: newIntegration.name!,
             type: newIntegration.type as any || 'REST',
+            enabled: true,
             baseUrl: newIntegration.baseUrl!,
             apiKey: newIntegration.apiKey,
             description: newIntegration.description,
@@ -105,7 +106,7 @@ export default function TenantSettingsPage() {
         updateTenant(currentTenant.id, { integrations: updated });
         setIntegrations(updated); // Optimistic update
         setShowIntModal(false);
-        setNewIntegration({ type: 'REST', active: true });
+        setNewIntegration({ type: 'REST', enabled: true, active: true });
     };
 
     const handleDeleteIntegration = (id: string) => {
@@ -442,7 +443,7 @@ export default function TenantSettingsPage() {
             )}
 
             {/* Admin Guide */}
-            <AdminGuide {...technicalSettingsGuide} />
+            <AdminGuide {...technicalSettingsGuide as any} />
         </div>
     );
 }

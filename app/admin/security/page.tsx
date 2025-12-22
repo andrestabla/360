@@ -14,7 +14,7 @@ export default function SecurityPage() {
             email: data.email!,
             name: data.name || 'Admin',
             role: data.role as any || 'READONLY',
-            mfa_enabled: false,
+            mfaEnabled: false,
             status: 'ACTIVE'
         };
         // Update DB directly for prototype
@@ -27,7 +27,7 @@ export default function SecurityPage() {
         const idx = DB.platformAdmins.findIndex(a => a.id === id);
         if (idx >= 0) {
             const current = DB.platformAdmins[idx];
-            current.status = current.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+            current.status = current.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
             setAdmins([...DB.platformAdmins]);
         }
     };
@@ -92,9 +92,9 @@ export default function SecurityPage() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${admin.mfa_enabled ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
-                                        <span className={`text-sm ${admin.mfa_enabled ? 'text-emerald-700 font-medium' : 'text-slate-400'}`}>
-                                            {admin.mfa_enabled ? 'Enabled' : 'Disabled'}
+                                        <div className={`w-2 h-2 rounded-full ${admin.mfaEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
+                                        <span className={`text-sm ${admin.mfaEnabled ? 'text-emerald-700 font-medium' : 'text-slate-400'}`}>
+                                            {admin.mfaEnabled ? 'Enabled' : 'Disabled'}
                                         </span>
                                     </div>
                                 </td>

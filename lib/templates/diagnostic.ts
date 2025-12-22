@@ -3,6 +3,7 @@ export interface DiagnosticDimension {
   name: string;
   description: string;
   weight: number;
+  weightAIQ?: number;
 }
 
 export interface DiagnosticQuestion {
@@ -19,31 +20,36 @@ export const DIAGNOSTIC_DIMENSIONS: DiagnosticDimension[] = [
     id: 'dim-procesos',
     name: 'Procesos',
     description: 'Evaluacion de la madurez en gestion de procesos organizacionales',
-    weight: 0.25
+    weight: 0.25,
+    weightAIQ: 0.20
   },
   {
     id: 'dim-personas',
     name: 'Personas',
     description: 'Evaluacion de la madurez en gestion del talento humano',
-    weight: 0.20
+    weight: 0.20,
+    weightAIQ: 0.15
   },
   {
     id: 'dim-tecnologia',
     name: 'Tecnologia',
     description: 'Evaluacion de la madurez en adopcion y uso de tecnologia',
-    weight: 0.20
+    weight: 0.20,
+    weightAIQ: 0.25
   },
   {
     id: 'dim-estrategia',
     name: 'Estrategia',
     description: 'Evaluacion de la madurez en planificacion estrategica',
-    weight: 0.20
+    weight: 0.20,
+    weightAIQ: 0.25
   },
   {
     id: 'dim-cultura',
     name: 'Cultura',
     description: 'Evaluacion de la madurez en cultura organizacional',
-    weight: 0.15
+    weight: 0.15,
+    weightAIQ: 0.15
   }
 ];
 

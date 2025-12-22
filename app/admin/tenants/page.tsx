@@ -349,7 +349,7 @@ function TenantModal({ initialData, onClose, onSave }: { initialData?: Tenant | 
                                     value={data.sector}
                                     onChange={e => setData({ ...data, sector: e.target.value })}
                                 >
-                                    {SECTOR_BENCHMARKS.map((s, i) => (
+                                    {Object.values(SECTOR_BENCHMARKS).map((s, i) => (
                                         <option key={i} value={s.sector}>{s.sector}</option>
                                     ))}
                                 </select>

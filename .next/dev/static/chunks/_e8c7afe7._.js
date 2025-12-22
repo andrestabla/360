@@ -37,7 +37,10 @@ const defaultPlatformSettings = {
     authPolicy: {
         allowRegistration: true,
         requireEmailVerification: true,
-        sessionTimeout: 3600
+        sessionTimeout: 3600,
+        enforceSSO: false,
+        passwordMinLength: 8,
+        mfaPolicy: 'optional'
     }
 };
 const sampleTenants = [
@@ -547,6 +550,7 @@ const DB = {
     ],
     platformSettings: defaultPlatformSettings,
     conversations: sampleConversations,
+    conversationMembers: [],
     messages: sampleMessages,
     workNotes: [],
     surveyResponses: [],
@@ -554,6 +558,7 @@ const DB = {
     publicComments: [],
     emailOutbox: [],
     storageConfigs: {},
+    contextChats: {},
     save: function() {
         if ("TURBOPACK compile-time truthy", 1) {
             try {
