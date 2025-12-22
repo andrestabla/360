@@ -66,11 +66,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error during login:', error?.message || error);
-    console.error('Full error:', JSON.stringify(error, null, 2));
     return NextResponse.json({ 
       success: false, 
-      error: 'Error en el servidor',
-      details: process.env.NODE_ENV === 'development' ? error?.message : undefined
+      error: 'Error en el servidor'
     }, { status: 500 });
   }
 }

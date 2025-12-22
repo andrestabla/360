@@ -607,7 +607,7 @@ async function createUser(input) {
         console.error('Error creating user:', error);
         return {
             success: false,
-            error: error.message
+            error: 'Error al crear usuario'
         };
     }
 }
@@ -663,7 +663,7 @@ async function authenticateUser(email, password, tenantId) {
         if (query.length === 0) {
             return {
                 success: false,
-                error: 'Usuario no encontrado'
+                error: 'Credenciales inválidas'
             };
         }
         const user = query[0];
@@ -676,14 +676,14 @@ async function authenticateUser(email, password, tenantId) {
         if (!user.password) {
             return {
                 success: false,
-                error: 'Usuario sin contraseña configurada'
+                error: 'Credenciales inválidas'
             };
         }
         const isValid = await verifyPassword(password, user.password);
         if (!isValid) {
             return {
                 success: false,
-                error: 'Contraseña incorrecta'
+                error: 'Credenciales inválidas'
             };
         }
         return {
@@ -705,7 +705,7 @@ async function authenticateUser(email, password, tenantId) {
         console.error('Error authenticating user:', error);
         return {
             success: false,
-            error: error.message
+            error: 'Error de autenticación'
         };
     }
 }
@@ -724,7 +724,7 @@ async function updateUserPassword(userId, newPassword) {
         console.error('Error updating password:', error);
         return {
             success: false,
-            error: error.message
+            error: 'Error al actualizar contraseña'
         };
     }
 }
@@ -741,7 +741,7 @@ async function updateUser(userId, updates) {
         console.error('Error updating user:', error);
         return {
             success: false,
-            error: error.message
+            error: 'Error al actualizar usuario'
         };
     }
 }
@@ -755,7 +755,7 @@ async function deleteUser(userId) {
         console.error('Error deleting user:', error);
         return {
             success: false,
-            error: error.message
+            error: 'Error al eliminar usuario'
         };
     }
 }
@@ -847,11 +847,9 @@ async function POST(request) {
         });
     } catch (error) {
         console.error('Error during login:', error?.message || error);
-        console.error('Full error:', JSON.stringify(error, null, 2));
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             success: false,
-            error: 'Error en el servidor',
-            details: ("TURBOPACK compile-time truthy", 1) ? error?.message : "TURBOPACK unreachable"
+            error: 'Error en el servidor'
         }, {
             status: 500
         });

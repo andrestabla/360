@@ -102,7 +102,7 @@ export async function createUser(input: CreateUserInput): Promise<{ success: boo
     };
   } catch (error: any) {
     console.error('Error creating user:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: 'Error al crear usuario' };
   }
 }
 
@@ -161,7 +161,7 @@ export async function authenticateUser(email: string, password: string, tenantId
     }
 
     if (query.length === 0) {
-      return { success: false, error: 'Usuario no encontrado' };
+      return { success: false, error: 'Credenciales inválidas' };
     }
 
     const user = query[0];
@@ -171,12 +171,12 @@ export async function authenticateUser(email: string, password: string, tenantId
     }
 
     if (!user.password) {
-      return { success: false, error: 'Usuario sin contraseña configurada' };
+      return { success: false, error: 'Credenciales inválidas' };
     }
 
     const isValid = await verifyPassword(password, user.password);
     if (!isValid) {
-      return { success: false, error: 'Contraseña incorrecta' };
+      return { success: false, error: 'Credenciales inválidas' };
     }
 
     return {
@@ -196,7 +196,7 @@ export async function authenticateUser(email: string, password: string, tenantId
     };
   } catch (error: any) {
     console.error('Error authenticating user:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: 'Error de autenticación' };
   }
 }
 
@@ -211,7 +211,7 @@ export async function updateUserPassword(userId: string, newPassword: string): P
     return { success: true };
   } catch (error: any) {
     console.error('Error updating password:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: 'Error al actualizar contraseña' };
   }
 }
 
@@ -232,7 +232,7 @@ export async function updateUser(userId: string, updates: Partial<{
     return { success: true };
   } catch (error: any) {
     console.error('Error updating user:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: 'Error al actualizar usuario' };
   }
 }
 
@@ -242,6 +242,6 @@ export async function deleteUser(userId: string): Promise<{ success: boolean; er
     return { success: true };
   } catch (error: any) {
     console.error('Error deleting user:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: 'Error al eliminar usuario' };
   }
 }
