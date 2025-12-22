@@ -206,9 +206,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     }, [currentTenant]);
 
-    const login = (role: string, tenantId?: string, email?: string) => {
+    const login = (role: string, tenantId?: string, email?: string, token?: string) => {
         if (role === 'superadmin') {
             setIsSuperAdmin(true);
+            if (token) {
+                setSessionToken(token);
+            }
             const adminUser: User = {
                 name: 'Super Admin',
                 role: 'Platform Owner',

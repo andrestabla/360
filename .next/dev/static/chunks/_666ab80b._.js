@@ -892,9 +892,12 @@ function AppProvider({ children }) {
     }["AppProvider.useEffect"], [
         currentTenant
     ]);
-    const login = (role, tenantId, email)=>{
+    const login = (role, tenantId, email, token)=>{
         if (role === 'superadmin') {
             setIsSuperAdmin(true);
+            if (token) {
+                setSessionToken(token);
+            }
             const adminUser = {
                 name: 'Super Admin',
                 role: 'Platform Owner',
@@ -1681,7 +1684,7 @@ function AppProvider({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/context/AppContext.tsx",
-        lineNumber: 963,
+        lineNumber: 966,
         columnNumber: 9
     }, this);
 }
