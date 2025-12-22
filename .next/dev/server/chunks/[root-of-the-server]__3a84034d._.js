@@ -496,41 +496,18 @@ const db = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$d
 });
 __turbopack_async_result__();
 } catch(e) { __turbopack_async_result__(e); } }, false);}),
-"[externals]/crypto [external] (crypto, cjs)", ((__turbopack_context__, module, exports) => {
-
-const mod = __turbopack_context__.x("crypto", () => require("crypto"));
-
-module.exports = mod;
-}),
-"[project]/lib/services/userService.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"[project]/app/api/health/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
 return __turbopack_context__.a(async (__turbopack_handle_async_dependencies__, __turbopack_async_result__) => { try {
 
 __turbopack_context__.s([
-    "authenticateUser",
-    ()=>authenticateUser,
-    "createUser",
-    ()=>createUser,
-    "deleteUser",
-    ()=>deleteUser,
-    "getUserById",
-    ()=>getUserById,
-    "getUsersByTenant",
-    ()=>getUsersByTenant,
-    "hashPassword",
-    ()=>hashPassword,
-    "updateUser",
-    ()=>updateUser,
-    "updateUserPassword",
-    ()=>updateUserPassword,
-    "verifyPassword",
-    ()=>verifyPassword
+    "GET",
+    ()=>GET
 ]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/server.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/server/db.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/shared/schema.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/drizzle-orm/sql/expressions/conditions.js [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$bcryptjs$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/bcryptjs/index.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$sql$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/drizzle-orm/sql/sql.js [app-route] (ecmascript)");
 var __turbopack_async_dependencies__ = __turbopack_handle_async_dependencies__([
     __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__
 ]);
@@ -538,334 +515,28 @@ var __turbopack_async_dependencies__ = __turbopack_handle_async_dependencies__([
 ;
 ;
 ;
-;
-const SALT_ROUNDS = 12;
-function generateId() {
-    return `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
-function generateTempPassword() {
-    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
-    let password = '';
-    for(let i = 0; i < 12; i++){
-        password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
-}
-async function hashPassword(password) {
-    return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$bcryptjs$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].hash(password, SALT_ROUNDS);
-}
-async function verifyPassword(password, hash) {
-    return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$bcryptjs$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].compare(password, hash);
-}
-async function createUser(input) {
+async function GET() {
     try {
-        const existingUser = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].select().from(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"].email, input.email));
-        if (existingUser.length > 0) {
-            return {
-                success: false,
-                error: 'Ya existe un usuario con este correo electrónico'
-            };
-        }
-        const tempPassword = input.password || generateTempPassword();
-        const hashedPassword = await hashPassword(tempPassword);
-        const userId = generateId();
-        const initials = input.name.split(' ').map((n)=>n[0]).join('').substring(0, 2).toUpperCase();
-        await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].insert(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"]).values({
-            id: userId,
-            name: input.name,
-            email: input.email,
-            password: hashedPassword,
-            role: input.role,
-            tenantId: input.tenantId,
-            unit: input.unit || null,
-            jobTitle: input.jobTitle || null,
-            phone: input.phone || null,
-            initials,
-            status: input.status || 'PENDING_INVITE',
-            mustChangePassword: !input.password,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        });
-        const [newUser] = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].select().from(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"].id, userId));
-        return {
-            success: true,
-            user: {
-                id: newUser.id,
-                name: newUser.name,
-                email: newUser.email,
-                role: newUser.role,
-                tenantId: newUser.tenantId,
-                unit: newUser.unit,
-                jobTitle: newUser.jobTitle,
-                phone: newUser.phone,
-                status: newUser.status,
-                createdAt: newUser.createdAt
+        const platformAdminsResult = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].execute(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$sql$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sql"]`SELECT COUNT(*) as count FROM platform_admins`);
+        const tenantsResult = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].execute(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$sql$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sql"]`SELECT COUNT(*) as count FROM tenants`);
+        const usersResult = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].execute(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$sql$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sql"]`SELECT COUNT(*) as count FROM users`);
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            status: 'ok',
+            database: 'connected',
+            counts: {
+                platformAdmins: platformAdminsResult.rows[0]?.count || 0,
+                tenants: tenantsResult.rows[0]?.count || 0,
+                users: usersResult.rows[0]?.count || 0
             },
-            tempPassword: !input.password ? tempPassword : undefined
-        };
-    } catch (error) {
-        console.error('Error creating user:', error);
-        return {
-            success: false,
-            error: 'Error al crear usuario'
-        };
-    }
-}
-async function getUsersByTenant(tenantId) {
-    try {
-        const result = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].select().from(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"].tenantId, tenantId));
-        return result.map((u)=>({
-                id: u.id,
-                name: u.name,
-                email: u.email,
-                role: u.role,
-                tenantId: u.tenantId,
-                unit: u.unit,
-                jobTitle: u.jobTitle,
-                phone: u.phone,
-                status: u.status,
-                createdAt: u.createdAt
-            }));
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        return [];
-    }
-}
-async function getUserById(userId) {
-    try {
-        const [user] = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].select().from(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"].id, userId));
-        if (!user) return null;
-        return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            tenantId: user.tenantId,
-            unit: user.unit,
-            jobTitle: user.jobTitle,
-            phone: user.phone,
-            status: user.status,
-            createdAt: user.createdAt
-        };
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        return null;
-    }
-}
-async function authenticateUser(email, password, tenantId) {
-    try {
-        let query;
-        if (tenantId) {
-            query = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].select().from(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["and"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"].email, email), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"].tenantId, tenantId)));
-        } else {
-            query = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].select().from(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"].email, email));
-        }
-        if (query.length === 0) {
-            return {
-                success: false,
-                error: 'Credenciales inválidas'
-            };
-        }
-        const user = query[0];
-        if (user.status === 'SUSPENDED') {
-            return {
-                success: false,
-                error: 'Tu cuenta ha sido suspendida'
-            };
-        }
-        if (!user.password) {
-            return {
-                success: false,
-                error: 'Credenciales inválidas'
-            };
-        }
-        const isValid = await verifyPassword(password, user.password);
-        if (!isValid) {
-            return {
-                success: false,
-                error: 'Credenciales inválidas'
-            };
-        }
-        return {
-            success: true,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                tenantId: user.tenantId,
-                unit: user.unit,
-                jobTitle: user.jobTitle,
-                phone: user.phone,
-                status: user.status,
-                createdAt: user.createdAt
-            }
-        };
-    } catch (error) {
-        console.error('Error authenticating user:', error);
-        return {
-            success: false,
-            error: 'Error de autenticación'
-        };
-    }
-}
-async function updateUserPassword(userId, newPassword) {
-    try {
-        const hashedPassword = await hashPassword(newPassword);
-        await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].update(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"]).set({
-            password: hashedPassword,
-            mustChangePassword: false,
-            updatedAt: new Date()
-        }).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"].id, userId));
-        return {
-            success: true
-        };
-    } catch (error) {
-        console.error('Error updating password:', error);
-        return {
-            success: false,
-            error: 'Error al actualizar contraseña'
-        };
-    }
-}
-async function updateUser(userId, updates) {
-    try {
-        await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].update(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"]).set({
-            ...updates,
-            updatedAt: new Date()
-        }).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"].id, userId));
-        return {
-            success: true
-        };
-    } catch (error) {
-        console.error('Error updating user:', error);
-        return {
-            success: false,
-            error: 'Error al actualizar usuario'
-        };
-    }
-}
-async function deleteUser(userId) {
-    try {
-        await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].delete(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["users"].id, userId));
-        return {
-            success: true
-        };
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        return {
-            success: false,
-            error: 'Error al eliminar usuario'
-        };
-    }
-}
-__turbopack_async_result__();
-} catch(e) { __turbopack_async_result__(e); } }, false);}),
-"[project]/app/api/auth/login/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
-
-return __turbopack_context__.a(async (__turbopack_handle_async_dependencies__, __turbopack_async_result__) => { try {
-
-__turbopack_context__.s([
-    "POST",
-    ()=>POST
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/server.js [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$services$2f$userService$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/services/userService.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/server/db.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/shared/schema.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/drizzle-orm/sql/expressions/conditions.js [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$sql$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/drizzle-orm/sql/sql.js [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$bcryptjs$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/bcryptjs/index.js [app-route] (ecmascript)");
-var __turbopack_async_dependencies__ = __turbopack_handle_async_dependencies__([
-    __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$services$2f$userService$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__,
-    __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__
-]);
-[__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$services$2f$userService$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__, __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__] = __turbopack_async_dependencies__.then ? (await __turbopack_async_dependencies__)() : __turbopack_async_dependencies__;
-;
-;
-;
-;
-;
-;
-async function POST(request) {
-    try {
-        const body = await request.json();
-        const { email, password, tenantId, isSuperAdmin } = body;
-        if (!email || !password) {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                success: false,
-                error: 'Email y contraseña son requeridos'
-            }, {
-                status: 400
-            });
-        }
-        if (isSuperAdmin) {
-            try {
-                const result = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].execute(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$sql$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sql"]`SELECT COUNT(*) as count FROM platform_admins`);
-                console.log('Platform admins count:', result);
-            } catch (countErr) {
-                console.error('Error checking platform_admins table:', countErr);
-            }
-            const [admin] = await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].select().from(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["platformAdmins"]).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["platformAdmins"].email, email.toLowerCase().trim()));
-            if (!admin) {
-                return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                    success: false,
-                    error: 'Credenciales inválidas'
-                }, {
-                    status: 401
-                });
-            }
-            const isValid = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$bcryptjs$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].compare(password, admin.password);
-            if (!isValid) {
-                return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                    success: false,
-                    error: 'Credenciales inválidas'
-                }, {
-                    status: 401
-                });
-            }
-            await __TURBOPACK__imported__module__$5b$project$5d2f$server$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["db"].update(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["platformAdmins"]).set({
-                lastLogin: new Date()
-            }).where((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$drizzle$2d$orm$2f$sql$2f$expressions$2f$conditions$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["eq"])(__TURBOPACK__imported__module__$5b$project$5d2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["platformAdmins"].id, admin.id));
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                success: true,
-                user: {
-                    id: admin.id,
-                    name: admin.name,
-                    email: admin.email,
-                    role: admin.role,
-                    isSuperAdmin: true
-                }
-            });
-        }
-        const result = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$services$2f$userService$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["authenticateUser"])(email.toLowerCase().trim(), password, tenantId);
-        if (!result.success) {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                success: false,
-                error: result.error
-            }, {
-                status: 401
-            });
-        }
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-            success: true,
-            user: result.user
+            env: ("TURBOPACK compile-time value", "development")
         });
     } catch (error) {
-        console.error('Login error:', error?.message || error);
-        console.error('Stack:', error?.stack);
-        if (error?.message?.includes('does not exist')) {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                success: false,
-                error: 'Base de datos no inicializada. Contacte al administrador.'
-            }, {
-                status: 500
-            });
-        }
+        console.error('Health check error:', error);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-            success: false,
-            error: 'Error en el servidor'
+            status: 'error',
+            database: 'disconnected',
+            error: error?.message?.includes('does not exist') ? 'Tables not found - database not initialized' : 'Database connection error',
+            env: ("TURBOPACK compile-time value", "development")
         }, {
             status: 500
         });
@@ -875,4 +546,4 @@ __turbopack_async_result__();
 } catch(e) { __turbopack_async_result__(e); } }, false);}),
 ];
 
-//# sourceMappingURL=%5Broot-of-the-server%5D__3f6e4b60._.js.map
+//# sourceMappingURL=%5Broot-of-the-server%5D__3a84034d._.js.map

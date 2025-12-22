@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authenticateUser } from '@/lib/services/userService';
 import { db } from '@/server/db';
 import { platformAdmins } from '@/shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
@@ -18,7 +18,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (isSuperAdmin) {
-      const [admin] = await db.select().from(platformAdmins).where(eq(platformAdmins.email, email));
+      try {
+        const result = await db.execute(sql`SELECT COUNT(*) as count FROM platform_admins`);
+        console.log('Platform admins count:', result);
+      } catch (countErr) {
+        console.error('Error checking platform_admins table:', countErr);
+      }
+
+      const [admin] = await db.select().from(platformAdmins).where(eq(platformAdmins.email, email.toLowerCase().trim()));
       
       if (!admin) {
         return NextResponse.json({ 
@@ -51,7 +58,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const result = await authenticateUser(email, password, tenantId);
+    const result = await authenticateUser(email.toLowerCase().trim(), password, tenantId);
 
     if (!result.success) {
       return NextResponse.json({ 
@@ -65,7 +72,16 @@ export async function POST(request: NextRequest) {
       user: result.user,
     });
   } catch (error: any) {
-    console.error('Error during login:', error?.message || error);
+    console.error('Login error:', error?.message || error);
+    console.error('Stack:', error?.stack);
+    
+    if (error?.message?.includes('does not exist')) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Base de datos no inicializada. Contacte al administrador.'
+      }, { status: 500 });
+    }
+    
     return NextResponse.json({ 
       success: false, 
       error: 'Error en el servidor'
