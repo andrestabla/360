@@ -173,3 +173,41 @@ All data tables include a `tenant_id` foreign key referencing the `tenants` tabl
 - workflows, surveys, tenant_email_configs, audit_logs
 - Services filter all queries by tenant_id to ensure data separation
 - Each tenant's data is completely isolated from other tenants
+
+## Persistence Architecture
+
+### Environment Isolation
+- **Development**: Uses Replit's development PostgreSQL database
+- **Production**: Uses separate production database (configure DATABASE_URL in Deploy settings)
+- **Security**: `lib/env.ts` validates environment configuration and prevents dev-to-prod connections
+
+### Database Migrations
+Managed via Drizzle Kit with versioned schema changes:
+```bash
+npm run db:migrate    # Generate and apply migrations
+npm run db:push       # Apply schema changes directly
+npm run db:studio     # Visual database editor
+```
+
+### Seeders (Development Data)
+- `npm run db:seed:dev` - Full development data reset (tenants, users, documents, workflows)
+- `npm run db:seed:prod` - Production-safe minimal seed (Super Admin only)
+- **Never** copy production data to development
+- **Never** run dev seeders in production
+
+### Required Environment Variables
+| Variable | Development | Production | Description |
+|----------|-------------|------------|-------------|
+| DATABASE_URL | Required | Required | PostgreSQL connection string |
+| EMAIL_ENCRYPTION_KEY | Optional | Required | AES-256 key for SMTP passwords |
+| STORAGE_ENCRYPTION_KEY | Optional | Required | AES-256 key for storage credentials |
+| NODE_ENV | development | production | Environment identifier |
+
+### Scripts Reference
+| Script | Purpose |
+|--------|---------|
+| `db:migrate` | Generate and apply schema migrations |
+| `db:push` | Push schema changes without migration files |
+| `db:seed:dev` | Reset and seed development data |
+| `db:seed:prod` | Minimal production seed |
+| `db:studio` | Open Drizzle Studio for data management |
