@@ -146,7 +146,7 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding }: 
                                         required
                                     />
                                     <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium bg-slate-100 px-2 py-1 rounded">
-                                        .maturity360.com
+                                        .maturity.online
                                     </div>
                                 </div>
                             </div>

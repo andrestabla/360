@@ -434,7 +434,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             id: `email-${Date.now()}`,
             to: adminEmail,
             subject: 'Bienvenido a Maturity360 - Credenciales de Acceso',
-            body: `Hola ${data.contactName || 'Admin'},\n\nTu organización ${newTenant.name} ha sido registrada exitosamente.\n\nTus credenciales de acceso son:\nURL: https://maturity360.com/login\nUsuario: ${adminEmail}\nContraseña Temporal: Temp123!`,
+            body: `Hola ${data.contactName || 'Admin'},\n\nTu organización ${newTenant.name} ha sido registrada exitosamente.\n\nTus credenciales de acceso son:\nURL: https://maturity.online/login\nUsuario: ${adminEmail}\nContraseña Temporal: Temp123!`,
             status: 'SENT',
             sentAt: timestamp
         });

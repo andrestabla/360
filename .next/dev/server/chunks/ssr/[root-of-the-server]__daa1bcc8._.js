@@ -55,7 +55,7 @@ const sampleTenants = [
         name: 'Empresa Demo',
         slug: 'demo',
         domains: [
-            'demo.maturity360.com'
+            'demo.maturity.online'
         ],
         status: 'ACTIVE',
         timezone: 'America/Bogota',
@@ -122,7 +122,7 @@ const sampleTenants = [
         name: 'Corporacion Alpha',
         slug: 'alpha',
         domains: [
-            'alpha.maturity360.com'
+            'alpha.maturity.online'
         ],
         status: 'ACTIVE',
         timezone: 'America/Bogota',
@@ -547,7 +547,7 @@ const DB = {
         {
             id: 'admin-1',
             name: 'Super Admin',
-            email: 'superadmin@maturity360.com',
+            email: 'superadmin@maturity.online',
             role: 'SUPER_ADMIN',
             status: 'ACTIVE',
             mfaEnabled: true,
@@ -1034,7 +1034,7 @@ function AppProvider({ children }) {
             id: `email-${Date.now()}`,
             to: adminEmail,
             subject: 'Bienvenido a Maturity360 - Credenciales de Acceso',
-            body: `Hola ${data.contactName || 'Admin'},\n\nTu organización ${newTenant.name} ha sido registrada exitosamente.\n\nTus credenciales de acceso son:\nURL: https://maturity360.com/login\nUsuario: ${adminEmail}\nContraseña Temporal: Temp123!`,
+            body: `Hola ${data.contactName || 'Admin'},\n\nTu organización ${newTenant.name} ha sido registrada exitosamente.\n\nTus credenciales de acceso son:\nURL: https://maturity.online/login\nUsuario: ${adminEmail}\nContraseña Temporal: Temp123!`,
             status: 'SENT',
             sentAt: timestamp
         });
