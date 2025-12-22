@@ -768,13 +768,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const adminCreatePost = (postData: Omit<Post, 'id' | 'date' | 'likes' | 'comments'>) => {
+    const adminCreatePost = (postData: Omit<Post, 'id' | 'date' | 'likes' | 'commentsCount'>) => {
         const newPost: Post = {
+            ...postData,
             id: `P-${currentTenantId}-${Date.now()}`,
             date: 'Ahora',
             likes: 0,
-            comments: 0,
-            ...postData
+            commentsCount: 0
         };
         DB.posts.unshift(newPost);
         DB.save();
@@ -831,7 +831,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             tenantId: currentTenantId,
             name: data.name || 'Nueva Carpeta',
             description: data.description,
-            parentId: data.parentId || null,
+            parentId: data.parentId || undefined,
             level: data.level || 1,
             unit: data.unit || 'General',
             process: data.process,
@@ -907,16 +907,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     const addDocComment = (docId: string, content: string) => {
-        if (!DB.publicComments[docId]) DB.publicComments[docId] = [];
-
-        DB.publicComments[docId].unshift({
+        const newComment = {
             id: `c-${Date.now()}`,
-            userId: currentUser?.id || 'anon',
-            userName: currentUser?.name || 'Anónimo',
+            docId: docId,
+            authorId: currentUser?.id || 'anon',
+            authorName: currentUser?.name || 'Anónimo',
             content: content,
-            date: 'Ahora',
-            likes: 0
-        });
+            createdAt: new Date().toISOString()
+        };
+        DB.publicComments.push(newComment);
 
         const doc = DB.docs.find(d => d.id === docId);
         if (doc) doc.commentsCount = (doc.commentsCount || 0) + 1;

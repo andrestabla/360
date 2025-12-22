@@ -1,4 +1,4 @@
-import { DB } from './lib/data';
+import { DB } from '@/lib/data';
 
 // Helper to seed a conversation with attachments to verify rendering
 export const seedAttachments = () => {
