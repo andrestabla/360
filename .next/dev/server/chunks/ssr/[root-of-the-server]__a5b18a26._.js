@@ -990,200 +990,91 @@ function AppProvider({ children }) {
             }
         }
     };
-    const createTenant = (data)=>{
-        const newId = `T${__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].tenants.length + 1}`;
-        const timestamp = new Date().toISOString();
-        const newTenant = {
-            id: newId,
-            name: data.name || 'New Tenant',
-            slug: data.slug || `tenant-${newId}`,
-            domains: data.domains || [],
-            status: 'ACTIVE',
-            timezone: data.timezone || 'America/Bogota',
-            locale: data.locale || 'es-CO',
-            branding: {
-                app_title: data.name || 'New Tenant',
-                primary_color: '#2563eb',
-                accent_color: '#1d4ed8',
-                updated_at: timestamp,
-                ...data.branding
-            },
-            policies: {
-                max_failed_logins: 3,
-                lock_minutes: 15,
-                file_max_size_bytes: 10 * 1024 * 1024,
-                allowed_mime_types: [
-                    'application/pdf'
-                ],
-                audit_retention_days: 90,
-                sso_enabled: false,
-                updated_at: timestamp,
-                ...data.policies
-            },
-            roleTemplates: {
-                1: Object.values(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["PERMISSIONS"]),
-                2: [
-                    'MANAGE_UNITS',
-                    'VIEW_ALL_DOCS',
-                    'UPLOAD_DOCS'
-                ],
-                3: [
-                    'VIEW_ALL_DOCS',
-                    'UPLOAD_DOCS'
-                ],
-                4: [
-                    'VIEW_ALL_DOCS'
-                ],
-                5: [
-                    'VIEW_ALL_DOCS'
-                ],
-                6: []
-            },
-            users: 1,
-            storage: '0 GB',
-            created_at: timestamp,
-            features: data.features || [
-                'DASHBOARD',
-                'WORKFLOWS',
-                'REPOSITORY',
-                'CHAT',
-                'ANALYTICS'
-            ],
-            sector: data.sector,
-            contactName: data.contactName,
-            contactEmail: data.contactEmail,
-            contactPhone: data.contactPhone
-        };
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].tenants.push(newTenant);
-        // Generate Initial Admin
-        const adminId = `u-adm-${newId}`;
-        const adminEmail = data.contactEmail || `admin@${newTenant.slug}.com`; // Default if not provided
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].users.push({
-            id: adminId,
-            name: data.contactName || `Admin ${newTenant.name}`,
-            email: adminEmail,
-            role: 'Admin Global',
-            level: 1,
-            tenantId: newId,
-            unit: 'Root',
-            initials: 'AD',
-            bio: 'Initial Admin',
-            phone: data.contactPhone || '',
-            location: 'Main',
-            jobTitle: 'Administrator',
-            language: newTenant.locale,
-            timezone: newTenant.timezone,
-            status: 'ACTIVE'
-        });
-        // Email Notification to Admin
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].emailOutbox.unshift({
-            id: `email-${Date.now()}`,
-            to: adminEmail,
-            subject: 'Bienvenido a Maturity360 - Credenciales de Acceso',
-            body: `Hola ${data.contactName || 'Admin'},\n\nTu organización ${newTenant.name} ha sido registrada exitosamente.\n\nTus credenciales de acceso son:\nURL: https://maturity.online/login\nUsuario: ${adminEmail}\nContraseña Temporal: Temp123!`,
-            status: 'SENT',
-            sentAt: timestamp
-        });
-        // Audit Log
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].platformAudit.unshift({
-            id: `audit-${Date.now()}`,
-            event_type: 'TENANT_CREATED',
-            actor_id: currentUser?.id || 'system',
-            actor_name: currentUser?.name || 'System',
-            target_tenant_id: newId,
-            metadata: {
-                name: newTenant.name,
-                slug: newTenant.slug,
-                adminEmail
-            },
-            ip: '127.0.0.1',
-            created_at: new Date().toISOString()
-        });
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].save();
-        console.log('Tenant Created:', newTenant);
-        return newTenant;
-    };
-    const updateTenant = (id, updates)=>{
-        const idx = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].tenants.findIndex((t)=>t.id === id);
-        if (idx >= 0) {
-            const current = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].tenants[idx];
-            // Audit Log
-            const changes = Object.keys(updates).filter((k)=>k !== 'branding' && k !== 'policies');
-            if (updates.branding) changes.push('branding');
-            if (updates.policies) changes.push('policies');
-            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].platformAudit.unshift({
-                id: `audit-${Date.now()}`,
-                event_type: updates.status ? `TENANT_${updates.status}` : 'TENANT_UPDATED',
-                actor_id: currentUser?.id || 'system',
-                actor_name: currentUser?.name || 'System',
-                target_tenant_id: id,
-                metadata: {
-                    changes,
-                    updates
+    const createTenant = async (data)=>{
+        try {
+            const response = await fetch('/api/admin/tenants', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 },
-                ip: '127.0.0.1',
-                created_at: new Date().toISOString()
+                body: JSON.stringify({
+                    name: data.name || 'New Tenant',
+                    slug: data.slug || `tenant-${Date.now()}`,
+                    domains: data.domains || [],
+                    timezone: data.timezone || 'America/Bogota',
+                    locale: data.locale || 'es-CO',
+                    sector: data.sector || 'technology',
+                    contactName: data.contactName,
+                    contactEmail: data.contactEmail,
+                    contactPhone: data.contactPhone,
+                    features: data.features || [
+                        'DASHBOARD',
+                        'WORKFLOWS',
+                        'REPOSITORY',
+                        'CHAT',
+                        'ANALYTICS'
+                    ],
+                    branding: data.branding || {},
+                    policies: data.policies || {}
+                })
             });
-            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].tenants[idx] = {
-                ...current,
-                ...updates,
-                branding: updates.branding ? {
-                    ...current.branding,
-                    ...updates.branding
-                } : current.branding,
-                policies: updates.policies ? {
-                    ...current.policies,
-                    ...updates.policies
-                } : current.policies
-            };
-            if (currentTenantId === id) {
-            // Force re-render if needed (though layout update helps)
+            const result = await response.json();
+            if (!result.success) {
+                console.error('Failed to create tenant:', result.error);
+                alert(`Error: ${result.error}`);
+                return null;
             }
-            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].save();
+            console.log('Tenant Created:', result.tenant);
+            setForceUpdate((prev)=>prev + 1);
+            return result.tenant;
+        } catch (error) {
+            console.error('Error creating tenant:', error);
+            alert('Error al crear el tenant. Intente nuevamente.');
+            return null;
         }
     };
-    const deleteTenant = (id)=>{
-        const idx = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].tenants.findIndex((t)=>t.id === id);
-        if (idx < 0) return;
-        const tenant = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].tenants[idx];
-        // Cascade Delete
-        // 1. Users
-        for(let i = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].users.length - 1; i >= 0; i--){
-            if (__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].users[i].tenantId === id) __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].users.splice(i, 1);
+    const updateTenant = async (id, updates)=>{
+        try {
+            const response = await fetch('/api/admin/tenants', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id,
+                    ...updates
+                })
+            });
+            const result = await response.json();
+            if (!result.success) {
+                console.error('Failed to update tenant:', result.error);
+                alert(`Error: ${result.error}`);
+                return;
+            }
+            console.log('Tenant Updated:', result.tenant);
+            setForceUpdate((prev)=>prev + 1);
+        } catch (error) {
+            console.error('Error updating tenant:', error);
+            alert('Error al actualizar el tenant. Intente nuevamente.');
         }
-        // 2. Docs
-        for(let i = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].docs.length - 1; i >= 0; i--){
-            if (__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].docs[i].tenantId === id) __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].docs.splice(i, 1);
+    };
+    const deleteTenant = async (id)=>{
+        try {
+            const response = await fetch(`/api/admin/tenants?id=${id}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            if (!result.success) {
+                console.error('Failed to delete tenant:', result.error);
+                alert(`Error: ${result.error}`);
+                return;
+            }
+            console.log('Tenant Deleted:', id);
+            setForceUpdate((n)=>n + 1);
+        } catch (error) {
+            console.error('Error deleting tenant:', error);
+            alert('Error al eliminar el tenant. Intente nuevamente.');
         }
-        // 3. Projects
-        for(let i = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].projects.length - 1; i >= 0; i--){
-            if (__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].projects[i].tenantId === id) __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].projects.splice(i, 1);
-        }
-        // 4. Posts
-        for(let i = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].posts.length - 1; i >= 0; i--){
-            if (__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].posts[i].tenantId === id) __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].posts.splice(i, 1);
-        }
-        // 5. Workflows
-        for(let i = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].workflowCases.length - 1; i >= 0; i--){
-            if (__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].workflowCases[i].tenantId === id) __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].workflowCases.splice(i, 1);
-        }
-        // Delete Tenant
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].tenants.splice(idx, 1);
-        // Audit Log
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["DB"].platformAudit.unshift({
-            id: `audit-${Date.now()}`,
-            event_type: 'TENANT_DELETED',
-            actor_id: currentUser?.id || 'system',
-            actor_name: currentUser?.name || 'System',
-            target_tenant_id: id,
-            metadata: {
-                name: tenant.name,
-                slug: tenant.slug
-            },
-            ip: '127.0.0.1',
-            created_at: new Date().toISOString()
-        });
-        setForceUpdate((n)=>n + 1);
     };
     const createUnit = (data)=>{
         if (!currentTenantId) return;
@@ -1714,7 +1605,7 @@ function AppProvider({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/context/AppContext.tsx",
-        lineNumber: 1039,
+        lineNumber: 944,
         columnNumber: 9
     }, this);
 }

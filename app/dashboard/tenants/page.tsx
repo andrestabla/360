@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
-import { Plus, Buildings, Trash, Power, CheckCircle, Warning, MagnifyingGlass, CaretRight, CaretDown, Factory } from '@phosphor-icons/react';
+import { Plus, Buildings, Trash, Power, CheckCircle, Warning, MagnifyingGlass, CaretRight, CaretDown, Factory, CircleNotch } from '@phosphor-icons/react';
 import { Tenant, TenantBranding, TenantPolicy, DB } from '@/lib/data';
 import { SECTOR_BENCHMARKS_LIST } from '@/lib/benchmark';
 
@@ -28,9 +28,35 @@ export default function TenantsPage() {
     const { isSuperAdmin, createTenant, updateTenant, deleteTenant } = useApp();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [refreshKey, setRefreshKey] = useState(0); // Force re-render list
+    const [refreshKey, setRefreshKey] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
+    const [tenants, setTenants] = useState<Tenant[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const ITEMS_PER_PAGE = 6;
+
+    const fetchTenants = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const response = await fetch('/api/admin/tenants');
+            const data = await response.json();
+            if (data.success) {
+                setTenants(data.tenants || []);
+            } else {
+                setError(data.error || 'Error al cargar los tenants');
+            }
+        } catch (err) {
+            console.error('Error fetching tenants:', err);
+            setError('Error de conexión. Intente nuevamente.');
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchTenants();
+    }, [fetchTenants, refreshKey]);
 
     // Form State
     const [formData, setFormData] = useState<Omit<Partial<Tenant>, 'branding' | 'policies'> & { branding: Partial<TenantBranding>, policies: Partial<TenantPolicy> }>({
@@ -57,14 +83,13 @@ export default function TenantsPage() {
 
     const openCreate = () => {
         setEditingId(null);
-        const { defaultLocale, defaultTimezone, defaultModules } = DB.platformSettings;
         setFormData({
             name: '', slug: '', domains: [],
-            timezone: defaultTimezone,
-            locale: defaultLocale,
+            timezone: 'America/Bogota',
+            locale: 'es-CO',
             branding: { primary_color: '#2563eb', accent_color: '#1d4ed8' },
             policies: { max_failed_logins: 3 },
-            features: [...defaultModules],
+            features: ['DASHBOARD', 'WORKFLOWS', 'REPOSITORY', 'CHAT', 'ANALYTICS', 'SURVEYS'],
             sector: SECTOR_BENCHMARKS_LIST[0]?.sector || 'technology',
             contactName: '', contactEmail: '', contactPhone: ''
         });
@@ -160,10 +185,37 @@ export default function TenantsPage() {
         }
     };
 
-    // Pagination Logic
-    const filteredTenants = DB.tenants; // Add search filter later if needed
+    const filteredTenants = tenants;
     const totalPages = Math.ceil(filteredTenants.length / ITEMS_PER_PAGE);
     const displayedTenants = filteredTenants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+    if (isLoading) {
+        return (
+            <div className="p-6 max-w-6xl mx-auto flex items-center justify-center min-h-[400px]">
+                <div className="flex flex-col items-center gap-3">
+                    <CircleNotch size={40} className="animate-spin text-blue-600" />
+                    <p className="text-slate-500">Cargando tenants...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6 max-w-6xl mx-auto">
+                <div className="bg-red-50 text-red-700 p-4 rounded-lg">
+                    <p className="font-medium">Error al cargar los tenants</p>
+                    <p className="text-sm mt-1">{error}</p>
+                    <button 
+                        onClick={() => setRefreshKey(prev => prev + 1)}
+                        className="mt-3 px-4 py-2 bg-red-100 hover:bg-red-200 rounded-lg text-sm font-medium"
+                    >
+                        Reintentar
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 max-w-6xl mx-auto animate-fadeIn">
@@ -177,15 +229,25 @@ export default function TenantsPage() {
                 </button>
             </div>
 
-            {/* List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <TenantList
-                    tenants={displayedTenants}
-                    onEdit={openEdit}
-                    onToggleStatus={handleToggleStatus}
-                    onDelete={handleDelete}
-                />
-            </div>
+            {tenants.length === 0 ? (
+                <div className="bg-slate-50 rounded-xl p-12 text-center">
+                    <Buildings size={48} className="text-slate-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-slate-700 mb-2">No hay tenants registrados</h3>
+                    <p className="text-slate-500 mb-4">Crea tu primer tenant para comenzar.</p>
+                    <button onClick={openCreate} className="btn btn-primary">
+                        <Plus weight="bold" /> Crear Tenant
+                    </button>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <TenantList
+                        tenants={displayedTenants}
+                        onEdit={openEdit}
+                        onToggleStatus={handleToggleStatus}
+                        onDelete={handleDelete}
+                    />
+                </div>
+            )}
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
