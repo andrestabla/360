@@ -65,10 +65,12 @@ export async function POST(request: NextRequest) {
       user: result.user,
     });
   } catch (error: any) {
-    console.error('Error during login:', error);
+    console.error('Error during login:', error?.message || error);
+    console.error('Full error:', JSON.stringify(error, null, 2));
     return NextResponse.json({ 
       success: false, 
-      error: 'Error en el servidor' 
+      error: 'Error en el servidor',
+      details: process.env.NODE_ENV === 'development' ? error?.message : undefined
     }, { status: 500 });
   }
 }
