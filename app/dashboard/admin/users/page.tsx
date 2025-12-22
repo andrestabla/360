@@ -41,6 +41,7 @@ export default function UsersPage() {
         mustChangePassword: true,
         tenantId: ''
     });
+    const [sendingCredentials, setSendingCredentials] = useState(false);
 
     // Super Admin: Global Tenant Filter
     const [filterTenantId, setFilterTenantId] = useState('ALL');
@@ -145,19 +146,36 @@ export default function UsersPage() {
         }
     };
 
-    const handleResendInvite = () => {
+    const handleResendInvite = async () => {
         if (!editingId) return;
-        if (confirm(`¿Reenviar credenciales de acceso a ${formData.email}?`)) {
-            adminResendInvite(editingId);
-            alert('Credenciales enviadas correctamente.');
+        if (!confirm(`¿Reenviar credenciales de acceso a ${formData.email}?`)) return;
+        
+        setSendingCredentials(true);
+        try {
+            const res = await fetch('/api/users/send-credentials', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: editingId, type: 'resend' })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                adminResendInvite(editingId);
+                alert(data.message || 'Credenciales enviadas correctamente.');
+            } else {
+                alert(`Error al enviar: ${data.error}`);
+            }
+        } catch (error: any) {
+            alert(`Error: ${error.message}`);
+        } finally {
+            setSendingCredentials(false);
             setRefreshKey(prev => prev + 1);
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Check for unique email
         if (!editingId && formData.email) {
             if (!adminCheckEmailUnique(formData.email)) {
                 alert('El correo electrónico ya está registrado.');
@@ -165,17 +183,13 @@ export default function UsersPage() {
             }
         }
 
-        // Validate password if manual
         if (!editingId && formData.passwordMode === 'manual' && !formData.password) {
             alert('Por favor, ingresa una contraseña manual.');
             return;
         }
 
-        // Map level to role name for display
-        // Map level to role name for display
         let roleName = LEVELS.find(l => l.level === Number(formData.level))?.label.split('(')[1].replace(')', '') || 'Usuario';
 
-        // Special Case: Global Admin
         if (formData.tenantId === 'global') {
             roleName = 'Super Admin';
         }
@@ -185,16 +199,47 @@ export default function UsersPage() {
 
         if (editingId) {
             adminUpdateUser(editingId, dataToSave);
+            setIsModalOpen(false);
+            setRefreshKey(prev => prev + 1);
         } else {
-            console.log(`[Notification System] Creating user ${formData.email} with role ${roleName}`);
             adminCreateUser(dataToSave, {
-                sendNotification: formData.passwordMode === 'auto',
+                sendNotification: false,
                 customPassword: formData.passwordMode === 'manual' ? formData.password : undefined
             });
-            alert(`Usuario creado exitosamente. ${formData.passwordMode === 'auto' ? 'Se envió invitación por correo.' : 'Contraseña asignada manualmente.'}`);
+            
+            const newUserId = DB.users.find(u => u.email === formData.email)?.id;
+            
+            if (formData.passwordMode === 'auto' && newUserId && formData.email) {
+                setSendingCredentials(true);
+                try {
+                    const res = await fetch('/api/users/send-credentials', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            userId: newUserId, 
+                            type: 'new',
+                            customPassword: password 
+                        })
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        alert(`Usuario creado exitosamente. ${data.message}`);
+                    } else {
+                        alert(`Usuario creado, pero hubo un error al enviar credenciales: ${data.error}\n\nPuede reenviar las credenciales desde el panel de edición del usuario.`);
+                    }
+                } catch (error: any) {
+                    alert(`Usuario creado, pero hubo un error al enviar email: ${error.message}\n\nPuede reenviar las credenciales desde el panel de edición del usuario.`);
+                } finally {
+                    setSendingCredentials(false);
+                }
+            } else {
+                alert(`Usuario creado exitosamente. Contraseña asignada manualmente.`);
+            }
+            
+            setIsModalOpen(false);
+            setRefreshKey(prev => prev + 1);
         }
-        setIsModalOpen(false);
-        setRefreshKey(prev => prev + 1);
     };
 
     return (
