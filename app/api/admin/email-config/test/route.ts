@@ -1,10 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
 import { testEmailConfig, sendTenantEmail } from '@/lib/services/tenantEmailService';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tenantId, sendTestTo } = body;
+    const { 
+      tenantId, 
+      sendTestTo,
+      isDraft,
+      smtpHost,
+      smtpPort,
+      smtpUser,
+      smtpPassword,
+      smtpSecure,
+      fromEmail,
+      fromName,
+    } = body;
+
+    if (isDraft && smtpHost && smtpUser && smtpPassword) {
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: parseInt(smtpPort) || 587,
+        secure: smtpSecure === true || smtpSecure === 'true',
+        auth: {
+          user: smtpUser,
+          pass: smtpPassword,
+        },
+      });
+
+      try {
+        await transporter.verify();
+        return NextResponse.json({
+          success: true,
+          message: 'Conexión SMTP verificada correctamente',
+        });
+      } catch (smtpError: any) {
+        return NextResponse.json({
+          success: false,
+          error: smtpError.message || 'Error de conexión SMTP',
+        });
+      }
+    }
 
     const verifyResult = await testEmailConfig(tenantId);
     
