@@ -58,6 +58,8 @@ const ChatService = {
         if (conversation) {
             conversation.lastMessage = body;
             conversation.lastMessageAt = message.created_at;
+            conversation.last_message_at = message.created_at;
+            conversation.lastMessagePreview = body.substring(0, 50);
         }
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
         return message;
@@ -125,6 +127,8 @@ const ChatService = {
             success: true,
             data: existing
         };
+        const user2 = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].users.find((u)=>u.id === userId2);
+        const user1 = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].users.find((u)=>u.id === userId1);
         const conversation = {
             id: `conv-${Date.now()}`,
             tenant_id: tenantId,
@@ -133,9 +137,20 @@ const ChatService = {
                 userId1,
                 userId2
             ],
+            title: user2?.name || 'Usuario',
+            avatar: user2?.initials || 'U',
             createdAt: new Date().toISOString()
         };
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.push(conversation);
+        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversationMembers.push({
+            conversation_id: conversation.id,
+            user_id: userId1,
+            joined_at: conversation.createdAt
+        }, {
+            conversation_id: conversation.id,
+            user_id: userId2,
+            joined_at: conversation.createdAt
+        });
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
         return {
             success: true,
@@ -156,6 +171,17 @@ const ChatService = {
             createdAt: new Date().toISOString()
         };
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversations.push(conversation);
+        const allMembers = [
+            creatorId,
+            ...memberIds
+        ];
+        allMembers.forEach((userId)=>{
+            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].conversationMembers.push({
+                conversation_id: conversation.id,
+                user_id: userId,
+                joined_at: conversation.createdAt
+            });
+        });
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DB"].save();
         return {
             success: true,

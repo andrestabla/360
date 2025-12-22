@@ -70,11 +70,10 @@ export default function ConversationList() {
         if (!currentTenantId || !currentUser) return;
         setShowNewChat(false);
         try {
-            const result = await ChatService.createDM(currentUser.id, targetUserId, currentTenantId);
+            const result = await ChatService.createDM(currentTenantId, currentUser.id, targetUserId);
             const chatId = result.data?.id;
             if (!chatId) throw new Error('Failed to create chat');
 
-            // Refresh list to show new chat, then select it
             await loadConversations();
 
             const params = new URLSearchParams(searchParams);
@@ -82,7 +81,7 @@ export default function ConversationList() {
             router.push(`/dashboard/chat?${params.toString()}`);
         } catch (e) {
             console.error(e);
-            alert('Error creating chat'); // Simple feedback for MVP
+            alert('Error creating chat');
         }
     };
 
@@ -90,11 +89,10 @@ export default function ConversationList() {
         if (!currentTenantId || !currentUser) return;
         setShowNewGroup(false);
         try {
-            const result = await ChatService.createGroup(currentUser.id, currentTenantId, title, memberIds);
+            const result = await ChatService.createGroup(currentTenantId, title, currentUser.id, memberIds);
             const chatId = result.data?.id;
             if (!chatId) throw new Error('Failed to create group');
 
-            // Refresh list
             await loadConversations();
 
             const params = new URLSearchParams(searchParams);

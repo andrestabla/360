@@ -60,6 +60,8 @@ export const ChatService = {
     if (conversation) {
       conversation.lastMessage = body;
       conversation.lastMessageAt = message.created_at;
+      conversation.last_message_at = message.created_at;
+      conversation.lastMessagePreview = body.substring(0, 50);
     }
 
     DB.save();
@@ -148,14 +150,25 @@ export const ChatService = {
     );
     if (existing) return { success: true, data: existing };
 
+    const user2 = DB.users.find(u => u.id === userId2);
+    const user1 = DB.users.find(u => u.id === userId1);
+
     const conversation: Conversation = {
       id: `conv-${Date.now()}`,
       tenant_id: tenantId,
       type: 'dm',
       participants: [userId1, userId2],
+      title: user2?.name || 'Usuario',
+      avatar: user2?.initials || 'U',
       createdAt: new Date().toISOString()
     };
     DB.conversations.push(conversation);
+
+    DB.conversationMembers.push(
+      { conversation_id: conversation.id, user_id: userId1, joined_at: conversation.createdAt },
+      { conversation_id: conversation.id, user_id: userId2, joined_at: conversation.createdAt }
+    );
+
     DB.save();
     return { success: true, data: conversation };
   },
@@ -171,6 +184,16 @@ export const ChatService = {
       createdAt: new Date().toISOString()
     };
     DB.conversations.push(conversation);
+
+    const allMembers = [creatorId, ...memberIds];
+    allMembers.forEach(userId => {
+      DB.conversationMembers.push({
+        conversation_id: conversation.id,
+        user_id: userId,
+        joined_at: conversation.createdAt
+      });
+    });
+
     DB.save();
     return { success: true, data: conversation };
   },
