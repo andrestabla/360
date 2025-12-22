@@ -126,3 +126,7 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
   - Provider presets for Gmail, Outlook, SendGrid, Mailgun, Amazon SES
   - Step-by-step instructions with provider-specific guidance
   - Connection verification before saving configuration
+- December 22, 2025: Fixed navigation translations
+  - Added missing nav_ prefixed translations to lib/i18n.ts
+  - Fixed sidebar menu items showing translation keys instead of text
+  - Removed unnecessary security warning for super admin on tenant domains
