@@ -89,6 +89,13 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
 - Session persistence with localStorage (synchronized hydration to prevent logout on refresh)
 - Tenant users authenticate through their subdomain
 
+## Email Notifications (Gmail Integration)
+- System notifications are sent via the connected Gmail account
+- Email service: `lib/services/emailService.ts`
+- API endpoint: `POST /api/notifications/send`
+- Supports general notifications and workflow-specific notifications
+- Uses Google APIs with OAuth2 authentication via Replit's connector system
+
 ## Recent Changes
 - December 2024: Imported from GitHub and configured for Replit environment
 - Added missing library files (data.ts, chatService.ts, i18n.ts, etc.)
