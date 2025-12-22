@@ -99,7 +99,7 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
   - `POST /api/users/send-credentials` - Send user credentials email
 - Supports SMTP providers: Gmail, SendGrid, Mailgun, Amazon SES, custom SMTP
 - Admin UI: Dashboard > Admin > Settings > "Correo Saliente" tab
-- SMTP passwords are encrypted before storage
+- SMTP passwords are encrypted with AES-256-GCM before storage
 - Production requires `EMAIL_ENCRYPTION_KEY` environment variable
 
 ## Recent Changes
