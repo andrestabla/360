@@ -25,7 +25,7 @@ async function validateTenantAdmin(request: NextRequest): Promise<{ valid: boole
       
       const [user] = await db.select().from(users).where(eq(users.email, payload.email.toLowerCase().trim()));
       
-      if (!user) {
+      if (!user || !user.email) {
         return { valid: false, error: 'User not found' };
       }
       
@@ -48,7 +48,7 @@ async function validateTenantAdmin(request: NextRequest): Promise<{ valid: boole
     
     const [user] = await db.select().from(users).where(eq(users.email, payload.email.toLowerCase().trim()));
     
-    if (!user) {
+    if (!user || !user.email) {
       return { valid: false, error: 'User not found' };
     }
     
