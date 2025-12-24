@@ -10,5 +10,20 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+declare global {
+  var _dbPool: pg.Pool | undefined;
+}
+
+function getPool(): pg.Pool {
+  if (process.env.NODE_ENV === "production") {
+    return new Pool({ connectionString: process.env.DATABASE_URL });
+  }
+  
+  if (!global._dbPool) {
+    global._dbPool = new Pool({ connectionString: process.env.DATABASE_URL });
+  }
+  return global._dbPool;
+}
+
+export const pool = getPool();
 export const db = drizzle(pool, { schema });
