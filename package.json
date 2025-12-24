@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "build:prod": "next build && drizzle-kit push && tsx scripts/seed-production.ts",
+    "build": "NODE_OPTIONS=--max-old-space-size=4096 next build",
+    "build:prod": "NODE_OPTIONS=--max-old-space-size=4096 next build",
     "start": "next start",
+    "deploy:db": "drizzle-kit push && tsx scripts/seed-production.ts",
     "lint": "eslint",
     "db:push": "drizzle-kit push",
     "db:migrate": "drizzle-kit generate && drizzle-kit push",
