@@ -222,3 +222,41 @@ npm run db:studio     # Visual database editor
 | `db:seed:dev` | Reset and seed development data |
 | `db:seed:prod` | Minimal production seed |
 | `db:studio` | Open Drizzle Studio for data management |
+| `deploy:db` | Push schema and seed production (post-deploy) |
+
+## Security: Encryption Key Management
+
+### Critical Keys
+The following encryption keys protect sensitive tenant data:
+- **EMAIL_ENCRYPTION_KEY**: Encrypts SMTP passwords in `tenant_email_configs`
+- **STORAGE_ENCRYPTION_KEY**: Encrypts storage provider credentials
+- **SESSION_SECRET**: Signs HMAC session tokens
+
+### Key Loss Impact
+**WARNING**: If you lose these keys, you will permanently lose access to:
+- All tenant SMTP configurations (email sending will fail)
+- All tenant storage credentials (file access will fail)
+- All active user sessions (users will be logged out)
+
+### Backup Policy (MANDATORY)
+1. **Generate strong keys**: Use 32+ character random strings
+2. **Store keys in multiple secure locations**:
+   - Password manager (1Password, LastPass, Bitwarden)
+   - Encrypted document in secure cloud storage
+   - Printed copy in physical safe (disaster recovery)
+3. **Never commit keys to version control**
+4. **Document key rotation procedure** before rotating
+5. **Test key restoration** from backup quarterly
+
+### Key Rotation Procedure
+1. Export all encrypted data with current key
+2. Set new encryption key in environment
+3. Re-encrypt all data with new key
+4. Verify all tenant email/storage configurations work
+5. Archive old key for 90 days (in case of rollback)
+
+### Emergency Recovery
+If keys are lost:
+1. Tenants must reconfigure their SMTP/storage settings manually
+2. All users must re-authenticate
+3. No automatic recovery is possible for encrypted credentials
