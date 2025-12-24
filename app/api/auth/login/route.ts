@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         timestamp: Date.now(),
       });
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         user: {
           id: admin.id,
@@ -64,6 +64,16 @@ export async function POST(request: NextRequest) {
         },
         sessionToken,
       });
+
+      response.cookies.set('m360_session', sessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60,
+        path: '/',
+      });
+
+      return response;
     }
 
     const result = await authenticateUser(email.toLowerCase().trim(), password, tenantId);
@@ -75,10 +85,27 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-    return NextResponse.json({
+    const userSessionToken = createSessionToken({
+      email: result.user?.email || email,
+      isSuperAdmin: false,
+      timestamp: Date.now(),
+    });
+
+    const response = NextResponse.json({
       success: true,
       user: result.user,
+      sessionToken: userSessionToken,
     });
+
+    response.cookies.set('m360_session', userSessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60,
+      path: '/',
+    });
+
+    return response;
   } catch (error: any) {
     console.error('Login error:', error?.message || error);
     console.error('Stack:', error?.stack);
