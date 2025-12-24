@@ -109,13 +109,13 @@ export function validateJson<T>(schema: z.ZodSchema<T>, data: unknown): { succes
   if (result.success) {
     return { success: true, data: result.data };
   }
-  return { success: false, error: result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ') };
+  return { success: false, error: result.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ') };
 }
 
 export function assertValidJson<T>(schema: z.ZodSchema<T>, data: unknown, fieldName: string): T {
   const result = schema.safeParse(data);
   if (!result.success) {
-    const errors = result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+    const errors = result.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
     throw new Error(`Invalid ${fieldName}: ${errors}`);
   }
   return result.data;
