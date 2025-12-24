@@ -178,12 +178,33 @@ The schema is defined in `shared/schema.ts` using Drizzle ORM. The database conn
 - Encryption service: `lib/services/storageEncryption.ts`
 - Provider presets: `lib/config/storageProviderPresets.ts`
 
-## Tenant Data Isolation
+## Tenant Data Isolation (Row Level Security)
 All data tables include a `tenant_id` foreign key referencing the `tenants` table:
 - users, units, documents, conversations, messages
 - workflows, surveys, tenant_email_configs, audit_logs
-- Services filter all queries by tenant_id to ensure data separation
-- Each tenant's data is completely isolated from other tenants
+
+### PostgreSQL Row Level Security (RLS)
+**Defense in depth**: Even if application code misses a tenant filter, the database enforces isolation.
+
+**Tables with RLS enabled** (FORCE ROW LEVEL SECURITY):
+- All tenant-scoped tables + `tenants` + `platform_admins`
+
+**Policies**:
+- Tenant users: Can only access rows where `tenant_id = app.current_tenant`
+- Super Admin: Can access all rows when `app.is_super_admin = true`
+
+**Session variables** (set per-transaction):
+- `app.current_tenant`: Current tenant ID
+- `app.is_super_admin`: Boolean flag for platform admins
+
+**Helper functions**:
+- `server/tenantContext.ts`: `withTenantContext()` wraps queries in transaction with RLS context
+- `get_current_tenant_id()`: PostgreSQL function to retrieve current tenant
+- `is_super_admin()`: PostgreSQL function to check admin status
+
+**Scripts**:
+- `npm run db:enable-rls`: Apply RLS policies to database
+- `scripts/enable-rls.sql`: SQL migration for RLS setup
 
 ## Persistence Architecture
 
