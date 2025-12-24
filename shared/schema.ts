@@ -1,4 +1,4 @@
-import { pgTable, text, varchar, integer, timestamp, boolean, json, serial } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean, json, serial, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const tenants = pgTable("tenants", {
@@ -48,7 +48,11 @@ export const users = pgTable("users", {
   inviteExpiresAt: timestamp("invite_expires_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_users_tenant").on(table.tenantId),
+  index("idx_users_tenant_email").on(table.tenantId, table.email),
+  index("idx_users_tenant_status").on(table.tenantId, table.status),
+]);
 
 export const units = pgTable("units", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -58,7 +62,9 @@ export const units = pgTable("units", {
   managerId: varchar("manager_id", { length: 255 }),
   level: integer("level").default(0),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_units_tenant").on(table.tenantId),
+]);
 
 export const documents = pgTable("documents", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -73,7 +79,10 @@ export const documents = pgTable("documents", {
   tags: json("tags").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_documents_tenant").on(table.tenantId),
+  index("idx_documents_tenant_status").on(table.tenantId, table.status),
+]);
 
 export const conversations = pgTable("conversations", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -85,7 +94,9 @@ export const conversations = pgTable("conversations", {
   lastMessage: text("last_message"),
   lastMessageAt: timestamp("last_message_at"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_conversations_tenant").on(table.tenantId),
+]);
 
 export const messages = pgTable("messages", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -101,7 +112,11 @@ export const messages = pgTable("messages", {
   deletedAt: timestamp("deleted_at"),
   editedAt: timestamp("edited_at"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_messages_tenant").on(table.tenantId),
+  index("idx_messages_conversation").on(table.conversationId),
+  index("idx_messages_tenant_conversation_created").on(table.tenantId, table.conversationId, table.createdAt),
+]);
 
 export const workflows = pgTable("workflows", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -113,7 +128,9 @@ export const workflows = pgTable("workflows", {
   steps: json("steps").$type<Record<string, unknown>[]>().default([]),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_workflows_tenant").on(table.tenantId),
+]);
 
 export const surveys = pgTable("surveys", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -125,7 +142,9 @@ export const surveys = pgTable("surveys", {
   responses: json("responses").$type<Record<string, unknown>[]>().default([]),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_surveys_tenant").on(table.tenantId),
+]);
 
 export const tenantEmailConfigs = pgTable("tenant_email_configs", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -146,7 +165,9 @@ export const tenantEmailConfigs = pgTable("tenant_email_configs", {
   createdBy: varchar("created_by", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_tenant_email_configs_tenant").on(table.tenantId),
+]);
 
 export const auditLogs = pgTable("audit_logs", {
   id: serial("id").primaryKey(),
@@ -159,7 +180,10 @@ export const auditLogs = pgTable("audit_logs", {
   ipAddress: varchar("ip_address", { length: 50 }),
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_audit_logs_tenant").on(table.tenantId),
+  index("idx_audit_logs_tenant_created").on(table.tenantId, table.createdAt),
+]);
 
 export const platformAdmins = pgTable("platform_admins", {
   id: varchar("id", { length: 255 }).primaryKey(),
