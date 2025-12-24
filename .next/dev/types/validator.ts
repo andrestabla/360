@@ -263,6 +263,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../app/dashboard/platform/settings/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/dashboard/platform/settings">> = Specific
+  const handler = {} as typeof import("../../../app/dashboard/platform/settings/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/dashboard/profile/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/dashboard/profile">> = Specific
@@ -429,6 +438,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/notifications/send">> = Specific
   const handler = {} as typeof import("../../../app/api/notifications/send/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/api/platform/security-config/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/platform/security-config">> = Specific
+  const handler = {} as typeof import("../../../app/api/platform/security-config/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

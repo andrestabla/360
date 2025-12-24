@@ -109,6 +109,7 @@ export default function Sidebar() {
                             <NavItem icon={Buildings} label="Tenants" path="/dashboard/tenants" />
                             <NavItem icon={UsersThree} label="Users & Permissions" path="/dashboard/admin/users" />
                             <NavItem icon={Globe} label="Platform Params" path="/dashboard/platform" />
+                            <NavItem icon={Gear} label="Config. Plataforma" path="/dashboard/platform/settings" />
                             <NavItem icon={ShieldCheck} label="Audit Global" path="/dashboard/audit" />
                         </>
                     ) : (
