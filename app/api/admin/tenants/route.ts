@@ -68,6 +68,25 @@ export async function GET(request: NextRequest) {
   }
 }
 
+function validateSlug(slug: string): { valid: boolean; normalized?: string; error?: string } {
+  if (!slug || typeof slug !== 'string') {
+    return { valid: false, error: 'Slug is required' };
+  }
+  
+  const normalized = slug.toLowerCase().trim();
+  
+  if (normalized.length < 2 || normalized.length > 63) {
+    return { valid: false, error: 'Slug must be between 2 and 63 characters' };
+  }
+  
+  const slugPattern = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+  if (!slugPattern.test(normalized)) {
+    return { valid: false, error: 'Slug must contain only lowercase letters, numbers, and hyphens. Cannot start or end with a hyphen.' };
+  }
+  
+  return { valid: true, normalized };
+}
+
 export async function POST(request: NextRequest) {
   const auth = await validateSuperAdmin(request);
   if (!auth.valid) {
@@ -88,7 +107,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existingTenant = await db.select().from(tenants).where(eq(tenants.slug, slug));
+    const slugValidation = validateSlug(slug);
+    if (!slugValidation.valid) {
+      return NextResponse.json(
+        { success: false, error: slugValidation.error },
+        { status: 400 }
+      );
+    }
+    const normalizedSlug = slugValidation.normalized!;
+
+    const existingTenant = await db.select().from(tenants).where(eq(tenants.slug, normalizedSlug));
     if (existingTenant.length > 0) {
       return NextResponse.json(
         { success: false, error: 'A tenant with this slug already exists' },
@@ -102,7 +130,7 @@ export async function POST(request: NextRequest) {
     const [newTenant] = await db.insert(tenants).values({
       id: tenantId,
       name,
-      slug,
+      slug: normalizedSlug,
       domains: domains || [],
       status: 'ACTIVE',
       timezone: timezone || 'America/Bogota',
