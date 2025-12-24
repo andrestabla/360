@@ -448,25 +448,24 @@ export default function PlatformSettingsPage() {
 
             </div>
 
-            {showEmailWizard && (
-                <EmailSetupWizard
-                    onClose={() => setShowEmailWizard(false)}
-                    onComplete={(config) => {
-                        setEmailConfig({
-                            ...emailConfig,
-                            smtpHost: config.smtpHost,
-                            smtpPort: String(config.smtpPort),
-                            smtpUser: config.smtpUser || '',
-                            smtpPassword: config.smtpPassword || '',
-                            smtpSecure: config.smtpSecure,
-                            fromName: config.fromName || 'Maturity 360',
-                            fromEmail: config.fromEmail || '',
-                            replyToEmail: config.replyToEmail || ''
-                        });
-                        setShowEmailWizard(false);
-                    }}
-                />
-            )}
+            <EmailSetupWizard
+                isOpen={showEmailWizard}
+                tenantId="platform"
+                onClose={() => setShowEmailWizard(false)}
+                onComplete={(config) => {
+                    setEmailConfig({
+                        ...emailConfig,
+                        smtpHost: config.smtpHost,
+                        smtpPort: String(config.smtpPort),
+                        smtpUser: config.smtpUser || '',
+                        smtpPassword: config.smtpPassword || '',
+                        smtpSecure: config.smtpSecure,
+                        fromName: config.fromName || 'Maturity 360',
+                        fromEmail: config.fromEmail || ''
+                    });
+                    setShowEmailWizard(false);
+                }}
+            />
         </div>
     );
 }
