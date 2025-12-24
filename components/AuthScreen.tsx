@@ -106,7 +106,7 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
 
             if (detectedTenant) {
                 const role = data.user.role === 'Admin Global' ? 'admin' : 'user';
-                login(role, detectedTenant.id, email);
+                login(role, detectedTenant.id, email, data.sessionToken);
             } else {
                 login('superadmin', undefined, email, data.sessionToken);
             }

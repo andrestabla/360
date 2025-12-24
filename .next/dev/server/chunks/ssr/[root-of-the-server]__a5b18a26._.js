@@ -871,6 +871,9 @@ function AppProvider({ children }) {
         } else if (tenantId) {
             setIsSuperAdmin(false);
             setCurrentTenantId(tenantId);
+            if (token) {
+                setSessionToken(token);
+            }
             let user;
             // 1. Try finding by Email (Exact Match)
             if (email) {
@@ -1059,6 +1062,7 @@ function AppProvider({ children }) {
             const response = await fetch(endpoint, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
+                credentials: 'include',
                 body: JSON.stringify(body)
             });
             const result = await response.json();
@@ -1622,7 +1626,7 @@ function AppProvider({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/context/AppContext.tsx",
-        lineNumber: 969,
+        lineNumber: 973,
         columnNumber: 9
     }, this);
 }

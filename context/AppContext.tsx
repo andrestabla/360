@@ -247,6 +247,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } else if (tenantId) {
             setIsSuperAdmin(false);
             setCurrentTenantId(tenantId);
+            if (token) {
+                setSessionToken(token);
+            }
 
             let user;
             // 1. Try finding by Email (Exact Match)
@@ -437,6 +440,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             const response = await fetch(endpoint, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
+                credentials: 'include',
                 body: JSON.stringify(body),
             });
 
