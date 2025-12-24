@@ -268,3 +268,15 @@ export type PlatformAdmin = typeof platformAdmins.$inferSelect;
 export type InsertPlatformAdmin = typeof platformAdmins.$inferInsert;
 export type TenantEmailConfig = typeof tenantEmailConfigs.$inferSelect;
 export type InsertTenantEmailConfig = typeof tenantEmailConfigs.$inferInsert;
+
+export const systemEnvironment = pgTable("system_environment", {
+  id: integer("id").primaryKey().default(1),
+  environment: varchar("environment", { length: 50 }).notNull(),
+  fingerprint: varchar("fingerprint", { length: 64 }).notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type SystemEnvironment = typeof systemEnvironment.$inferSelect;
+export type InsertSystemEnvironment = typeof systemEnvironment.$inferInsert;
