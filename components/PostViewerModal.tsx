@@ -4,6 +4,7 @@ import { Post, PublicComment, DB } from '@/lib/data';
 import { useApp } from '@/context/AppContext';
 import { X, Heart, ChatCircle, Paperclip, PlayCircle, SpeakerHigh, Image as ImageIcon, PaperPlaneRight, UserCircle } from '@phosphor-icons/react';
 import { useState, useEffect, useRef } from 'react';
+import { sanitizeHTML } from '@/lib/services/sanitize';
 
 interface PostViewerModalProps {
     post: Post | null;
@@ -120,7 +121,7 @@ export default function PostViewerModal({ post, onClose }: PostViewerModalProps)
                         {/* Rich Text Body */}
                         <div
                             className="prose prose-slate max-w-none mb-8 text-slate-600 leading-relaxed"
-                            dangerouslySetInnerHTML={{ __html: post.content }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content) }}
                         />
 
                         {/* Attachments */}

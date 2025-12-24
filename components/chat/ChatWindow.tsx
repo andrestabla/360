@@ -6,6 +6,7 @@ import { ChatService } from '@/lib/services/chatService';
 import { DB } from '@/lib/data'; // Still needed for direct push simulation, but ideally Service handles send too
 import { PaperPlaneRight, Paperclip, Smiley, Phone, VideoCamera, Info, Checks, CircleNotch, ArrowDown, DotsThreeVertical, Trash, PencilSimple, X, BellSlash, SignOut, ArrowUUpLeft, Heart, ThumbsUp, SmileyWink, File, Download, MagnifyingGlass } from '@phosphor-icons/react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { sanitizeHTML, escapeHTML } from '@/lib/services/sanitize';
 
 export default function ChatWindow() {
     const { currentUser, currentTenantId, refreshUnreadCount } = useApp();
@@ -524,7 +525,7 @@ export default function ChatWindow() {
                                             <span className="text-[10px] text-gray-400">{new Date(res.created_at).toLocaleDateString()}</span>
                                         </div>
                                         <div className="text-gray-600 truncate text-xs w-full" dangerouslySetInnerHTML={{
-                                            __html: res.body.replace(new RegExp(`(${msgSearchQuery})`, 'gi'), '<span class="bg-yellow-200 text-black rounded px-0.5">$1</span>')
+                                            __html: escapeHTML(res.body).replace(new RegExp(`(${escapeHTML(msgSearchQuery)})`, 'gi'), '<span class="bg-yellow-200 text-black rounded px-0.5">$1</span>')
                                         }} />
                                     </button>
                                 ))}

@@ -252,10 +252,9 @@ export default function AuthScreen({ forceLoginMode = false, previewBranding, te
 
                             {effectiveBranding?.support_message && (
                                 <div className="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <p
-                                        className="text-center text-xs text-slate-500 leading-relaxed"
-                                        dangerouslySetInnerHTML={{ __html: effectiveBranding.support_message.replace(/(IT@empresa\.com)/g, '<a href="mailto:$1" class="text-blue-600 font-bold hover:underline">$1</a>') }}
-                                    ></p>
+                                    <p className="text-center text-xs text-slate-500 leading-relaxed">
+                                        {effectiveBranding.support_message}
+                                    </p>
                                 </div>
                             )}
                         </form>

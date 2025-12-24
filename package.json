@@ -22,6 +22,7 @@
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
     "@types/bcryptjs": "^2.4.6",
+    "@types/dompurify": "^3.0.5",
     "@types/nodemailer": "^7.0.4",
     "@types/pg": "^8.16.0",
     "bcryptjs": "^3.0.3",
@@ -29,6 +30,7 @@
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
     "googleapis": "^169.0.0",
+    "isomorphic-dompurify": "^2.30.0",
     "next": "16.0.10",
     "nodemailer": "^7.0.11",
     "pg": "^8.16.3",
