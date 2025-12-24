@@ -5,9 +5,34 @@ import { platformAdmins } from '@/shared/schema';
 import { eq, sql } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { createSessionToken } from '@/lib/services/sessionToken';
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/services/rateLimit';
+
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return request.headers.get('x-real-ip') || 'unknown';
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIP = getClientIP(request);
+    const rateLimitResult = checkRateLimit(clientIP, 'login');
+    
+    if (!rateLimitResult.success) {
+      const response = NextResponse.json({ 
+        success: false, 
+        error: `Demasiados intentos de login. Intente de nuevo en ${rateLimitResult.retryAfter} segundos.`
+      }, { status: 429 });
+      
+      Object.entries(getRateLimitHeaders(rateLimitResult)).forEach(([key, value]) => {
+        response.headers.set(key, value);
+      });
+      
+      return response;
+    }
+    
     const body = await request.json();
     const { email, password, tenantId, isSuperAdmin } = body;
 

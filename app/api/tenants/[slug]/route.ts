@@ -2,12 +2,37 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
 import { tenants } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/services/rateLimit';
+
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return request.headers.get('x-real-ip') || 'unknown';
+}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const clientIP = getClientIP(request);
+    const rateLimitResult = checkRateLimit(clientIP, 'tenantLookup');
+    
+    if (!rateLimitResult.success) {
+      const response = NextResponse.json({ 
+        found: false,
+        error: 'Too many requests. Please try again later.'
+      }, { status: 429 });
+      
+      Object.entries(getRateLimitHeaders(rateLimitResult)).forEach(([key, value]) => {
+        response.headers.set(key, value);
+      });
+      
+      return response;
+    }
+    
     const { slug } = await params;
     
     const [tenant] = await db.select({
