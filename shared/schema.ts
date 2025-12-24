@@ -31,7 +31,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }),
   role: varchar("role", { length: 100 }).notNull(),
   level: integer("level").default(1),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
   unit: varchar("unit", { length: 255 }),
   initials: varchar("initials", { length: 10 }),
   bio: text("bio"),
@@ -56,7 +56,7 @@ export const users = pgTable("users", {
 
 export const units = pgTable("units", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   parentId: varchar("parent_id", { length: 255 }),
   managerId: varchar("manager_id", { length: 255 }),
@@ -68,7 +68,7 @@ export const units = pgTable("units", {
 
 export const documents = pgTable("documents", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   content: text("content"),
   category: varchar("category", { length: 255 }),
@@ -86,7 +86,7 @@ export const documents = pgTable("documents", {
 
 export const conversations = pgTable("conversations", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
   type: varchar("type", { length: 20 }).notNull().default("dm"),
   name: text("name"),
   title: text("title"),
@@ -100,8 +100,8 @@ export const conversations = pgTable("conversations", {
 
 export const messages = pgTable("messages", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id),
-  conversationId: varchar("conversation_id", { length: 255 }).notNull().references(() => conversations.id),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  conversationId: varchar("conversation_id", { length: 255 }).notNull().references(() => conversations.id, { onDelete: "cascade" }),
   senderId: varchar("sender_id", { length: 255 }).notNull(),
   body: text("body").notNull(),
   bodyType: varchar("body_type", { length: 50 }).default("text"),
@@ -120,7 +120,7 @@ export const messages = pgTable("messages", {
 
 export const workflows = pgTable("workflows", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
   status: varchar("status", { length: 50 }).default("DRAFT"),
@@ -134,7 +134,7 @@ export const workflows = pgTable("workflows", {
 
 export const surveys = pgTable("surveys", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
   status: varchar("status", { length: 50 }).default("DRAFT"),
@@ -148,7 +148,7 @@ export const surveys = pgTable("surveys", {
 
 export const tenantEmailConfigs = pgTable("tenant_email_configs", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }),
+  tenantId: varchar("tenant_id", { length: 255 }).references(() => tenants.id, { onDelete: "cascade" }),
   provider: varchar("provider", { length: 50 }).notNull().default("SMTP"),
   smtpHost: varchar("smtp_host", { length: 255 }),
   smtpPort: integer("smtp_port").default(587),
