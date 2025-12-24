@@ -39,7 +39,7 @@ export const IntegrationSchema = z.object({
   name: z.string(),
   type: z.string(),
   enabled: z.boolean().optional(),
-  config: z.record(z.unknown()).optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
 }).passthrough();
 
 export const WorkflowStepSchema = z.object({
@@ -50,7 +50,7 @@ export const WorkflowStepSchema = z.object({
   assigneeId: z.string().optional(),
   assigneeRole: z.string().optional(),
   status: z.enum(["pending", "in_progress", "completed", "skipped"]).optional(),
-  config: z.record(z.unknown()).optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
 }).passthrough();
 
 export const SurveyQuestionSchema = z.object({
