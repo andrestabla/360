@@ -431,10 +431,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const updateTenant = async (id: string, updates: Omit<Partial<Tenant>, 'branding' | 'policies'> & { branding?: Partial<TenantBranding>, policies?: Partial<TenantPolicy> }) => {
         try {
-            const response = await fetch('/api/admin/tenants', {
+            const endpoint = isSuperAdmin ? '/api/admin/tenants' : '/api/tenant/settings';
+            const body = isSuperAdmin ? { id, ...updates } : updates;
+            
+            const response = await fetch(endpoint, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
-                body: JSON.stringify({ id, ...updates }),
+                body: JSON.stringify(body),
             });
 
             const result = await response.json();
