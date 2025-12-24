@@ -29,11 +29,15 @@ async function validateTenantAdmin(request: NextRequest): Promise<{ valid: boole
         return { valid: false, error: 'User not found' };
       }
       
+      if (!user.tenantId) {
+        return { valid: false, error: 'User has no tenant association' };
+      }
+      
       if (user.role !== 'Admin Global' && user.level !== 1) {
         return { valid: false, error: 'Admin access required' };
       }
       
-      return { valid: true, user: { id: user.id, email: user.email, tenantId: user.tenantId!, role: user.role } };
+      return { valid: true, user: { id: user.id, email: user.email, tenantId: user.tenantId, role: user.role } };
     }
     
     const payload = verifySessionToken(sessionCookie.value);
@@ -48,11 +52,15 @@ async function validateTenantAdmin(request: NextRequest): Promise<{ valid: boole
       return { valid: false, error: 'User not found' };
     }
     
+    if (!user.tenantId) {
+      return { valid: false, error: 'User has no tenant association' };
+    }
+    
     if (user.role !== 'Admin Global' && user.level !== 1) {
       return { valid: false, error: 'Admin access required' };
     }
     
-    return { valid: true, user: { id: user.id, email: user.email, tenantId: user.tenantId!, role: user.role } };
+    return { valid: true, user: { id: user.id, email: user.email, tenantId: user.tenantId, role: user.role } };
   } catch (error) {
     console.error('Auth validation error:', error);
     return { valid: false, error: 'Authentication failed' };
