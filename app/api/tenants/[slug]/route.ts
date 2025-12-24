@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
-import { tenants } from '@/shared/schema';
-import { eq } from 'drizzle-orm';
 import { checkRateLimit, getRateLimitHeaders } from '@/lib/services/rateLimit';
+import { getCachedTenantBySlug } from '@/lib/services/cache';
 
 function getClientIP(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
@@ -35,13 +33,7 @@ export async function GET(
     
     const { slug } = await params;
     
-    const [tenant] = await db.select({
-      id: tenants.id,
-      name: tenants.name,
-      slug: tenants.slug,
-      status: tenants.status,
-      branding: tenants.branding,
-    }).from(tenants).where(eq(tenants.slug, slug.toLowerCase()));
+    const tenant = await getCachedTenantBySlug(slug);
 
     if (!tenant) {
       return NextResponse.json({ 
