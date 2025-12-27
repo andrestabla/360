@@ -1,12 +1,11 @@
-import { pgTable, text, varchar, integer, timestamp, boolean, json, serial, index } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean, json, serial, index, primaryKey } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import type { AdapterAccountType } from "next-auth/adapters";
 
-export const tenants = pgTable("tenants", {
-  id: varchar("id", { length: 255 }).primaryKey(),
-  name: text("name").notNull(),
-  slug: varchar("slug", { length: 255 }).notNull().unique(),
+export const organizationSettings = pgTable("organization_settings", {
+  id: integer("id").primaryKey().default(1), // Singleton row
+  name: text("name").notNull().default("My Organization"),
   domains: json("domains").$type<string[]>().default([]),
-  status: varchar("status", { length: 50 }).notNull().default("ACTIVE"),
   timezone: varchar("timezone", { length: 100 }).default("UTC"),
   locale: varchar("locale", { length: 20 }).default("es"),
   branding: json("branding").$type<Record<string, unknown>>().default({}),
@@ -19,136 +18,14 @@ export const tenants = pgTable("tenants", {
   contactName: varchar("contact_name", { length: 255 }),
   contactEmail: varchar("contact_email", { length: 255 }),
   contactPhone: varchar("contact_phone", { length: 100 }),
-  users: integer("users").default(0),
   storage: varchar("storage", { length: 50 }).default("0 GB"),
+  plan: varchar("plan", { length: 50 }).notNull().default("ENTERPRISE"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const users = pgTable("users", {
-  id: varchar("id", { length: 255 }).primaryKey(),
-  name: text("name").notNull(),
-  email: varchar("email", { length: 255 }),
-  role: varchar("role", { length: 100 }).notNull(),
-  level: integer("level").default(1),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-  unit: varchar("unit", { length: 255 }),
-  initials: varchar("initials", { length: 10 }),
-  bio: text("bio"),
-  phone: varchar("phone", { length: 50 }),
-  location: varchar("location", { length: 255 }),
-  jobTitle: varchar("job_title", { length: 255 }),
-  language: varchar("language", { length: 20 }).default("es"),
-  timezone: varchar("timezone", { length: 100 }),
-  status: varchar("status", { length: 50 }).notNull().default("ACTIVE"),
-  avatar: text("avatar"),
-  password: text("password"),
-  mustChangePassword: boolean("must_change_password").default(false),
-  inviteSentAt: timestamp("invite_sent_at"),
-  inviteExpiresAt: timestamp("invite_expires_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => [
-  index("idx_users_tenant").on(table.tenantId),
-  index("idx_users_tenant_email").on(table.tenantId, table.email),
-  index("idx_users_tenant_status").on(table.tenantId, table.status),
-]);
-
-export const units = pgTable("units", {
-  id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  parentId: varchar("parent_id", { length: 255 }),
-  managerId: varchar("manager_id", { length: 255 }),
-  level: integer("level").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => [
-  index("idx_units_tenant").on(table.tenantId),
-]);
-
-export const documents = pgTable("documents", {
-  id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  content: text("content"),
-  category: varchar("category", { length: 255 }),
-  unitId: varchar("unit_id", { length: 255 }),
-  ownerId: varchar("owner_id", { length: 255 }),
-  status: varchar("status", { length: 50 }).default("DRAFT"),
-  version: integer("version").default(1),
-  tags: json("tags").$type<string[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => [
-  index("idx_documents_tenant").on(table.tenantId),
-  index("idx_documents_tenant_status").on(table.tenantId, table.status),
-]);
-
-export const conversations = pgTable("conversations", {
-  id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-  type: varchar("type", { length: 20 }).notNull().default("dm"),
-  name: text("name"),
-  title: text("title"),
-  participants: json("participants").$type<string[]>().default([]),
-  lastMessage: text("last_message"),
-  lastMessageAt: timestamp("last_message_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => [
-  index("idx_conversations_tenant").on(table.tenantId),
-]);
-
-export const messages = pgTable("messages", {
-  id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-  conversationId: varchar("conversation_id", { length: 255 }).notNull().references(() => conversations.id, { onDelete: "cascade" }),
-  senderId: varchar("sender_id", { length: 255 }).notNull(),
-  body: text("body").notNull(),
-  bodyType: varchar("body_type", { length: 50 }).default("text"),
-  attachments: json("attachments").$type<Record<string, unknown>[]>().default([]),
-  readBy: json("read_by").$type<string[]>().default([]),
-  replyToMessageId: varchar("reply_to_message_id", { length: 255 }),
-  reactions: json("reactions").$type<Record<string, unknown>[]>().default([]),
-  deletedAt: timestamp("deleted_at"),
-  editedAt: timestamp("edited_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => [
-  index("idx_messages_tenant").on(table.tenantId),
-  index("idx_messages_conversation").on(table.conversationId),
-  index("idx_messages_tenant_conversation_created").on(table.tenantId, table.conversationId, table.createdAt),
-]);
-
-export const workflows = pgTable("workflows", {
-  id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description"),
-  status: varchar("status", { length: 50 }).default("DRAFT"),
-  ownerId: varchar("owner_id", { length: 255 }),
-  steps: json("steps").$type<Record<string, unknown>[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => [
-  index("idx_workflows_tenant").on(table.tenantId),
-]);
-
-export const surveys = pgTable("surveys", {
-  id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description"),
-  status: varchar("status", { length: 50 }).default("DRAFT"),
-  questions: json("questions").$type<Record<string, unknown>[]>().default([]),
-  responses: json("responses").$type<Record<string, unknown>[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => [
-  index("idx_surveys_tenant").on(table.tenantId),
-]);
-
-export const tenantEmailConfigs = pgTable("tenant_email_configs", {
-  id: varchar("id", { length: 255 }).primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).references(() => tenants.id, { onDelete: "cascade" }),
+export const emailSettings = pgTable("email_settings", {
+  id: integer("id").primaryKey().default(1), // Singleton row
   provider: varchar("provider", { length: 50 }).notNull().default("SMTP"),
   smtpHost: varchar("smtp_host", { length: 255 }),
   smtpPort: integer("smtp_port").default(587),
@@ -162,16 +39,184 @@ export const tenantEmailConfigs = pgTable("tenant_email_configs", {
   lastTestedAt: timestamp("last_tested_at"),
   lastTestResult: boolean("last_test_result"),
   lastTestError: text("last_test_error"),
-  createdBy: varchar("created_by", { length: 255 }),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const users = pgTable("users", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  name: text("name").notNull(),
+  email: varchar("email", { length: 255 }),
+  emailVerified: timestamp("email_verified", { mode: "date" }),
+  image: text("image"),
+  role: varchar("role", { length: 100 }).notNull(),
+  level: integer("level").default(1),
+  unit: varchar("unit", { length: 255 }),
+  initials: varchar("initials", { length: 10 }),
+  bio: text("bio"),
+  phone: varchar("phone", { length: 50 }),
+  location: varchar("location", { length: 255 }),
+  jobTitle: varchar("job_title", { length: 255 }),
+  language: varchar("language", { length: 20 }).default("es"),
+  timezone: varchar("timezone", { length: 100 }),
+  status: varchar("status", { length: 50 }).notNull().default("ACTIVE"),
+  avatar: text("avatar"),
+  password: text("password"),
+  mustChangePassword: boolean("must_change_password").default(false),
+  lastLogin: timestamp("last_login"),
+  inviteSentAt: timestamp("invite_sent_at"),
+  inviteExpiresAt: timestamp("invite_expires_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
-  index("idx_tenant_email_configs_tenant").on(table.tenantId),
+  index("idx_users_email").on(table.email),
+  index("idx_users_status").on(table.status),
 ]);
+
+export const accounts = pgTable(
+  "account",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").$type<AdapterAccountType>().notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (account) => [
+    primaryKey({
+      columns: [account.provider, account.providerAccountId],
+    }),
+  ]
+)
+
+export const sessions = pgTable("session", {
+  sessionToken: text("sessionToken").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expires: timestamp("expires", { mode: "date" }).notNull(),
+})
+
+export const verificationTokens = pgTable(
+  "verificationToken",
+  {
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (verificationToken) => [
+    primaryKey({
+      columns: [verificationToken.identifier, verificationToken.token],
+    }),
+  ]
+)
+
+export const authenticators = pgTable(
+  "authenticator",
+  {
+    credentialID: text("credentialID").notNull().unique(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    providerAccountId: text("providerAccountId").notNull(),
+    credentialPublicKey: text("credentialPublicKey").notNull(),
+    counter: integer("counter").notNull(),
+    credentialDeviceType: text("credentialDeviceType").notNull(),
+    credentialBackedUp: boolean("credentialBackedUp").notNull(),
+    transports: text("transports"),
+  },
+  (authenticator) => [
+    primaryKey({
+      columns: [authenticator.userId, authenticator.credentialID],
+    }),
+  ]
+)
+
+export const units = pgTable("units", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  name: text("name").notNull(),
+  parentId: varchar("parent_id", { length: 255 }),
+  managerId: varchar("manager_id", { length: 255 }),
+  level: integer("level").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const documents = pgTable("documents", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  title: text("title").notNull(),
+  content: text("content"),
+  category: varchar("category", { length: 255 }),
+  unitId: varchar("unit_id", { length: 255 }),
+  ownerId: varchar("owner_id", { length: 255 }),
+  status: varchar("status", { length: 50 }).default("DRAFT"),
+  version: integer("version").default(1),
+  tags: json("tags").$type<string[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_documents_status").on(table.status),
+]);
+
+export const conversations = pgTable("conversations", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  type: varchar("type", { length: 20 }).notNull().default("dm"),
+  name: text("name"),
+  title: text("title"),
+  participants: json("participants").$type<string[]>().default([]),
+  lastMessage: text("last_message"),
+  lastMessageAt: timestamp("last_message_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const messages = pgTable("messages", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  conversationId: varchar("conversation_id", { length: 255 }).notNull().references(() => conversations.id, { onDelete: "cascade" }),
+  senderId: varchar("sender_id", { length: 255 }).notNull(),
+  body: text("body").notNull(),
+  bodyType: varchar("body_type", { length: 50 }).default("text"),
+  attachments: json("attachments").$type<Record<string, unknown>[]>().default([]),
+  readBy: json("read_by").$type<string[]>().default([]),
+  replyToMessageId: varchar("reply_to_message_id", { length: 255 }),
+  reactions: json("reactions").$type<Record<string, unknown>[]>().default([]),
+  deletedAt: timestamp("deleted_at"),
+  editedAt: timestamp("edited_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_messages_conversation").on(table.conversationId),
+  index("idx_messages_conversation_created").on(table.conversationId, table.createdAt),
+]);
+
+export const workflows = pgTable("workflows", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: varchar("status", { length: 50 }).default("DRAFT"),
+  ownerId: varchar("owner_id", { length: 255 }),
+  steps: json("steps").$type<Record<string, unknown>[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const surveys = pgTable("surveys", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: varchar("status", { length: 50 }).default("DRAFT"),
+  questions: json("questions").$type<Record<string, unknown>[]>().default([]),
+  responses: json("responses").$type<Record<string, unknown>[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
 export const auditLogs = pgTable("audit_logs", {
   id: serial("id").primaryKey(),
-  tenantId: varchar("tenant_id", { length: 255 }).notNull(),
   userId: varchar("user_id", { length: 255 }),
   action: varchar("action", { length: 255 }).notNull(),
   resource: varchar("resource", { length: 255 }),
@@ -181,73 +226,60 @@ export const auditLogs = pgTable("audit_logs", {
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
-  index("idx_audit_logs_tenant").on(table.tenantId),
-  index("idx_audit_logs_tenant_created").on(table.tenantId, table.createdAt),
+  index("idx_audit_logs_created").on(table.createdAt),
 ]);
 
-export const platformAdmins = pgTable("platform_admins", {
+// =========================================================================
+// 2. TABLAS DE PRODUCTIVIDAD PERSONAL
+// =========================================================================
+
+export const userNotes = pgTable("user_notes", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  name: text("name").notNull(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  password: text("password").notNull(),
-  role: varchar("role", { length: 50 }).notNull().default("SUPER_ADMIN"),
-  avatar: text("avatar"),
-  lastLogin: timestamp("last_login"),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  date: varchar("date", { length: 20 }), // YYYY-MM-DD format
+  isImportant: boolean("is_important").default(false),
+  status: varchar("status", { length: 20 }).notNull().default("ACTIVE"), // ACTIVE or COMPLETED
+  pinned: boolean("pinned").default(false),
+  color: varchar("color", { length: 50 }).default("bg-blue-500"),
+  reminder: json("reminder").$type<{
+    date: string;
+    channel: 'internal' | 'email' | 'both';
+    sent: boolean;
+  }>(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_user_notes_user").on(table.userId),
+  index("idx_user_notes_date").on(table.date),
+  index("idx_user_notes_status").on(table.status),
+]);
 
-export const tenantsRelations = relations(tenants, ({ many }) => ({
-  users: many(users),
-  units: many(units),
-  documents: many(documents),
-  conversations: many(conversations),
-  workflows: many(workflows),
-  surveys: many(surveys),
-}));
+// Removed platformAdmins table. Admins will be users with specific role in the main users table.
 
-export const usersRelations = relations(users, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [users.tenantId],
-    references: [tenants.id],
-  }),
-}));
+// Relations can be simplified as we removed tenant nesting.
+// Most tables were related to tenants. Now they stand alone or related to Users/Units.
 
-export const unitsRelations = relations(units, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [units.tenantId],
-    references: [tenants.id],
-  }),
-}));
-
-export const documentsRelations = relations(documents, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [documents.tenantId],
-    references: [tenants.id],
-  }),
-}));
-
-export const conversationsRelations = relations(conversations, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [conversations.tenantId],
-    references: [tenants.id],
-  }),
+export const conversationsRelations = relations(conversations, ({ many }) => ({
   messages: many(messages),
 }));
 
 export const messagesRelations = relations(messages, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [messages.tenantId],
-    references: [tenants.id],
-  }),
   conversation: one(conversations, {
     fields: [messages.conversationId],
     references: [conversations.id],
   }),
 }));
 
-export type Tenant = typeof tenants.$inferSelect;
-export type InsertTenant = typeof tenants.$inferInsert;
+export const systemEnvironment = pgTable("system_environment", {
+  id: integer("id").primaryKey().default(1),
+  environment: varchar("environment", { length: 50 }).notNull(),
+  fingerprint: varchar("fingerprint", { length: 64 }).notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Unit = typeof units.$inferSelect;
@@ -264,19 +296,11 @@ export type Survey = typeof surveys.$inferSelect;
 export type InsertSurvey = typeof surveys.$inferInsert;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
-export type PlatformAdmin = typeof platformAdmins.$inferSelect;
-export type InsertPlatformAdmin = typeof platformAdmins.$inferInsert;
-export type TenantEmailConfig = typeof tenantEmailConfigs.$inferSelect;
-export type InsertTenantEmailConfig = typeof tenantEmailConfigs.$inferInsert;
-
-export const systemEnvironment = pgTable("system_environment", {
-  id: integer("id").primaryKey().default(1),
-  environment: varchar("environment", { length: 50 }).notNull(),
-  fingerprint: varchar("fingerprint", { length: 64 }).notNull(),
-  description: text("description"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
+export type UserNote = typeof userNotes.$inferSelect;
+export type InsertUserNote = typeof userNotes.$inferInsert;
+export type OrganizationSettings = typeof organizationSettings.$inferSelect;
+export type InsertOrganizationSettings = typeof organizationSettings.$inferInsert;
+export type EmailSettings = typeof emailSettings.$inferSelect;
+export type InsertEmailSettings = typeof emailSettings.$inferInsert;
 export type SystemEnvironment = typeof systemEnvironment.$inferSelect;
 export type InsertSystemEnvironment = typeof systemEnvironment.$inferInsert;
