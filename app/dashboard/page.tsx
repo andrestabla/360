@@ -67,23 +67,42 @@ export default function DashboardPage() {
                 {/* Main Feed */}
                 <div className="lg:col-span-2 space-y-6">
 
-                    {/* Filters */}
-                    <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                        <h2 className="text-xl font-bold text-slate-800">Noticias y Actualizaciones</h2>
-                        <div className="flex gap-2">
+                    {/* Quick Access */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-4">
+                            <span className="text-xl">⚡</span>
+                            <h2 className="text-lg font-bold text-slate-800">Accesos Rápidos</h2>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
                             <button
-                                onClick={() => setFilter('all')}
-                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${filter === 'all' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                onClick={() => router.push('/dashboard/repository')}
+                                className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 hover:shadow-md hover:border-slate-300 transition-all group flex flex-col items-center gap-3"
                             >
-                                Todas
+                                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                                    <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm font-semibold text-slate-700">Repositorio</span>
                             </button>
                             <button
-                                onClick={() => setFilter('official')}
-                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${filter === 'official' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                onClick={() => router.push('/dashboard/workflows')}
+                                className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 hover:shadow-md hover:border-slate-300 transition-all group flex flex-col items-center gap-3"
                             >
-                                Oficiales
+                                <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+                                    <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm font-semibold text-slate-700">Mis Workflows</span>
                             </button>
                         </div>
+                    </div>
+
+                    {/* News Section Header */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-blue-600">📢</span>
+                        <h2 className="text-lg font-bold text-slate-800">Noticias Institucionales</h2>
                     </div>
 
                     {/* Pinned Posts */}
@@ -154,27 +173,24 @@ export default function DashboardPage() {
 
                 {/* Right Sidebar */}
                 <div className="space-y-6">
-                    {/* Quick Access or Widgets */}
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                        <h3 className="font-bold text-slate-800 mb-4">Accesos Rápidos</h3>
-                        <div className="grid grid-cols-2 gap-3">
-                            <button onClick={() => router.push('/dashboard/projects')} className="p-3 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-700 text-sm font-medium text-center transition-colors">
-                                Proyectos
-                            </button>
-                            <button onClick={() => router.push('/dashboard/repository')} className="p-3 bg-purple-50 hover:bg-purple-100 rounded-lg text-purple-700 text-sm font-medium text-center transition-colors">
-                                Documentos
-                            </button>
-                            <button onClick={() => router.push('/dashboard/directory')} className="p-3 bg-emerald-50 hover:bg-emerald-100 rounded-lg text-emerald-700 text-sm font-medium text-center transition-colors">
-                                Directorio
-                            </button>
-                            <button onClick={() => router.push('/dashboard/surveys')} className="p-3 bg-amber-50 hover:bg-amber-100 rounded-lg text-amber-700 text-sm font-medium text-center transition-colors">
-                                Encuestas
-                            </button>
-                        </div>
-                    </div>
-
                     {/* Work Notes Widget */}
                     <WorkNotesWidget userId={currentUser.id} />
+
+                    {/* Workflows Widget */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
+                            <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                </svg>
+                            </div>
+                            <h3 className="font-bold text-slate-800 text-sm">Mis Workflows</h3>
+                            <a href="/dashboard/workflows" className="ml-auto text-xs text-blue-600 hover:text-blue-700 font-medium">Ver todo</a>
+                        </div>
+                        <div className="p-6 text-center">
+                            <div className="text-slate-400 text-sm">No has creado solicitudes.</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
