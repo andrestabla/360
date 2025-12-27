@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  X, 
+import {
+  X,
   CloudArrowUp,
-  CaretRight, 
-  CaretLeft, 
-  CheckCircle, 
+  CaretRight,
+  CaretLeft,
+  CheckCircle,
   Warning,
   ArrowSquareOut,
   SpinnerGap,
@@ -29,7 +29,6 @@ interface StorageSetupWizardProps {
   onClose: () => void;
   onComplete: (config: StorageConfigData) => void;
   existingConfig?: StorageConfigData | null;
-  tenantId: string;
 }
 
 export interface StorageConfigData {
@@ -59,12 +58,11 @@ const getProviderIcon = (iconName: string) => {
   return icons[iconName] || CloudArrowUp;
 };
 
-export default function StorageSetupWizard({ 
-  isOpen, 
-  onClose, 
+export default function StorageSetupWizard({
+  isOpen,
+  onClose,
   onComplete,
-  existingConfig,
-  tenantId 
+  existingConfig
 }: StorageSetupWizardProps) {
   const [currentStep, setCurrentStep] = useState<WizardStep>('provider');
   const [selectedProvider, setSelectedProvider] = useState<string>('');
@@ -133,18 +131,17 @@ export default function StorageSetupWizard({
   const handleVerify = async () => {
     setIsVerifying(true);
     setVerificationResult(null);
-    
+
     try {
       const response = await fetch('/api/admin/storage-config/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenantId,
           provider: selectedProvider,
           config,
         }),
       });
-      
+
       const data = await response.json();
       setVerificationResult({
         success: data.success,
@@ -167,13 +164,12 @@ export default function StorageSetupWizard({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenantId,
           provider: selectedProvider,
           config,
           enabled: true,
         }),
       });
-      
+
       if (response.ok) {
         onComplete({
           provider: selectedProvider,
@@ -191,7 +187,7 @@ export default function StorageSetupWizard({
 
   const renderFieldInput = (field: StorageProviderPreset['fields'][0]) => {
     const commonClasses = "w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none";
-    
+
     if (field.type === 'select' && field.options) {
       return (
         <select
@@ -264,20 +260,18 @@ export default function StorageSetupWizard({
         <div className="flex items-center justify-between px-6 py-4 bg-slate-800/50 border-b border-slate-700 overflow-x-auto">
           {STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center flex-shrink-0">
-              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                currentStep === step.id 
-                  ? 'bg-blue-500/20 text-blue-400' 
-                  : index < currentStepIndex 
-                    ? 'text-green-400' 
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${currentStep === step.id
+                  ? 'bg-blue-500/20 text-blue-400'
+                  : index < currentStepIndex
+                    ? 'text-green-400'
                     : 'text-slate-500'
-              }`}>
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                  index < currentStepIndex 
-                    ? 'bg-green-500/20' 
-                    : currentStep === step.id 
-                      ? 'bg-blue-500/30' 
-                      : 'bg-slate-700'
                 }`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index < currentStepIndex
+                    ? 'bg-green-500/20'
+                    : currentStep === step.id
+                      ? 'bg-blue-500/30'
+                      : 'bg-slate-700'
+                  }`}>
                   {index < currentStepIndex ? <Check weight="bold" className="w-4 h-4" /> : index + 1}
                 </div>
                 <span className="hidden sm:inline text-sm font-medium">{step.label}</span>
@@ -302,18 +296,15 @@ export default function StorageSetupWizard({
                     <button
                       key={provider.id}
                       onClick={() => handleProviderSelect(provider.id)}
-                      className={`flex items-center gap-4 p-4 rounded-xl border transition-all text-left ${
-                        selectedProvider === provider.id
+                      className={`flex items-center gap-4 p-4 rounded-xl border transition-all text-left ${selectedProvider === provider.id
                           ? 'border-blue-500 bg-blue-500/10'
                           : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
-                      }`}
+                        }`}
                     >
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        selectedProvider === provider.id ? 'bg-blue-500/20' : 'bg-slate-700'
-                      }`}>
-                        <Icon className={`w-6 h-6 ${
-                          selectedProvider === provider.id ? 'text-blue-400' : 'text-slate-400'
-                        }`} weight="fill" />
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${selectedProvider === provider.id ? 'bg-blue-500/20' : 'bg-slate-700'
+                        }`}>
+                        <Icon className={`w-6 h-6 ${selectedProvider === provider.id ? 'text-blue-400' : 'text-slate-400'
+                          }`} weight="fill" />
                       </div>
                       <div className="flex-1">
                         <h3 className="font-medium text-white">{provider.label}</h3>
@@ -433,11 +424,10 @@ export default function StorageSetupWizard({
               </button>
 
               {verificationResult && (
-                <div className={`rounded-xl p-4 flex items-start gap-3 ${
-                  verificationResult.success 
-                    ? 'bg-green-500/10 border border-green-500/30' 
+                <div className={`rounded-xl p-4 flex items-start gap-3 ${verificationResult.success
+                    ? 'bg-green-500/10 border border-green-500/30'
                     : 'bg-red-500/10 border border-red-500/30'
-                }`}>
+                  }`}>
                   {verificationResult.success ? (
                     <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" weight="fill" />
                   ) : (

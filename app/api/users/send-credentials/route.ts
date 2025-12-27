@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendUserCredentialsEmail, resendCredentialsEmail } from '@/lib/services/tenantEmailService';
 import { DB } from '@/lib/data';
-import { db } from '@/server/db';
-import { tenants } from '@/shared/schema';
-import { eq } from 'drizzle-orm';
 
 function generateTemporaryPassword(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
@@ -32,50 +29,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'El usuario no tiene email configurado' }, { status: 400 });
     }
 
-    let tenantName = 'Maturity 360';
-    let tenantSlug = user.tenantId;
+    // Global settings for Single Tenant - tenantName removed as unused
 
-    const memTenant = DB.tenants.find(t => t.id === user.tenantId);
-    if (memTenant) {
-      tenantName = memTenant.name;
-      tenantSlug = memTenant.slug || user.tenantId;
-    }
-    
-    try {
-      const dbTenants = await db.select().from(tenants).where(eq(tenants.id, user.tenantId));
-      if (dbTenants.length > 0) {
-        tenantName = dbTenants[0].name;
-        tenantSlug = dbTenants[0].slug || user.tenantId;
-      }
-    } catch (dbError) {
-      console.log('Using in-memory tenant data');
-    }
-
-    const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+    const baseUrl = process.env.REPLIT_DEV_DOMAIN
       ? `https://${process.env.REPLIT_DEV_DOMAIN}`
       : process.env.NEXT_PUBLIC_APP_URL || 'https://maturity.online';
-    
-    const loginUrl = `${baseUrl}/${tenantSlug}`;
+
+    // Global Login URL (no tenant slug)
+    const loginUrl = `${baseUrl}/login`;
 
     const password = customPassword || generateTemporaryPassword();
 
     let result;
+    // Updated calls without tenantId and tenantName
     if (type === 'resend') {
       result = await resendCredentialsEmail(
-        user.tenantId,
         user.email,
         user.name,
         password,
-        tenantName,
         loginUrl
       );
     } else {
       result = await sendUserCredentialsEmail(
-        user.tenantId,
         user.email,
         user.name,
         password,
-        tenantName,
         loginUrl
       );
     }

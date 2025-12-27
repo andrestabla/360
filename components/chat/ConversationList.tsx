@@ -9,7 +9,7 @@ import NewOneOnOneModal from './NewOneOnOneModal';
 import NewGroupModal from './NewGroupModal';
 
 export default function ConversationList() {
-    const { currentTenantId, currentUser, refreshUnreadCount } = useApp();
+    const { currentUser, refreshUnreadCount } = useApp();
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -24,10 +24,10 @@ export default function ConversationList() {
     const activeId = searchParams.get('chatId');
 
     const loadConversations = useCallback(async () => {
-        if (!currentUser || !currentTenantId) return;
+        if (!currentUser) return;
         setLoading(true);
         try {
-            const res = await ChatService.getConversations(currentUser.id, currentTenantId);
+            const res = await ChatService.getConversations(currentUser.id);
             const enriched = res.data.map(c => c.id === activeId ? { ...c, unreadCount: 0 } : c);
             setConversations(enriched);
         } catch (e) {
@@ -35,7 +35,7 @@ export default function ConversationList() {
         } finally {
             setLoading(false);
         }
-    }, [currentUser, currentTenantId, refreshKey]);
+    }, [currentUser, refreshKey]);
 
     useEffect(() => {
         loadConversations();
@@ -45,7 +45,7 @@ export default function ConversationList() {
         const interval = setInterval(() => {
             // specific logic to update unread counts or last messages without full reload visual glitch?
             // For prototype, simple SWR-like refresh is fine
-            ChatService.getConversations(currentUser!.id, currentTenantId!).then(res => {
+            ChatService.getConversations(currentUser!.id).then(res => {
                 setConversations(prev => {
                     return res.data.map(c => c.id === activeId ? { ...c, unreadCount: 0 } : c);
                 });
@@ -53,7 +53,7 @@ export default function ConversationList() {
         }, 5000);
         return () => clearInterval(interval);
 
-    }, [loadConversations, currentUser, currentTenantId]);
+    }, [loadConversations, currentUser]);
 
 
     const handleSelect = (conv: Conversation) => {
@@ -67,10 +67,10 @@ export default function ConversationList() {
     };
 
     const handleCreateDM = async (targetUserId: string) => {
-        if (!currentTenantId || !currentUser) return;
+        if (!currentUser) return;
         setShowNewChat(false);
         try {
-            const result = await ChatService.createDM(currentTenantId, currentUser.id, targetUserId);
+            const result = await ChatService.createDM(currentUser.id, targetUserId);
             const chatId = result.data?.id;
             if (!chatId) throw new Error('Failed to create chat');
 
@@ -86,10 +86,10 @@ export default function ConversationList() {
     };
 
     const handleCreateGroup = async (title: string, memberIds: string[]) => {
-        if (!currentTenantId || !currentUser) return;
+        if (!currentUser) return;
         setShowNewGroup(false);
         try {
-            const result = await ChatService.createGroup(currentTenantId, title, currentUser.id, memberIds);
+            const result = await ChatService.createGroup(title, currentUser.id, memberIds);
             const chatId = result.data?.id;
             if (!chatId) throw new Error('Failed to create group');
 
@@ -111,11 +111,11 @@ export default function ConversationList() {
                 setSearchResults(null);
                 return;
             }
-            if (!currentUser || !currentTenantId) return;
+            if (!currentUser) return;
 
             setIsSearching(true);
             try {
-                const results = await ChatService.searchConversations(currentUser.id, currentTenantId, search);
+                const results = await ChatService.searchConversations(currentUser.id, search);
                 setSearchResults(results);
             } catch (e) {
                 console.error(e);
@@ -125,7 +125,7 @@ export default function ConversationList() {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [search, currentUser, currentTenantId]);
+    }, [search, currentUser]);
 
     // Handle Search Input Change
     // No change needed to JSX aside from binding

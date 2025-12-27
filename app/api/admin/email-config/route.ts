@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getEmailConfig, saveEmailConfig, testEmailConfig, deleteEmailConfig } from '@/lib/services/tenantEmailService';
+import { getEmailConfig, saveEmailConfig, deleteEmailConfig } from '@/lib/services/tenantEmailService';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
-    
-    const config = await getEmailConfig(tenantId);
-    
-    return NextResponse.json({ 
-      success: true, 
-      config: config || null 
+    // Removed tenantId param
+    const config = await getEmailConfig();
+
+    return NextResponse.json({
+      success: true,
+      config: config || null
     });
   } catch (error: any) {
     console.error('Error getting email config:', error);
@@ -21,28 +19,28 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
-      tenantId, 
-      smtpHost, 
-      smtpPort, 
-      smtpUser, 
-      smtpPassword, 
-      smtpSecure, 
-      fromName, 
-      fromEmail, 
+    const {
+      // Removed tenantId
+      smtpHost,
+      smtpPort,
+      smtpUser,
+      smtpPassword,
+      smtpSecure,
+      fromName,
+      fromEmail,
       replyToEmail,
-      createdBy 
+      createdBy
     } = body;
 
     if (!smtpHost || !smtpPort || !smtpUser || !fromEmail) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Campos requeridos: smtpHost, smtpPort, smtpUser, fromEmail' 
+      return NextResponse.json({
+        success: false,
+        error: 'Campos requeridos: smtpHost, smtpPort, smtpUser, fromEmail'
       }, { status: 400 });
     }
 
     const result = await saveEmailConfig({
-      tenantId,
+      // Removed tenantId arg
       smtpHost,
       smtpPort: parseInt(smtpPort),
       smtpUser,
@@ -51,7 +49,7 @@ export async function POST(request: NextRequest) {
       fromName: fromName || 'Maturity 360',
       fromEmail,
       replyToEmail,
-      createdBy: createdBy || 'admin',
+      // createdBy ignored by service currently but fine to pass if we update service later
     });
 
     return NextResponse.json(result);
@@ -63,10 +61,8 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
-    
-    const result = await deleteEmailConfig(tenantId);
+    // Removed tenantId param
+    const result = await deleteEmailConfig();
     return NextResponse.json(result);
   } catch (error: any) {
     console.error('Error deleting email config:', error);

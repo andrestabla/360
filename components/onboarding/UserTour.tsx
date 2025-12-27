@@ -14,7 +14,7 @@ interface TourStep {
 }
 
 export default function UserTour() {
-    const { currentUser, isSuperAdmin, currentTenant } = useApp();
+    const { currentUser, isSuperAdmin } = useApp();
     const [isVisible, setIsVisible] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
@@ -39,7 +39,7 @@ export default function UserTour() {
         const commonSteps: TourStep[] = [
             {
                 id: 'welcome',
-                title: `Bienvenido a ${currentTenant?.name || 'la Plataforma'}`,
+                title: `Bienvenido a Maturity360`,
                 content: 'Te damos la bienvenida a tu nuevo espacio de trabajo. Acompáñanos en un breve recorrido para conocer las herramientas principales.',
                 placement: 'center'
             }
@@ -52,15 +52,8 @@ export default function UserTour() {
                 {
                     id: 'nav-platform',
                     title: 'Gestión Global',
-                    content: 'Aquí tienes acceso total a todos los Tenants, Usuarios y Configuraciones de la plataforma.',
+                    content: 'Aquí tienes acceso total a todos los Usuarios y Configuraciones de la plataforma.',
                     targetId: 'nav-item--dashboard', // Points to Dashboard/Global
-                    placement: 'right'
-                },
-                {
-                    id: 'nav-tenants',
-                    title: 'Tenants',
-                    content: 'Administra las organizaciones y sus suscripciones desde aquí.',
-                    targetId: 'nav-item--dashboard-tenants',
                     placement: 'right'
                 },
                 {
@@ -72,80 +65,68 @@ export default function UserTour() {
                 }
             ];
         } else {
-            // --- Tenant User (Admin or Regular) ---
+            // --- User (Admin or Regular) ---
 
-            // 1. Dashboard (Always available if enabled or default)
-            if (currentTenant?.features?.includes('DASHBOARD')) {
-                roleSteps.push({
-                    id: 'nav-dashboard',
-                    title: 'Tu Panel de Control',
-                    content: 'Visualiza indicadores clave y el estado general de tu organización.',
-                    targetId: 'nav-item--dashboard',
-                    placement: 'right'
-                });
-            }
+            // 1. Dashboard
+            roleSteps.push({
+                id: 'nav-dashboard',
+                title: 'Tu Panel de Control',
+                content: 'Visualiza indicadores clave y el estado general.',
+                targetId: 'nav-item--dashboard',
+                placement: 'right'
+            });
 
             // 2. Chat
-            if (currentTenant?.features?.includes('CHAT')) {
-                roleSteps.push({
-                    id: 'nav-chat',
-                    title: 'Mensajería y Colaboración',
-                    content: 'Comunícate en tiempo real con tu equipo y crea grupos de trabajo.',
-                    targetId: 'nav-item--dashboard-chat',
-                    placement: 'right'
-                });
-            }
+            roleSteps.push({
+                id: 'nav-chat',
+                title: 'Mensajería y Colaboración',
+                content: 'Comunícate en tiempo real con tu equipo y crea grupos de trabajo.',
+                targetId: 'nav-item--dashboard-chat',
+                placement: 'right'
+            });
 
             // 3. Repository
-            if (currentTenant?.features?.includes('REPOSITORY')) {
-                roleSteps.push({
-                    id: 'nav-repo',
-                    title: 'Repositorio Documental',
-                    content: 'Centraliza y gestiona todos los documentos importantes de tu organización.',
-                    targetId: 'nav-item--dashboard-repository',
-                    placement: 'right'
-                });
-            }
+            roleSteps.push({
+                id: 'nav-repo',
+                title: 'Repositorio Documental',
+                content: 'Centraliza y gestiona todos los documentos importantes.',
+                targetId: 'nav-item--dashboard-repository',
+                placement: 'right'
+            });
 
             // 4. Workflows / Projects
-            if (currentTenant?.features?.includes('WORKFLOWS')) {
-                roleSteps.push({
-                    id: 'nav-workflows',
-                    title: 'Proyectos y Flujos',
-                    content: 'Organiza tus proyectos, tareas y entregables en un solo lugar.',
-                    targetId: 'nav-item--dashboard-workflows',
-                    placement: 'right'
-                });
-            }
+            roleSteps.push({
+                id: 'nav-workflows',
+                title: 'Proyectos y Flujos',
+                content: 'Organiza tus proyectos, tareas y entregables en un solo lugar.',
+                targetId: 'nav-item--dashboard-workflows',
+                placement: 'right'
+            });
 
             // 5. Analytics
-            if (currentTenant?.features?.includes('ANALYTICS')) {
-                roleSteps.push({
-                    id: 'nav-analytics',
-                    title: 'Analítica Avanzada',
-                    content: 'Explora datos y reportes detallados para la toma de decisiones.',
-                    targetId: 'nav-item--dashboard-analytics',
-                    placement: 'right'
-                });
-            }
+            roleSteps.push({
+                id: 'nav-analytics',
+                title: 'Analítica Avanzada',
+                content: 'Explora datos y reportes detallados para la toma de decisiones.',
+                targetId: 'nav-item--dashboard-analytics',
+                placement: 'right'
+            });
 
             // 6. Surveys
-            if (currentTenant?.features?.includes('SURVEYS')) {
-                roleSteps.push({
-                    id: 'nav-surveys',
-                    title: 'Encuestas y Evaluaciones',
-                    content: 'Gestiona clima laboral, evaluaciones de madurez y formularios.',
-                    targetId: 'nav-item--dashboard-surveys',
-                    placement: 'right'
-                });
-            }
+            roleSteps.push({
+                id: 'nav-surveys',
+                title: 'Encuestas y Evaluaciones',
+                content: 'Gestiona clima laboral, evaluaciones de madurez y formularios.',
+                targetId: 'nav-item--dashboard-surveys',
+                placement: 'right'
+            });
 
             // 7. Admin / Manager Steps
             if (currentUser?.level !== undefined && currentUser.level <= 2) {
                 roleSteps.push({
                     id: 'nav-admin',
                     title: 'Administración',
-                    content: 'Configura unidades, roles, usuarios y parámetros de tu Tenant.',
+                    content: 'Configura unidades, roles, usuarios y parámetros.',
                     targetId: 'nav-item--dashboard-admin',
                     placement: 'right'
                 });
@@ -156,7 +137,7 @@ export default function UserTour() {
                 roleSteps.push({
                     id: 'nav-units',
                     title: 'Estructura Organizacional',
-                    content: 'Define y gestiona las unidades y jerarquías de tu empresa.',
+                    content: 'Define y gestiona las unidades y jerarquías.',
                     targetId: 'nav-item--dashboard-admin-units',
                     placement: 'right'
                 });
@@ -182,7 +163,7 @@ export default function UserTour() {
         ];
 
         return finalSteps;
-    }, [currentUser, isSuperAdmin, currentTenant]);
+    }, [currentUser, isSuperAdmin]);
 
     // Update Rect on Step Change
     useEffect(() => {

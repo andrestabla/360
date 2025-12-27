@@ -9,7 +9,7 @@ import AdminGuide from '@/components/AdminGuide';
 import { unitsGuide } from '@/lib/adminGuides';
 
 export default function UnitsPage() {
-    const { currentUser, currentTenant, isSuperAdmin, createUnit, updateUnit, deleteUnit } = useApp();
+    const { currentUser, isSuperAdmin, createUnit, updateUnit, deleteUnit } = useApp();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -33,11 +33,10 @@ export default function UnitsPage() {
         setRefreshKey(prev => prev + 1);
     };
 
-    // Get units for current tenant
+    // Get all units
     const tenantUnits = useMemo(() => {
-        if (!currentTenant) return [];
-        return DB.units.filter(u => u.tenantId === currentTenant.id);
-    }, [currentTenant, refreshKey]);
+        return DB.units;
+    }, [refreshKey]);
 
     // Build hierarchy
     const rootUnits = useMemo(() => tenantUnits.filter(u => !u.parentId || u.parentId === 'ROOT' || u.depth === 0), [tenantUnits]);
@@ -45,13 +44,14 @@ export default function UnitsPage() {
 
     // Get eligible users for owner
     const eligibleUsers = useMemo(() => {
-        if (!currentTenant) return [];
-        return DB.users.filter(u => u.tenantId === currentTenant.id);
-    }, [currentTenant]);
+        return DB.users;
+    }, []);
 
     if (!currentUser) return <div className="p-8 text-center text-slate-500">Cargando sesión...</div>;
 
-    if (currentUser.level !== 1) {
+    const isAdmin = isSuperAdmin || currentUser.level === 1 || currentUser.role?.toLowerCase().includes('admin');
+
+    if (!isAdmin) {
         return (
             <div className="p-8 text-center bg-red-50 text-red-600 rounded-xl m-8">
                 <h3 className="font-bold">Acceso Denegado</h3>
@@ -60,7 +60,7 @@ export default function UnitsPage() {
         );
     }
 
-    if (!currentTenant) return <div className="p-8 text-center text-slate-500">Cargando datos de la organización...</div>;
+
 
     const handleCreate = (type: 'UNIT' | 'PROCESS', parentId: string = '') => {
         setEditingId(null);
@@ -167,7 +167,7 @@ export default function UnitsPage() {
                     <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
                         <TreeStructure className="text-blue-600" /> Estructura Organizacional
                     </h1>
-                    <p className="text-sm text-slate-500 mt-1">Define y gestiona las áreas y departamentos de {currentTenant.name}.</p>
+                    <p className="text-sm text-slate-500 mt-1">Define y gestiona las áreas y departamentos.</p>
                 </div>
                 <div className="flex gap-3">
                     <button
@@ -315,7 +315,6 @@ export default function UnitsPage() {
                 isOpen={isImportModalOpen}
                 onClose={() => setIsImportModalOpen(false)}
                 onImport={handleImport}
-                tenantId={currentTenant.id}
             />
 
             {/* Admin Guide */}

@@ -3,14 +3,13 @@
 import { useState, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { DB, PlatformAuditEvent } from '@/lib/data';
-import { ShieldCheck, MagnifyingGlass, DownloadSimple, Funnel, ArrowClockwise, CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { ShieldCheck, MagnifyingGlass, DownloadSimple, ArrowClockwise, CaretLeft, CaretRight } from '@phosphor-icons/react';
 
 const ITEMS_PER_PAGE = 20;
 
 export default function AuditPage() {
     const { isSuperAdmin } = useApp();
     const [search, setSearch] = useState('');
-    const [filterTenantId, setFilterTenantId] = useState('ALL');
     const [filterEventType, setFilterEventType] = useState('ALL');
     const [filterDateFrom, setFilterDateFrom] = useState('');
     const [filterDateTo, setFilterDateTo] = useState('');
@@ -36,11 +35,7 @@ export default function AuditPage() {
             const matchesSearch =
                 log.event_type.toLowerCase().includes(searchLower) ||
                 log.actor_name.toLowerCase().includes(searchLower) ||
-                (log.target_tenant_id && log.target_tenant_id.toLowerCase().includes(searchLower)) ||
                 (log.target_user_id && log.target_user_id.toLowerCase().includes(searchLower));
-
-            // Tenant Filter
-            const matchesTenant = filterTenantId === 'ALL' || log.target_tenant_id === filterTenantId;
 
             // Type Filter
             const matchesType = filterEventType === 'ALL' || log.event_type === filterEventType;
@@ -57,9 +52,9 @@ export default function AuditPage() {
                 matchesDate = matchesDate && new Date(log.created_at) < endDate;
             }
 
-            return matchesSearch && matchesTenant && matchesType && matchesDate;
+            return matchesSearch && matchesType && matchesDate;
         }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    }, [search, filterTenantId, filterEventType, filterDateFrom, filterDateTo, refreshKey]);
+    }, [search, filterEventType, filterDateFrom, filterDateTo, refreshKey]);
 
     // Pagination
     const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
@@ -68,14 +63,13 @@ export default function AuditPage() {
     // Export Handler
     const handleExport = () => {
         // Generate CSV content
-        const headers = ['ID', 'Fecha', 'Evento', 'Actor ID', 'Actor Nombre', 'Target Tenant', 'Target User', 'IP', 'Metadata'];
+        const headers = ['ID', 'Fecha', 'Evento', 'Actor ID', 'Actor Nombre', 'Target User', 'IP', 'Metadata'];
         const rows = filteredLogs.map(log => [
             log.id,
             new Date(log.created_at).toISOString(),
             log.event_type,
             log.actor_id,
             `"${log.actor_name}"`,
-            log.target_tenant_id || '',
             log.target_user_id || '',
             log.ip,
             `"${JSON.stringify(log.metadata).replace(/"/g, '""')}"` // Escape quotes for CSV
@@ -103,7 +97,7 @@ export default function AuditPage() {
             event_type: 'AUDIT_EXPORT',
             actor_id: 'superadmin', // Assuming current user is always superadmin here
             actor_name: 'Super Admin',
-            metadata: { count: filteredLogs.length, filters: { search, filterTenantId, filterEventType } },
+            metadata: { count: filteredLogs.length, filters: { search, filterEventType } },
             ip: '127.0.0.1',
             created_at: new Date().toISOString()
         });
@@ -138,25 +132,11 @@ export default function AuditPage() {
                             <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 ring-purple-500/20 outline-none"
-                                placeholder="Buscar por evento, usuario, tenant..."
+                                placeholder="Buscar por evento, usuario..."
                                 value={search}
                                 onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
                             />
                         </div>
-                    </div>
-
-                    <div className="w-48">
-                        <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Tenant</label>
-                        <select
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 ring-purple-500/20 outline-none bg-slate-50"
-                            value={filterTenantId}
-                            onChange={e => { setFilterTenantId(e.target.value); setCurrentPage(1); }}
-                        >
-                            <option value="ALL">Todos los Tenants</option>
-                            {DB.tenants.map(t => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
-                            ))}
-                        </select>
                     </div>
 
                     <div className="w-48">
@@ -234,11 +214,6 @@ export default function AuditPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex flex-col gap-1">
-                                                {log.target_tenant_id && (
-                                                    <span className="text-xs text-slate-600 flex items-center gap-1">
-                                                        🏢 {DB.tenants.find(t => t.id === log.target_tenant_id)?.name || log.target_tenant_id}
-                                                    </span>
-                                                )}
                                                 {log.target_user_id && (
                                                     <span className="text-xs text-slate-500 flex items-center gap-1">
                                                         👤 {DB.users.find(u => u.id === log.target_user_id)?.name || log.target_user_id}

@@ -6,30 +6,34 @@ import { X, BellRinging } from '@phosphor-icons/react';
 import { Message } from '@/types/chat';
 
 export default function ChatLayout({ sidebar, children }: { sidebar: ReactNode; children: ReactNode }) {
-    const { currentUser, currentTenantId } = useApp();
+    // Removed currentTenantId
+    const { currentUser } = useApp();
     const [notifications, setNotifications] = useState<Message[]>([]);
 
     // Polling for Notifications
     useEffect(() => {
-        if (!currentUser || !currentTenantId) return;
+        if (!currentUser) return;
 
         let lastCheck = new Date().toISOString();
 
         const interval = setInterval(async () => {
             const now = new Date().toISOString();
             try {
-                const newMsgs = await ChatService.checkNewMessages(currentUser.id, currentTenantId, lastCheck);
+                // Pass '' or 'global' or 'platform' as tenantId if the service requires it strictly string
+                // But generally we should update ChatService.checkNewMessages signature too. 
+                // Assuming we'll fix service next, or pass a placeholder.
+                const newMsgs = await ChatService.checkNewMessages(currentUser.id, lastCheck);
                 if (newMsgs.length > 0) {
                     setNotifications(prev => [...prev, ...newMsgs]);
-                    // Play Audio? 
-                    // const audio = new Audio('/sounds/notification.mp3'); audio.play();
                 }
                 lastCheck = now;
-            } catch (e) { console.error("Poll fail", e); }
-        }, 8000); // 8 seconds poll
+            } catch (e) {
+                // Silent fail or low noise
+            }
+        }, 8000);
 
         return () => clearInterval(interval);
-    }, [currentUser, currentTenantId]);
+    }, [currentUser]);
 
     const removeNotif = (id: string) => {
         setNotifications(prev => prev.filter(n => n.id !== id));

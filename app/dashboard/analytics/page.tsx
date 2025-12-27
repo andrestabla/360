@@ -246,7 +246,7 @@ const MOCK_DASHBOARDS: Dashboard[] = [
 const runQuery = (
     config: WidgetConfig,
     dataset: Dataset,
-    context: { projects: Project[], folders: any[], users: any[], tenantId: string },
+    context: { projects: Project[], folders: any[], users: any[] },
     activeFilters?: Record<string, string>
 ): any => {
     if (!dataset) return null;
@@ -456,17 +456,16 @@ const runQuery = (
 // --- COMPONENT ---
 
 export default function AnalyticsModule() {
-    const { currentTenantId, version } = useApp(); // Used for reactivity
+    const { version } = useApp(); // Used for reactivity
     const [view, setView] = useState<'HUB' | 'EDITOR'>('HUB');
     const [activeTab, setActiveTab] = useState<'DASHBOARDS' | 'DATASETS'>('DASHBOARDS');
 
     // Data (Real Context)
     const contextData = useMemo(() => ({
-        projects: DB.projects.filter(p => p.tenantId === currentTenantId),
-        folders: DB.projectFolders.filter(f => f.tenantId === currentTenantId),
-        users: DB.users,
-        tenantId: currentTenantId || ''
-    }), [currentTenantId, version]);
+        projects: DB.projects,
+        folders: DB.projectFolders,
+        users: DB.users
+    }), [version]);
 
     // Generate Dynamic Datasets from Folders
     const folderDatasets: Dataset[] = useMemo(() => {
@@ -551,14 +550,14 @@ export default function AnalyticsModule() {
     // Obtener unidades disponibles en dashboards
     const dashboardAvailableUnits = useMemo(() => {
         return DB.units
-            .filter(u => u.tenantId === currentTenantId && u.type === 'UNIT')
+            .filter(u => u.type === 'UNIT')
             .map(u => u.name);
-    }, [currentTenantId]);
+    }, []);
 
     // Obtener procesos disponibles según la unidad seleccionada
     const dashboardAvailableProcesses = useMemo(() => {
-        const allProjects = DB.projects.filter(p => p.tenantId === currentTenantId);
-        const allFolders = DB.projectFolders.filter(f => f.tenantId === currentTenantId);
+        const allProjects = DB.projects;
+        const allFolders = DB.projectFolders;
 
         const processesFromData = new Set<string>();
 
@@ -579,7 +578,7 @@ export default function AnalyticsModule() {
         });
 
         return Array.from(processesFromData).sort();
-    }, [currentTenantId, dashboardFilterUnit]);
+    }, [dashboardFilterUnit]);
 
     // Resetear filtro de proceso cuando cambie la unidad
     useEffect(() => {
@@ -2417,7 +2416,6 @@ function DashboardCard({ dashboard, onClick, onDelete, onEdit, onShare }: {
 }
 
 function EditDashboardPropertiesModal({ dashboard, onClose, onSave }: any) {
-    const { currentTenantId } = useApp();
     const [title, setTitle] = useState(dashboard.title);
     const [description, setDescription] = useState(dashboard.description);
     const [access, setAccess] = useState(dashboard.access);
@@ -2431,7 +2429,7 @@ function EditDashboardPropertiesModal({ dashboard, onClose, onSave }: any) {
     useEffect(() => {
         if (dashboard.unit) {
             // Buscar si es un área o subárea
-            const unitObj = DB.units.find(u => u.name === dashboard.unit && u.tenantId === currentTenantId);
+            const unitObj = DB.units.find(u => u.name === dashboard.unit);
             if (unitObj) {
                 if (unitObj.depth === 1) {
                     // Es un área
@@ -2447,20 +2445,19 @@ function EditDashboardPropertiesModal({ dashboard, onClose, onSave }: any) {
                 }
             }
         }
-    }, [dashboard.unit, currentTenantId]);
+    }, [dashboard.unit]);
 
     // Obtener áreas disponibles (depth 1)
     const availableAreas = useMemo(() => {
         return DB.units
-            .filter(u => u.tenantId === currentTenantId && u.type === 'UNIT' && u.depth === 1)
+            .filter(u => u.type === 'UNIT' && u.depth === 1)
             .map(u => u.name);
-    }, [currentTenantId]);
+    }, []);
 
     // Obtener subáreas disponibles según el área seleccionada
     const availableSubareas = useMemo(() => {
         if (selectedArea === 'GLOBAL' || !selectedArea) return [];
         const areaUnit = DB.units.find(u =>
-            u.tenantId === currentTenantId &&
             u.type === 'UNIT' &&
             u.name === selectedArea &&
             u.depth === 1
@@ -2468,9 +2465,9 @@ function EditDashboardPropertiesModal({ dashboard, onClose, onSave }: any) {
         if (!areaUnit) return [];
 
         return DB.units
-            .filter(u => u.tenantId === currentTenantId && u.type === 'UNIT' && u.parentId === areaUnit.id)
+            .filter(u => u.type === 'UNIT' && u.parentId === areaUnit.id)
             .map(u => u.name);
-    }, [currentTenantId, selectedArea]);
+    }, [selectedArea]);
 
     // Obtener procesos disponibles según área o subárea
     const availableProcesses = useMemo(() => {
@@ -2480,16 +2477,15 @@ function EditDashboardPropertiesModal({ dashboard, onClose, onSave }: any) {
         if (!parentUnitName) return [];
 
         const parentUnit = DB.units.find(u =>
-            u.tenantId === currentTenantId &&
             u.name === parentUnitName
         );
 
         if (!parentUnit) return [];
 
         return DB.units
-            .filter(u => u.tenantId === currentTenantId && u.type === 'PROCESS' && u.parentId === parentUnit.id)
+            .filter(u => u.type === 'PROCESS' && u.parentId === parentUnit.id)
             .map(u => u.name);
-    }, [currentTenantId, selectedArea, selectedSubarea]);
+    }, [selectedArea, selectedSubarea]);
 
     // Resetear subárea cuando cambie el área
     useEffect(() => {
@@ -2619,7 +2615,6 @@ function EditDashboardPropertiesModal({ dashboard, onClose, onSave }: any) {
 }
 
 function CreateDashboardModal({ onClose, onCreate, folderDatasets }: any) {
-    const { currentTenantId } = useApp();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [access, setAccess] = useState<AccessLevel>('PRIVATE');
@@ -2633,15 +2628,14 @@ function CreateDashboardModal({ onClose, onCreate, folderDatasets }: any) {
     // Obtener áreas disponibles (depth 1)
     const availableAreas = useMemo(() => {
         return DB.units
-            .filter(u => u.tenantId === currentTenantId && u.type === 'UNIT' && u.depth === 1)
+            .filter(u => u.type === 'UNIT' && u.depth === 1)
             .map(u => u.name);
-    }, [currentTenantId]);
+    }, []);
 
     // Obtener subáreas disponibles según el área seleccionada
     const availableSubareas = useMemo(() => {
         if (selectedArea === 'GLOBAL' || !selectedArea) return [];
         const areaUnit = DB.units.find(u =>
-            u.tenantId === currentTenantId &&
             u.type === 'UNIT' &&
             u.name === selectedArea &&
             u.depth === 1
@@ -2649,9 +2643,9 @@ function CreateDashboardModal({ onClose, onCreate, folderDatasets }: any) {
         if (!areaUnit) return [];
 
         return DB.units
-            .filter(u => u.tenantId === currentTenantId && u.type === 'UNIT' && u.parentId === areaUnit.id)
+            .filter(u => u.type === 'UNIT' && u.parentId === areaUnit.id)
             .map(u => u.name);
-    }, [currentTenantId, selectedArea]);
+    }, [selectedArea]);
 
     // Obtener procesos disponibles según área o subárea
     const availableProcesses = useMemo(() => {
@@ -2661,16 +2655,15 @@ function CreateDashboardModal({ onClose, onCreate, folderDatasets }: any) {
         if (!parentUnitName) return [];
 
         const parentUnit = DB.units.find(u =>
-            u.tenantId === currentTenantId &&
             u.name === parentUnitName
         );
 
         if (!parentUnit) return [];
 
         return DB.units
-            .filter(u => u.tenantId === currentTenantId && u.type === 'PROCESS' && u.parentId === parentUnit.id)
+            .filter(u => u.type === 'PROCESS' && u.parentId === parentUnit.id)
             .map(u => u.name);
-    }, [currentTenantId, selectedArea, selectedSubarea]);
+    }, [selectedArea, selectedSubarea]);
 
     // Resetear subárea cuando cambie el área
     useEffect(() => {
@@ -2868,7 +2861,6 @@ function CreateDashboardModal({ onClose, onCreate, folderDatasets }: any) {
 }
 
 function CreateDatasetModal({ onClose, onCreate }: any) {
-    const { currentTenantId } = useApp();
     const [title, setTitle] = useState('');
     const [source, setSource] = useState('FILE');
     const [file, setFile] = useState<File | null>(null);
@@ -2879,17 +2871,15 @@ function CreateDatasetModal({ onClose, onCreate }: any) {
 
     const repositoryDocs = useMemo(() => {
         return DB.docs.filter(d =>
-            d.tenantId === currentTenantId &&
             d.title.toLowerCase().includes(searchTerm.toLowerCase())
         );
-    }, [currentTenantId, searchTerm]);
+    }, [searchTerm]);
 
     const activeProjects = useMemo(() => {
         return DB.projects.filter(p =>
-            p.tenantId === currentTenantId &&
             p.title.toLowerCase().includes(searchTerm.toLowerCase())
         );
-    }, [currentTenantId, searchTerm]);
+    }, [searchTerm]);
 
     const organizationalStorages = [
         { id: 'ST-01', name: 'Amazon S3 (Data Lake Principal)', provider: 'S3' },

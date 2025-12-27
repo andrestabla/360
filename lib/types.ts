@@ -431,6 +431,8 @@ export interface PlatformSettings {
     passwordMinLength?: number;
     mfaPolicy?: 'none' | 'optional' | 'required';
   };
+  storage?: TenantStorageConfig;
+  roleTemplates?: Record<number, string[]>;
 }
 
 export interface Attachment {

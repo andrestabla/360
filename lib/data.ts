@@ -46,13 +46,22 @@ export const PERMISSIONS: Permission[] = [
   'IMPERSONATE_USERS'
 ];
 
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  link?: string;
+  read: boolean;
+  timestamp: string;
+}
+
 export interface User {
   id: string;
   name: string;
   email?: string;
   role: string;
   level: number;
-  tenantId: string;
   unit: string;
   initials: string;
   bio?: string;
@@ -69,82 +78,8 @@ export interface User {
   inviteExpiresAt?: string;
 }
 
-export interface TenantBranding {
-  app_title: string;
-  primary_color: string;
-  accent_color: string;
-  login_bg_color?: string;
-  login_bg_image?: string;
-  login_description?: string;
-  support_message?: string;
-  logo_url?: string;
-  updated_at: string;
-}
-
-export interface TenantPolicy {
-  session_duration_minutes?: number;
-  max_failed_logins: number;
-  lock_minutes: number;
-  mfa_required?: boolean;
-  ip_whitelist?: string[];
-  sso_enabled: boolean;
-  sso_providers?: string[];
-  file_max_size_bytes: number;
-  allowed_mime_types: string[];
-  audit_retention_days: number;
-  updated_at: string;
-}
-
-export interface TenantSSOConfig {
-  provider: string;
-  clientId: string;
-  clientSecret: string;
-  domain?: string;
-  authUrl?: string;
-  tokenUrl?: string;
-  enabled: boolean;
-}
-
-export interface TenantIntegration {
-  id: string;
-  type: string;
-  name: string;
-  enabled: boolean;
-  active?: boolean;
-  baseUrl?: string;
-  apiKey?: string;
-  description?: string;
-  config?: Record<string, unknown>;
-}
-
-export interface Tenant {
-  id: string;
-  name: string;
-  slug: string;
-  domains: string[];
-  status: 'ACTIVE' | 'SUSPENDED' | 'DELETED';
-  timezone: string;
-  locale: string;
-  branding: TenantBranding;
-  policies: TenantPolicy;
-  ssoConfig?: TenantSSOConfig;
-  storageConfig?: TenantStorageConfig;
-  integrations?: TenantIntegration[];
-  features: string[];
-  sector?: string;
-  contactName?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  users: number;
-  storage: string;
-  created_at: string;
-  updated_at?: string;
-  roleTemplates: Record<number, string[]>;
-}
-
 export interface Unit {
   id: string;
-  tenantId: string;
   name: string;
   code?: string;
   parentId?: string;
@@ -158,7 +93,6 @@ export interface Unit {
 
 export interface Post {
   id: string;
-  tenantId: string;
   author: string;
   authorId?: string;
   title: string;
@@ -197,7 +131,6 @@ export interface PublicComment {
 
 export interface Doc {
   id: string;
-  tenantId: string;
   title: string;
   type: string;
   size: string;
@@ -262,7 +195,6 @@ export interface ProjectPhase {
 
 export interface Project {
   id: string;
-  tenantId: string;
   title: string;
   description?: string;
   startDate?: string;
@@ -283,7 +215,6 @@ export type ProjectParticipant = string | { userId: string; role?: string };
 
 export interface ProjectFolder {
   id: string;
-  tenantId: string;
   name: string;
   description?: string;
   parentId?: string;
@@ -299,7 +230,6 @@ export interface ProjectFolder {
 
 export interface RepoFolder {
   id: string;
-  tenantId: string;
   name: string;
   parentId?: string;
   description?: string;
@@ -321,7 +251,6 @@ export interface WorkflowStep {
 
 export interface WorkflowDefinition {
   id: string;
-  tenantId: string;
   title: string;
   description?: string;
   unit?: string;
@@ -353,7 +282,6 @@ export interface WorkflowComment {
 export interface WorkflowCase {
   id: string;
   workflowId: string;
-  tenantId: string;
   title: string;
   status: 'open' | 'in_progress' | 'completed' | 'cancelled' | 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'RECEIVED' | 'PENDING' | 'REJECTED' | 'APPROVED' | 'CLOSED';
   creatorId: string;
@@ -368,56 +296,11 @@ export interface WorkflowCase {
 
 export type StorageProvider = 'GOOGLE_DRIVE' | 'DROPBOX' | 'ONEDRIVE' | 'SHAREPOINT' | 'S3' | 'LOCAL';
 
-export interface GoogleDriveConfig {
-  clientId: string;
-  clientSecret: string;
-  refreshToken: string;
-  folderId?: string;
-}
-
-export interface DropboxConfig {
-  accessToken: string;
-  rootPath?: string;
-}
-
-export interface OneDriveConfig {
-  clientId: string;
-  clientSecret: string;
-  refreshToken: string;
-  driveId?: string;
-}
-
-export interface SharePointConfig {
-  siteUrl: string;
-  clientId: string;
-  clientSecret: string;
-  libraryName?: string;
-}
-
-export interface S3Config {
-  accessKeyId: string;
-  secretAccessKey: string;
-  bucket: string;
-  region: string;
-  endpoint?: string;
-}
-
-export interface TenantStorageConfig {
-  provider: StorageProvider;
-  enabled: boolean;
-  config: GoogleDriveConfig | DropboxConfig | OneDriveConfig | SharePointConfig | S3Config | Record<string, any>;
-  encryptedConfig?: string;
-  lastTested?: string;
-  testStatus?: 'success' | 'failed';
-  testMessage?: string;
-}
-
 export interface PlatformAuditEvent {
   id: string;
   event_type: string;
   actor_id: string;
   actor_name: string;
-  target_tenant_id?: string;
   target_user_id?: string;
   metadata: Record<string, unknown>;
   ip: string;
@@ -446,11 +329,22 @@ export interface PlatformSettings {
     passwordMinLength?: number;
     mfaPolicy?: 'none' | 'optional' | 'required';
   };
+  storage?: any;
+  roleTemplates?: Record<number, string[]>;
+  plan?: 'STARTER' | 'PRO' | 'ENTERPRISE' | 'CUSTOM';
+  branding?: {
+    appTitle?: string;
+    portalDescription?: string;
+    supportMessage?: string;
+    primaryColor?: string;
+    loginBackgroundColor?: string;
+    loginBackgroundImage?: string;
+    logoUrl?: string;
+  };
 }
 
 export interface Attachment {
   id: string;
-  tenant_id?: string;
   message_id?: string;
   file_name?: string;
   mime_type?: string;
@@ -472,7 +366,6 @@ export interface MessageReaction {
 
 export interface ChatMessage {
   id: string;
-  tenant_id: string;
   conversation_id: string;
   sender_id: string;
   body: string;
@@ -500,7 +393,6 @@ export interface ConversationMember {
 
 export interface Conversation {
   id: string;
-  tenant_id: string;
   type: 'dm' | 'group';
   name?: string;
   title?: string;
@@ -517,7 +409,6 @@ export interface Conversation {
 export interface WorkNote {
   id: string;
   userId: string;
-  tenantId: string;
   title: string;
   content: string;
   color: string;
@@ -554,7 +445,6 @@ export interface SurveyQuestion {
 
 export interface Survey {
   id: string;
-  tenantId: string;
   title: string;
   description?: string;
   status: 'draft' | 'active' | 'closed' | 'DRAFT' | 'ACTIVE' | 'CLOSED' | 'OPEN' | 'SCHEDULED' | 'ARCHIVED';
@@ -579,7 +469,6 @@ export interface Survey {
 export interface SurveyResponse {
   id: string;
   surveyId: string;
-  tenantId: string;
   userId: string;
   respondentId?: string;
   answers: Record<string, unknown>;
@@ -596,7 +485,6 @@ export interface EmailOutbox {
 }
 
 interface Database {
-  tenants: Tenant[];
   users: User[];
   units: Unit[];
   posts: Post[];
@@ -617,7 +505,6 @@ interface Database {
   surveys: Survey[];
   publicComments: PublicComment[];
   emailOutbox: EmailOutbox[];
-  storageConfigs: Record<string, TenantStorageConfig>;
   contextChats: Record<string, { text: string; type: string }[]>;
   save: () => void;
   load: () => void;
@@ -627,6 +514,14 @@ const defaultPlatformSettings: PlatformSettings = {
   defaultModules: ['DASHBOARD', 'WORKFLOWS', 'REPOSITORY', 'CHAT', 'ANALYTICS'],
   defaultLocale: 'es-CO',
   defaultTimezone: 'America/Bogota',
+  plan: 'ENTERPRISE',
+  branding: {
+    appTitle: 'Algoritmo',
+    portalDescription: 'Plataforma de gestión integral.',
+    primaryColor: '#3b82f6',
+    loginBackgroundColor: '#ffffff',
+    loginBackgroundImage: '/images/auth/login-bg-3.jpg',
+  },
   authPolicy: {
     allowRegistration: true,
     requireEmailVerification: true,
@@ -634,90 +529,9 @@ const defaultPlatformSettings: PlatformSettings = {
     enforceSSO: false,
     passwordMinLength: 8,
     mfaPolicy: 'optional'
-  }
-};
-
-const sampleTenants: Tenant[] = [
-  {
-    id: 'T1',
-    name: 'Empresa Demo',
-    slug: 'demo',
-    domains: ['demo.maturity.online'],
-    status: 'ACTIVE',
-    timezone: 'America/Bogota',
-    locale: 'es-CO',
-    branding: {
-      app_title: 'Empresa Demo',
-      primary_color: '#2563eb',
-      accent_color: '#1d4ed8',
-      updated_at: new Date().toISOString()
-    },
-    policies: {
-      max_failed_logins: 3,
-      lock_minutes: 15,
-      file_max_size_bytes: 10 * 1024 * 1024,
-      allowed_mime_types: ['application/pdf', 'image/png', 'image/jpeg'],
-      audit_retention_days: 90,
-      sso_enabled: false,
-      updated_at: new Date().toISOString()
-    },
-    features: ['DASHBOARD', 'WORKFLOWS', 'REPOSITORY', 'CHAT', 'ANALYTICS', 'SURVEYS'],
-    sector: 'technology',
-    contactName: 'Juan Admin',
-    contactEmail: 'admin@demo.com',
-    contactPhone: '+57 300 123 4567',
-    users: 5,
-    storage: '2.5 GB',
-    created_at: '2024-01-15T10:00:00Z',
-    roleTemplates: {
-      1: [...PERMISSIONS],
-      2: ['MANAGE_UNITS', 'VIEW_ALL_DOCS', 'UPLOAD_DOCS', 'VIEW_ANALYTICS'],
-      3: ['VIEW_ALL_DOCS', 'UPLOAD_DOCS'],
-      4: ['VIEW_ALL_DOCS'],
-      5: ['VIEW_ALL_DOCS'],
-      6: []
-    }
   },
-  {
-    id: 'T2',
-    name: 'Corporacion Alpha',
-    slug: 'alpha',
-    domains: ['alpha.maturity.online'],
-    status: 'ACTIVE',
-    timezone: 'America/Bogota',
-    locale: 'es-CO',
-    branding: {
-      app_title: 'Corporacion Alpha',
-      primary_color: '#059669',
-      accent_color: '#047857',
-      updated_at: new Date().toISOString()
-    },
-    policies: {
-      max_failed_logins: 5,
-      lock_minutes: 30,
-      file_max_size_bytes: 20 * 1024 * 1024,
-      allowed_mime_types: ['application/pdf'],
-      audit_retention_days: 180,
-      sso_enabled: true,
-      updated_at: new Date().toISOString()
-    },
-    features: ['DASHBOARD', 'WORKFLOWS', 'REPOSITORY', 'CHAT'],
-    sector: 'finance',
-    contactName: 'Maria Gonzalez',
-    contactEmail: 'admin@alpha.com',
-    users: 12,
-    storage: '8.2 GB',
-    created_at: '2024-02-20T14:30:00Z',
-    roleTemplates: {
-      1: [...PERMISSIONS],
-      2: ['MANAGE_UNITS', 'VIEW_ALL_DOCS', 'UPLOAD_DOCS'],
-      3: ['VIEW_ALL_DOCS', 'UPLOAD_DOCS'],
-      4: ['VIEW_ALL_DOCS'],
-      5: [],
-      6: []
-    }
-  }
-];
+  storage: undefined
+};
 
 const sampleUsers: User[] = [
   {
@@ -726,7 +540,6 @@ const sampleUsers: User[] = [
     email: 'admin@demo.com',
     role: 'Admin Global',
     level: 1,
-    tenantId: 'T1',
     unit: 'Direccion General',
     initials: 'JA',
     bio: 'Administrador principal de la plataforma',
@@ -743,7 +556,6 @@ const sampleUsers: User[] = [
     email: 'maria@demo.com',
     role: 'Gerente',
     level: 2,
-    tenantId: 'T1',
     unit: 'Operaciones',
     initials: 'ML',
     bio: 'Gerente de Operaciones',
@@ -760,7 +572,6 @@ const sampleUsers: User[] = [
     email: 'carlos@demo.com',
     role: 'Analista',
     level: 3,
-    tenantId: 'T1',
     unit: 'TI',
     initials: 'CP',
     bio: 'Analista de sistemas',
@@ -775,7 +586,6 @@ const sampleUsers: User[] = [
     email: 'ana@demo.com',
     role: 'Usuario',
     level: 4,
-    tenantId: 'T1',
     unit: 'Recursos Humanos',
     initials: 'AG',
     bio: 'Coordinadora de RRHH',
@@ -788,7 +598,6 @@ const sampleUsers: User[] = [
     email: 'pedro@alpha.com',
     role: 'Admin Global',
     level: 1,
-    tenantId: 'T2',
     unit: 'Direccion',
     initials: 'PM',
     bio: 'Director Alpha',
@@ -800,7 +609,6 @@ const sampleUsers: User[] = [
 const sampleUnits: Unit[] = [
   {
     id: 'U-T1-1',
-    tenantId: 'T1',
     name: 'Direccion General',
     depth: 0,
     type: 'UNIT',
@@ -808,7 +616,6 @@ const sampleUnits: Unit[] = [
   },
   {
     id: 'U-T1-2',
-    tenantId: 'T1',
     name: 'Operaciones',
     depth: 1,
     parentId: 'U-T1-1',
@@ -817,7 +624,6 @@ const sampleUnits: Unit[] = [
   },
   {
     id: 'U-T1-3',
-    tenantId: 'T1',
     name: 'TI',
     depth: 1,
     parentId: 'U-T1-1',
@@ -826,7 +632,6 @@ const sampleUnits: Unit[] = [
   },
   {
     id: 'U-T1-4',
-    tenantId: 'T1',
     name: 'Recursos Humanos',
     depth: 1,
     parentId: 'U-T1-1',
@@ -837,134 +642,95 @@ const sampleUnits: Unit[] = [
 
 const samplePosts: Post[] = [
   {
-    id: 'post-1',
-    tenantId: 'T1',
+    id: 'p1',
     author: 'Juan Admin',
     authorId: 'u1',
-    title: 'Bienvenidos a Maturity360',
-    excerpt: 'Conoce nuestra nueva plataforma de gestion organizacional',
-    content: 'Estamos emocionados de presentar Maturity360, una plataforma integral para la gestion de madurez organizacional. Esta herramienta les permitira mejorar sus procesos, colaborar de manera efectiva y alcanzar sus objetivos estrategicos.',
-    category: 'Anuncios',
+    title: 'Bienvenidos a Maturity 360',
+    content: 'Estamos lanzando la nueva plataforma de proyectos.',
+    category: 'Oficial',
     status: 'published',
     audience: 'all',
-    date: new Date().toISOString(),
-    likes: 15,
-    commentsCount: 3
+    date: 'Hace 2 horas',
+    likes: 12,
+    commentsCount: 3,
+    mediaType: 'image',
+    mediaUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7'
   },
   {
-    id: 'post-2',
-    tenantId: 'T1',
+    id: 'p2',
     author: 'Maria Lopez',
     authorId: 'u2',
-    title: 'Nuevos procedimientos operativos',
-    excerpt: 'Actualizacion de los procedimientos del area de operaciones',
-    content: 'Se han actualizado los procedimientos operativos para mejorar la eficiencia. Por favor revisen los documentos adjuntos en el repositorio.',
-    category: 'Operaciones',
+    title: 'Actualizacion de Politicas',
+    content: 'Se han actualizado las politicas de seguridad.',
+    category: 'RRHH',
     status: 'published',
-    audience: 'unit',
-    date: new Date(Date.now() - 86400000).toISOString(),
-    likes: 8,
-    commentsCount: 1
+    audience: 'all',
+    date: 'Ayer',
+    likes: 5,
+    commentsCount: 0
   }
 ];
 
 const sampleDocs: Doc[] = [
   {
-    id: 'doc-1',
-    tenantId: 'T1',
-    title: 'Manual de Procesos v2.0',
+    id: 'd1',
+    title: 'Manual de Usuario',
     type: 'PDF',
-    size: '2.5 MB',
-    version: '2.0',
+    size: '2.4 MB',
+    version: '1.0',
     status: 'active',
     authorId: 'u1',
     unit: 'Direccion General',
     visibility: 'public',
-    tags: ['procesos', 'manual', 'calidad'],
-    likes: 12,
-    commentsCount: 4,
-    date: new Date().toISOString()
+    tags: ['manual', 'guia'],
+    likes: 8,
+    commentsCount: 1,
+    date: '2024-03-01'
   },
   {
-    id: 'doc-2',
-    tenantId: 'T1',
-    title: 'Politica de Seguridad',
-    type: 'PDF',
-    size: '1.2 MB',
-    version: '1.5',
+    id: 'd2',
+    title: 'Reporte Financiero Q1',
+    type: 'XLSX',
+    size: '1.1 MB',
+    version: '1.2',
     status: 'active',
-    authorId: 'u3',
+    authorId: 'u2',
     unit: 'TI',
     visibility: 'public',
-    tags: ['seguridad', 'TI', 'politicas'],
-    likes: 8,
-    commentsCount: 2,
-    date: new Date(Date.now() - 172800000).toISOString()
+    tags: ['finanzas', 'q1'],
+    likes: 3,
+    commentsCount: 0,
+    date: '2024-03-15'
   }
 ];
 
 const sampleProjects: Project[] = [
   {
-    id: 'proj-1',
-    tenantId: 'T1',
-    title: 'Implementacion ISO 9001',
-    description: 'Proyecto de certificacion en calidad ISO 9001:2015',
-    startDate: '2024-01-01',
-    endDate: '2024-12-31',
-    status: 'active',
+    id: 'pj1',
+    title: 'Implementacion ISO',
+    description: 'Proyecto para certificacion ISO 9001',
+    status: 'ACTIVE',
     creatorId: 'u1',
-    createdAt: '2024-01-01T10:00:00Z',
-    participants: ['u1', 'u2', 'u3'],
-    phases: [
-      {
-        id: 'phase-1',
-        name: 'Diagnostico',
-        order: 1,
-        status: 'completed',
-        activities: [
-          {
-            id: 'act-1',
-            name: 'Evaluacion inicial',
-            status: 'completed',
-            participants: ['u1', 'u2'],
-            documents: []
-          }
-        ]
-      },
-      {
-        id: 'phase-2',
-        name: 'Implementacion',
-        order: 2,
-        status: 'in_progress',
-        activities: [
-          {
-            id: 'act-2',
-            name: 'Documentacion de procesos',
-            status: 'in_progress',
-            participants: ['u2', 'u3'],
-            documents: []
-          }
-        ]
-      }
-    ],
-    color: '#2563eb'
+    createdAt: '2024-01-20',
+    participants: ['u1', 'u2'],
+    phases: [],
+    color: '#3b82f6',
+    unit: 'Calidad'
   }
 ];
 
 const sampleConversations: Conversation[] = [
   {
-    id: 'conv-1',
-    tenant_id: 'T1',
+    id: 'c1',
     type: 'dm',
     participants: ['u1', 'u2'],
-    lastMessage: 'Hola, necesito revisar el documento',
-    lastMessageAt: new Date().toISOString(),
-    unreadCount: 0,
-    createdAt: new Date(Date.now() - 86400000 * 7).toISOString()
+    lastMessage: 'Hola, revisaste el documento?',
+    lastMessageAt: '10:30 AM',
+    unreadCount: 1,
+    createdAt: '2024-03-01'
   },
   {
     id: 'conv-2',
-    tenant_id: 'T1',
     type: 'group',
     name: 'Equipo de Proyecto ISO',
     participants: ['u1', 'u2', 'u3'],
@@ -977,42 +743,26 @@ const sampleConversations: Conversation[] = [
 
 const sampleMessages: ChatMessage[] = [
   {
-    id: 'msg-1',
-    tenant_id: 'T1',
-    conversation_id: 'conv-1',
+    id: 'm1',
+    conversation_id: 'c1',
     sender_id: 'u2',
-    body: 'Hola, necesito revisar el documento',
+    body: 'Hola, revisaste el documento?',
     body_type: 'text',
-    created_at: new Date().toISOString(),
-    senderName: 'Maria Lopez'
-  },
-  {
-    id: 'msg-2',
-    tenant_id: 'T1',
-    conversation_id: 'conv-2',
-    sender_id: 'u1',
-    body: 'Reunion manana a las 10am',
-    body_type: 'text',
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-    senderName: 'Juan Admin'
+    created_at: '2024-03-20T10:30:00Z',
+    senderName: 'Maria Lopez',
+    status: 'sent'
   }
 ];
 
-const sampleWorkflowDefinitions: WorkflowDefinition[] = [
+const sampleWorkflows: WorkflowDefinition[] = [
   {
-    id: 'wf-def-1',
-    tenantId: 'T1',
-    title: 'Solicitud de Vacaciones',
-    description: 'Proceso para solicitar vacaciones',
-    unit: 'Recursos Humanos',
-    icon: 'calendar',
-    schema: [
-      { id: 'step-1', name: 'Solicitud', type: 'task' },
-      { id: 'step-2', name: 'Aprobacion Jefe', type: 'approval', assigneeRole: 'Gerente' },
-      { id: 'step-3', name: 'Notificacion RRHH', type: 'notification' }
-    ],
-    slaHours: 48,
-    active: true
+    id: 'wf1',
+    title: 'Aprobacion de Gastos',
+    description: 'Proceso para aprobar gastos superiores a $1000',
+    ownerId: 'u1',
+    active: true,
+    schema: [],
+    unit: 'Finanzas'
   }
 ];
 
@@ -1020,33 +770,17 @@ const sampleWorkflowCases: WorkflowCase[] = [];
 
 const sampleSurveys: Survey[] = [
   {
-    id: 'survey-1',
-    tenantId: 'T1',
-    title: 'Diagnostico de Madurez Organizacional',
-    description: 'Evaluacion inicial del nivel de madurez',
+    id: 's1',
+    title: 'Clima Laboral 2024',
     status: 'active',
     questions: [
-      {
-        id: 'q1',
-        text: 'Como calificaria el nivel de documentacion de procesos?',
-        type: 'scale',
-        required: true,
-        dimension: 'Procesos'
-      },
-      {
-        id: 'q2',
-        text: 'La organizacion cuenta con indicadores de gestion definidos?',
-        type: 'boolean',
-        required: true,
-        dimension: 'Medicion'
-      }
+      { id: 'q1', type: 'scale', title: 'Satisfaccion', required: true, scale: 5 }
     ],
-    createdAt: new Date().toISOString()
+    createdAt: '2024-03-01'
   }
 ];
 
 export const DB: Database = {
-  tenants: sampleTenants,
   users: sampleUsers,
   units: sampleUnits,
   posts: samplePosts,
@@ -1054,20 +788,10 @@ export const DB: Database = {
   projects: sampleProjects,
   projectFolders: [],
   repoFolders: [],
-  workflowDefinitions: sampleWorkflowDefinitions,
-  workflowCases: sampleWorkflowCases,
+  workflowDefinitions: sampleWorkflows,
+  workflowCases: [],
   platformAudit: [],
-  platformAdmins: [
-    {
-      id: 'admin-1',
-      name: 'Super Admin',
-      email: 'superadmin@maturity.online',
-      role: 'SUPER_ADMIN',
-      status: 'ACTIVE',
-      mfaEnabled: true,
-      lastLogin: new Date().toISOString()
-    }
-  ],
+  platformAdmins: [],
   platformSettings: defaultPlatformSettings,
   conversations: sampleConversations,
   conversationMembers: [],
@@ -1077,14 +801,12 @@ export const DB: Database = {
   surveys: sampleSurveys,
   publicComments: [],
   emailOutbox: [],
-  storageConfigs: {},
   contextChats: {},
 
-  save: function() {
+  save: function () {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('m360_db', JSON.stringify({
-          tenants: this.tenants,
           users: this.users,
           units: this.units,
           posts: this.posts,
@@ -1100,8 +822,7 @@ export const DB: Database = {
           workNotes: this.workNotes,
           surveyResponses: this.surveyResponses,
           surveys: this.surveys,
-          publicComments: this.publicComments,
-          storageConfigs: this.storageConfigs
+          publicComments: this.publicComments
         }));
       } catch (e) {
         console.error('Failed to save DB:', e);
@@ -1109,7 +830,7 @@ export const DB: Database = {
     }
   },
 
-  load: function() {
+  load: function () {
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem('m360_db');

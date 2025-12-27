@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-import { testEmailConfig, sendTenantEmail } from '@/lib/services/tenantEmailService';
+import { testEmailConfig, sendEmail } from '@/lib/services/tenantEmailService';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
-      tenantId, 
+    const {
       sendTestTo,
       isDraft,
       smtpHost,
@@ -43,15 +42,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const verifyResult = await testEmailConfig(tenantId);
-    
+    // Global test config
+    const verifyResult = await testEmailConfig();
+
     if (!verifyResult.success) {
       return NextResponse.json(verifyResult);
     }
 
     if (sendTestTo) {
-      const sendResult = await sendTenantEmail({
-        tenantId,
+      const sendResult = await sendEmail({
         to: sendTestTo,
         subject: 'Prueba de configuración de correo - Maturity 360',
         html: `

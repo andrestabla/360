@@ -9,36 +9,30 @@ import {
 } from '@phosphor-icons/react';
 
 export default function AuditPage() {
-    const { isSuperAdmin, currentTenant, currentUser } = useApp();
+    const { isSuperAdmin, currentUser, platformSettings } = useApp();
     const [search, setSearch] = useState('');
-    const [filterTenant, setFilterTenant] = useState('ALL');
     const [filterType, setFilterType] = useState('ALL');
 
     // Authorization Check
-    const hasAccess = isSuperAdmin || currentTenant?.roleTemplates[currentUser?.level || 6]?.includes('VIEW_AUDIT'); // Simplified check based on permission availability if not superadmin
+    const hasAccess = isSuperAdmin || platformSettings.roleTemplates?.[currentUser?.level || 6]?.includes('VIEW_AUDIT');
 
-    // Get Unique Event Types & Tenants for filters
+    // Get Unique Event Types
     const eventTypes = useMemo(() => Array.from(new Set(DB.platformAudit.map(e => e.event_type))), []);
-    const tenants = useMemo(() => DB.tenants, []);
 
     // Filter Logic
     const filteredLogs = useMemo(() => {
         return DB.platformAudit.filter(log => {
-            // Permission Scope: SuperAdmin sees ALL, Tenant Admin sees ONLY their tenant
-            if (!isSuperAdmin && log.target_tenant_id !== currentTenant?.id) return false;
-
             // UI Filters
             const matchSearch =
                 log.actor_name.toLowerCase().includes(search.toLowerCase()) ||
                 log.event_type.toLowerCase().includes(search.toLowerCase()) ||
                 (log.metadata && JSON.stringify(log.metadata).toLowerCase().includes(search.toLowerCase()));
 
-            const matchTenant = filterTenant === 'ALL' || log.target_tenant_id === filterTenant;
             const matchType = filterType === 'ALL' || log.event_type === filterType;
 
-            return matchSearch && matchTenant && matchType;
+            return matchSearch && matchType;
         }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    }, [search, filterTenant, filterType, isSuperAdmin, currentTenant]);
+    }, [search, filterType]);
 
     // Export Handler
     const handleExport = (format: 'CSV' | 'JSON') => {
@@ -54,13 +48,12 @@ export default function AuditPage() {
             fileName += '.json';
         } else {
             // CSV
-            const headers = ['ID', 'Fecha', 'Tipo Evento', 'Actor', 'Tenant ID', 'IP', 'Metadata'];
+            const headers = ['ID', 'Fecha', 'Tipo Evento', 'Actor', 'IP', 'Metadata'];
             const rows = filteredLogs.map(l => [
                 l.id,
                 l.created_at,
                 l.event_type,
                 l.actor_name,
-                l.target_tenant_id || '-',
                 l.ip,
                 JSON.stringify(l.metadata || {}).replace(/"/g, '""') // Escape quotes
             ]);
@@ -93,7 +86,7 @@ export default function AuditPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
                         <ShieldCheck className="text-blue-600" weight="duotone" />
-                        Auditoría {isSuperAdmin ? 'Global' : 'Corporativa'}
+                        Auditoría del Sistema
                     </h1>
                     <p className="text-slate-500 text-sm mt-1">
                         Registro inmutable de actividades y seguridad del sistema.
@@ -121,21 +114,6 @@ export default function AuditPage() {
                     />
                 </div>
 
-                {isSuperAdmin && (
-                    <div className="relative min-w-[200px]">
-                        <Buildings className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <select
-                            className="w-full pl-9 pr-8 py-2 border rounded-lg bg-white text-sm outline-none focus:border-blue-500 appearance-none cursor-pointer"
-                            value={filterTenant}
-                            onChange={e => setFilterTenant(e.target.value)}
-                        >
-                            <option value="ALL">Todos los Tenants</option>
-                            {tenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                        </select>
-                        <Funnel className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={12} />
-                    </div>
-                )}
-
                 <div className="relative min-w-[200px]">
                     <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <select
@@ -158,14 +136,13 @@ export default function AuditPage() {
                             <th className="px-6 py-3 w-[180px]">Fecha / Hora</th>
                             <th className="px-6 py-3 w-[200px]">Actor</th>
                             <th className="px-6 py-3 w-[250px]">Acción</th>
-                            {isSuperAdmin && <th className="px-6 py-3">Tenant</th>}
                             <th className="px-6 py-3">Detalles</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                         {filteredLogs.length === 0 ? (
                             <tr>
-                                <td colSpan={isSuperAdmin ? 5 : 4} className="p-8 text-center text-slate-400">
+                                <td colSpan={4} className="p-8 text-center text-slate-400">
                                     No se encontraron registros de auditoría con los filtros actuales.
                                 </td>
                             </tr>
@@ -189,18 +166,6 @@ export default function AuditPage() {
                                             {log.event_type}
                                         </span>
                                     </td>
-                                    {isSuperAdmin && (
-                                        <td className="px-6 py-4 text-slate-600">
-                                            {log.target_tenant_id ? (
-                                                <span className="flex items-center gap-1">
-                                                    <Buildings size={14} className="text-slate-400" />
-                                                    {tenants.find(t => t.id === log.target_tenant_id)?.name || log.target_tenant_id}
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-400 italic">Sistema Global</span>
-                                            )}
-                                        </td>
-                                    )}
                                     <td className="px-6 py-4 text-slate-500 font-mono text-xs truncate max-w-xs">
                                         {JSON.stringify(log.metadata)}
                                     </td>

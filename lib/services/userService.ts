@@ -1,6 +1,6 @@
 import { db } from '@/server/db';
-import { users, tenants } from '@/shared/schema';
-import { eq, and } from 'drizzle-orm';
+import { users } from '@/shared/schema';
+import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
 const SALT_ROUNDS = 12;
@@ -10,7 +10,6 @@ export interface CreateUserInput {
   email: string;
   password?: string;
   role: string;
-  tenantId: string;
   unit?: string;
   jobTitle?: string;
   phone?: string;
@@ -23,7 +22,6 @@ export interface UserOutput {
   name: string;
   email: string | null;
   role: string;
-  tenantId: string;
   unit: string | null;
   jobTitle: string | null;
   phone: string | null;
@@ -71,7 +69,6 @@ export async function createUser(input: CreateUserInput): Promise<{ success: boo
       email: input.email,
       password: hashedPassword,
       role: input.role,
-      tenantId: input.tenantId,
       unit: input.unit || null,
       jobTitle: input.jobTitle || null,
       phone: input.phone || null,
@@ -91,7 +88,6 @@ export async function createUser(input: CreateUserInput): Promise<{ success: boo
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
-        tenantId: newUser.tenantId,
         unit: newUser.unit,
         jobTitle: newUser.jobTitle,
         phone: newUser.phone,
@@ -106,15 +102,14 @@ export async function createUser(input: CreateUserInput): Promise<{ success: boo
   }
 }
 
-export async function getUsersByTenant(tenantId: string): Promise<UserOutput[]> {
+export async function getAllUsers(): Promise<UserOutput[]> {
   try {
-    const result = await db.select().from(users).where(eq(users.tenantId, tenantId));
+    const result = await db.select().from(users);
     return result.map(u => ({
       id: u.id,
       name: u.name,
       email: u.email,
       role: u.role,
-      tenantId: u.tenantId,
       unit: u.unit,
       jobTitle: u.jobTitle,
       phone: u.phone,
@@ -136,7 +131,6 @@ export async function getUserById(userId: string): Promise<UserOutput | null> {
       name: user.name,
       email: user.email,
       role: user.role,
-      tenantId: user.tenantId,
       unit: user.unit,
       jobTitle: user.jobTitle,
       phone: user.phone,
@@ -149,16 +143,9 @@ export async function getUserById(userId: string): Promise<UserOutput | null> {
   }
 }
 
-export async function authenticateUser(email: string, password: string, tenantId?: string): Promise<{ success: boolean; user?: UserOutput; error?: string }> {
+export async function authenticateUser(email: string, password: string): Promise<{ success: boolean; user?: UserOutput; error?: string }> {
   try {
-    let query;
-    if (tenantId) {
-      query = await db.select().from(users).where(
-        and(eq(users.email, email), eq(users.tenantId, tenantId))
-      );
-    } else {
-      query = await db.select().from(users).where(eq(users.email, email));
-    }
+    const query = await db.select().from(users).where(eq(users.email, email));
 
     if (query.length === 0) {
       return { success: false, error: 'Credenciales inválidas' };
@@ -186,7 +173,6 @@ export async function authenticateUser(email: string, password: string, tenantId
         name: user.name,
         email: user.email,
         role: user.role,
-        tenantId: user.tenantId,
         unit: user.unit,
         jobTitle: user.jobTitle,
         phone: user.phone,
@@ -245,3 +231,4 @@ export async function deleteUser(userId: string): Promise<{ success: boolean; er
     return { success: false, error: 'Error al eliminar usuario' };
   }
 }
+

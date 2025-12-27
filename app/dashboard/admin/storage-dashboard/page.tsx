@@ -17,8 +17,8 @@ import AdminGuide from '@/components/AdminGuide';
 import { storageDashboardGuide } from '@/lib/adminGuides';
 
 export default function StorageDashboardPage() {
-    const { currentTenantId } = useApp();
-    const tenant = DB.tenants.find(t => t.id === currentTenantId);
+    const { platformSettings } = useApp();
+    const storageConfig = platformSettings.storage;
 
     const [stats, setStats] = useState<StorageStats | null>(null);
     const [loadingStats, setLoadingStats] = useState(false);
@@ -29,16 +29,16 @@ export default function StorageDashboardPage() {
 
     useEffect(() => {
         loadStats();
-    }, [currentTenantId]);
+    }, [storageConfig]);
 
     const loadStats = async () => {
-        if (!tenant?.storageConfig || !currentTenantId) return;
+        if (!storageConfig) return;
 
         setLoadingStats(true);
         try {
-            const service = getStorageService(currentTenantId);
+            const service = getStorageService();
             if (service) {
-                const result = await service.getStats(currentTenantId);
+                const result = await service.getStats();
                 if (result.success && result.stats) {
                     setStats(result.stats);
                 }
@@ -73,7 +73,7 @@ export default function StorageDashboardPage() {
         return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
     };
 
-    if (!tenant?.storageConfig) {
+    if (!storageConfig) {
         return (
             <div className="p-8">
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 flex items-start gap-4">
@@ -122,15 +122,15 @@ export default function StorageDashboardPage() {
                 <div className="flex items-center justify-between">
                     <div>
                         <div className="text-blue-100 text-sm font-medium mb-1">Proveedor Actual</div>
-                        <div className="text-2xl font-bold">{providerNames[tenant.storageConfig.provider]}</div>
-                        {tenant.storageConfig.lastTested && (
+                        <div className="text-2xl font-bold">{providerNames[storageConfig.provider as import("@/lib/data").StorageProvider]}</div>
+                        {storageConfig.lastTested && (
                             <div className="text-blue-100 text-sm mt-2">
-                                Última prueba: {new Date(tenant.storageConfig.lastTested).toLocaleString('es-ES')}
+                                Última prueba: {new Date(storageConfig.lastTested).toLocaleString('es-ES')}
                             </div>
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        {tenant.storageConfig.testStatus === 'success' ? (
+                        {storageConfig.testStatus === 'success' ? (
                             <CheckCircle size={48} weight="fill" className="text-green-300" />
                         ) : (
                             <Warning size={48} weight="fill" className="text-yellow-300" />
@@ -251,7 +251,7 @@ export default function StorageDashboardPage() {
                                 disabled={migrating}
                             >
                                 {Object.entries(providerNames)
-                                    .filter(([key]) => key !== tenant.storageConfig?.provider)
+                                    .filter(([key]) => key !== storageConfig?.provider)
                                     .map(([key, name]) => (
                                         <option key={key} value={key}>{name}</option>
                                     ))

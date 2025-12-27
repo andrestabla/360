@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function NewOneOnOneModal({ isOpen, onClose, onUserSelect }: Props) {
-    const { currentTenantId, currentUser } = useApp();
+    const { currentUser } = useApp();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
@@ -28,10 +28,9 @@ export default function NewOneOnOneModal({ isOpen, onClose, onUserSelect }: Prop
     }, [isOpen]);
 
     const search = async (q: string) => {
-        if (!currentTenantId) return;
         setLoading(true);
         try {
-            const users = await ChatService.searchUsers(currentTenantId, q);
+            const users = await ChatService.searchUsers(q);
             // Filter out self
             setResults(users.filter((u: User) => u.id !== currentUser?.id));
         } finally {

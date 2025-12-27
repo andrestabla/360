@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createUser, getUsersByTenant, updateUser, deleteUser } from '@/lib/services/userService';
+import { createUser, getAllUsers, updateUser, deleteUser } from '@/lib/services/userService';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
-
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant ID is required' }, { status: 400 });
-    }
-
-    const users = await getUsersByTenant(tenantId);
+    // In Single-Tenant, we just get all users
+    const users = await getAllUsers();
     return NextResponse.json({ success: true, users });
   } catch (error: any) {
     console.error('Error fetching users:', error);
@@ -21,12 +15,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, password, role, tenantId, unit, jobTitle, phone, sendInvite } = body;
+    const { name, email, password, role, unit, jobTitle, phone, sendInvite } = body;
 
-    if (!name || !email || !role || !tenantId) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Campos requeridos: name, email, role, tenantId' 
+    if (!name || !email || !role) {
+      return NextResponse.json({
+        success: false,
+        error: 'Campos requeridos: name, email, role'
       }, { status: 400 });
     }
 
@@ -35,7 +29,6 @@ export async function POST(request: NextRequest) {
       email,
       password,
       role,
-      tenantId,
       unit,
       jobTitle,
       phone,

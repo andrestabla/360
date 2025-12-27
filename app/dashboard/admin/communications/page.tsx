@@ -9,7 +9,7 @@ import AdminGuide from '@/components/AdminGuide';
 import { communicationsGuide } from '@/lib/adminGuides';
 
 export default function CommunicationsPage() {
-    const { currentUser, currentTenantId, adminCreatePost, adminUpdatePost, adminDeletePost } = useApp();
+    const { currentUser, isSuperAdmin, adminCreatePost, adminUpdatePost, adminDeletePost } = useApp();
     const [showModal, setShowModal] = useState(false);
     const [editingPost, setEditingPost] = useState<Post | null>(null);
     const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
@@ -28,12 +28,14 @@ export default function CommunicationsPage() {
         audience: 'all'
     });
 
-    if (!currentUser || currentUser.level !== 1) {
+    const isAdmin = isSuperAdmin || (currentUser && (currentUser.level === 1 || currentUser.role?.toLowerCase().includes('admin')));
+
+    if (!isAdmin) {
         return <div className="p-8 text-center text-slate-500">Acceso restringido.</div>;
     }
 
-    const posts = DB.posts.filter(p => p.tenantId === currentTenantId);
-    const units = DB.units.filter(u => u.tenantId === currentTenantId);
+    const posts = DB.posts;
+    const units = DB.units;
 
     const handleEdit = (post: Post) => {
         setEditingPost(post);
@@ -86,8 +88,7 @@ export default function CommunicationsPage() {
         } else {
             adminCreatePost({
                 ...formData as any,
-                tenantId: currentTenantId!,
-                author: currentUser.name,
+                author: currentUser?.name || 'Administrador',
                 // attach: { name: 'Adjunto Demo', type: 'pdf' } // Removed default attachment
             });
         }

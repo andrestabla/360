@@ -24,21 +24,21 @@ export interface StorageService {
   upload: (tenantId: string, file: File, path?: string) => Promise<{ success: boolean; url?: string; error?: string }>;
   download: (tenantId: string, fileId: string) => Promise<{ success: boolean; blob?: Blob; error?: string }>;
   delete: (tenantId: string, fileId: string) => Promise<{ success: boolean; error?: string }>;
-  list: (tenantId: string, path?: string) => Promise<{ success: boolean; files?: StorageFile[]; error?: string }>;
-  getStats: (tenantId: string) => Promise<{ success: boolean; stats?: StorageStats; error?: string }>;
+  list: (tenantId?: string, path?: string) => Promise<{ success: boolean; files?: StorageFile[]; error?: string }>;
+  getStats: (tenantId?: string) => Promise<{ success: boolean; stats?: StorageStats; error?: string }>;
 }
 
-export function getStorageService(tenantId: string): StorageService {
-  const config = DB.storageConfigs[tenantId];
+export function getStorageService(): StorageService {
+  const config = DB.platformSettings.storage;
 
   return {
-    upload: async (tenantId: string, file: File, path?: string) => {
+    upload: async (tenantId: string, file: File, path?: string) => { // Kept signature for compatibility if needed, but ignored
       if (!config?.enabled) {
         return { success: false, error: 'Almacenamiento no configurado' };
       }
 
       const fileId = `file-${Date.now()}`;
-      const url = `/storage/${tenantId}/${fileId}/${file.name}`;
+      const url = `/storage/global/${fileId}/${file.name}`;
 
       return { success: true, url };
     },
@@ -59,13 +59,12 @@ export function getStorageService(tenantId: string): StorageService {
       return { success: true };
     },
 
-    list: async (tenantId: string, path?: string) => {
+    list: async (tenantId?: string, path?: string) => {
       if (!config?.enabled) {
         return { success: false, error: 'Almacenamiento no configurado' };
       }
 
       const files: StorageFile[] = DB.docs
-        .filter(d => d.tenantId === tenantId)
         .map(d => ({
           id: d.id,
           name: d.title,
@@ -79,8 +78,8 @@ export function getStorageService(tenantId: string): StorageService {
       return { success: true, files };
     },
 
-    getStats: async (tenantId: string) => {
-      const docs = DB.docs.filter(d => d.tenantId === tenantId);
+    getStats: async (tenantId?: string) => {
+      const docs = DB.docs;
 
       let totalUsed = 0;
       const byType: Record<string, number> = {};

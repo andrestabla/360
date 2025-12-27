@@ -18,17 +18,12 @@ const NOTE_COLORS = [
     { name: 'Slate', value: 'bg-slate-500', border: 'border-slate-100', text: 'text-slate-600', light: 'bg-slate-50' },
 ];
 
-interface WorkNotesWidgetProps {
-    userId: string;
-    tenantId: string;
-}
-
-export default function WorkNotesWidget({ userId, tenantId }: WorkNotesWidgetProps) {
+export default function WorkNotesWidget({ userId }: { userId: string }) {
     const [viewMode, setViewMode] = useState<'LIST' | 'CALENDAR'>('LIST');
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingNote, setEditingNote] = useState<WorkNote | null>(null);
     const [notes, setNotes] = useState<WorkNote[]>(() =>
-        DB.workNotes.filter(n => n.userId === userId && n.tenantId === tenantId)
+        DB.workNotes.filter(n => n.userId === userId)
     );
     const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ACTIVE');
 
@@ -46,7 +41,6 @@ export default function WorkNotesWidget({ userId, tenantId }: WorkNotesWidgetPro
         const newNote: WorkNote = {
             id: `note-${Date.now()}`,
             userId,
-            tenantId,
             title: note.title || '',
             content: note.content || '',
             date: note.date || new Date().toISOString().split('T')[0],

@@ -7,9 +7,10 @@ export interface ChatServiceResponse<T> {
 }
 
 export const ChatService = {
-  getConversations: async (userId: string, tenantId: string): Promise<ChatServiceResponse<Conversation[]>> => {
+  // Removed tenantId param
+  getConversations: async (userId: string): Promise<ChatServiceResponse<Conversation[]>> => {
     const conversations = DB.conversations.filter(
-      c => c.tenant_id === tenantId && c.participants.includes(userId)
+      c => c.participants.includes(userId)
     );
     return { success: true, data: conversations };
   },
@@ -39,10 +40,10 @@ export const ChatService = {
   ): Promise<ChatMessage> => {
     const sender = DB.users.find(u => u.id === senderId);
     const conversation = DB.conversations.find(c => c.id === conversationId);
-    
+
     const message: ChatMessage = {
       id: `msg-${Date.now()}`,
-      tenant_id: conversation?.tenant_id || '',
+      // tenant_id removed
       conversation_id: conversationId,
       sender_id: senderId,
       body,
@@ -69,14 +70,13 @@ export const ChatService = {
   },
 
   createConversation: async (
-    tenantId: string,
     type: 'dm' | 'group',
     participants: string[],
     name?: string
   ): Promise<ChatServiceResponse<Conversation>> => {
     const conversation: Conversation = {
       id: `conv-${Date.now()}`,
-      tenant_id: tenantId,
+      // tenant_id removed
       type,
       name,
       participants,
@@ -98,64 +98,63 @@ export const ChatService = {
     return { success: true, data: true };
   },
 
-  getUsers: async (tenantId: string): Promise<ChatServiceResponse<User[]>> => {
-    const users = DB.users.filter(u => u.tenantId === tenantId && u.status === 'ACTIVE');
+  getUsers: async (): Promise<ChatServiceResponse<User[]>> => {
+    const users = DB.users.filter(u => u.status === 'ACTIVE');
     return { success: true, data: users };
   },
 
-  checkNewMessages: async (userId: string, tenantId: string, since: string): Promise<ChatMessage[]> => {
+  // Removed tenantId param
+  checkNewMessages: async (userId: string, since: string): Promise<ChatMessage[]> => {
     const userConversations = DB.conversations.filter(
-      c => c.tenant_id === tenantId && c.participants.includes(userId)
+      c => c.participants.includes(userId)
     );
     const conversationIds = userConversations.map(c => c.id);
     const newMessages = DB.messages.filter(
-      m => conversationIds.includes(m.conversation_id) && 
-           m.sender_id !== userId &&
-           new Date(m.created_at) > new Date(since)
+      m => conversationIds.includes(m.conversation_id) &&
+        m.sender_id !== userId &&
+        new Date(m.created_at) > new Date(since)
     );
     return newMessages;
   },
 
-  searchMessages: async (tenantId: string, query: string, conversationId?: string): Promise<ChatMessage[]> => {
+  searchMessages: async (query: string, conversationId?: string): Promise<ChatMessage[]> => {
     const lowerQuery = query.toLowerCase();
-    let messages = DB.messages.filter(m => m.tenant_id === tenantId);
+    let messages = DB.messages;
     if (conversationId) {
       messages = messages.filter(m => m.conversation_id === conversationId);
     }
     return messages.filter(m => m.body.toLowerCase().includes(lowerQuery));
   },
 
-  searchConversations: async (tenantId: string, userId: string, query: string): Promise<Conversation[]> => {
+  searchConversations: async (userId: string, query: string): Promise<Conversation[]> => {
     const lowerQuery = query.toLowerCase();
     return DB.conversations.filter(
-      c => c.tenant_id === tenantId && 
-           c.participants.includes(userId) &&
-           (c.name?.toLowerCase().includes(lowerQuery) || c.title?.toLowerCase().includes(lowerQuery))
+      c => c.participants.includes(userId) &&
+        (c.name?.toLowerCase().includes(lowerQuery) || c.title?.toLowerCase().includes(lowerQuery))
     );
   },
 
-  searchUsers: async (tenantId: string, query: string): Promise<User[]> => {
+  searchUsers: async (query: string): Promise<User[]> => {
     const lowerQuery = query.toLowerCase();
     return DB.users.filter(
-      u => u.tenantId === tenantId && 
-           u.status === 'ACTIVE' &&
-           (u.name.toLowerCase().includes(lowerQuery) || u.email?.toLowerCase().includes(lowerQuery))
+      u => u.status === 'ACTIVE' &&
+        (u.name.toLowerCase().includes(lowerQuery) || u.email?.toLowerCase().includes(lowerQuery))
     );
   },
 
-  createDM: async (tenantId: string, userId1: string, userId2: string): Promise<ChatServiceResponse<Conversation>> => {
+  createDM: async (userId1: string, userId2: string): Promise<ChatServiceResponse<Conversation>> => {
+    // Check global DM, not tenant scoped
     const existing = DB.conversations.find(
-      c => c.tenant_id === tenantId && c.type === 'dm' && 
-           c.participants.includes(userId1) && c.participants.includes(userId2)
+      c => c.type === 'dm' &&
+        c.participants.includes(userId1) && c.participants.includes(userId2)
     );
     if (existing) return { success: true, data: existing };
 
     const user2 = DB.users.find(u => u.id === userId2);
-    const user1 = DB.users.find(u => u.id === userId1);
 
     const conversation: Conversation = {
       id: `conv-${Date.now()}`,
-      tenant_id: tenantId,
+      // tenant_id removed
       type: 'dm',
       participants: [userId1, userId2],
       title: user2?.name || 'Usuario',
@@ -173,10 +172,10 @@ export const ChatService = {
     return { success: true, data: conversation };
   },
 
-  createGroup: async (tenantId: string, name: string, creatorId: string, memberIds: string[]): Promise<ChatServiceResponse<Conversation>> => {
+  createGroup: async (name: string, creatorId: string, memberIds: string[]): Promise<ChatServiceResponse<Conversation>> => {
     const conversation: Conversation = {
       id: `conv-${Date.now()}`,
-      tenant_id: tenantId,
+      // tenant_id removed
       type: 'group',
       name,
       title: name,
@@ -235,17 +234,17 @@ export const ChatService = {
     return { success: true, data: true };
   },
 
-  uploadFile: async (file: File, tenantId: string, onProgress?: (percent: number) => void): Promise<Attachment> => {
+  uploadFile: async (file: File, onProgress?: (percent: number) => void): Promise<Attachment> => {
     if (onProgress) onProgress(100);
     return {
       id: `att-${Date.now()}`,
-      url: URL.createObjectURL(file),
+      url: URL.createObjectURL(file), // Mock URL
       name: file.name,
       file_name: file.name,
       size: file.size,
       type: file.type,
       mime_type: file.type,
-      tenant_id: tenantId,
+      // tenant_id removed
       created_at: new Date().toISOString()
     };
   },
@@ -278,7 +277,7 @@ export const ChatService = {
     return DB.users.filter(u => conv.participants.includes(u.id));
   },
 
-  reportContent: async (userId: string, tenantId: string, report: { targetId: string; type: string; reason: string; detail: string }): Promise<ChatServiceResponse<boolean>> => {
+  reportContent: async (userId: string, report: { targetId: string; type: string; reason: string; detail: string }): Promise<ChatServiceResponse<boolean>> => {
     return { success: true, data: true };
   }
 };

@@ -9,32 +9,30 @@ import {
 } from '@phosphor-icons/react';
 
 export default function UnitPage() {
-    const { currentUser, currentTenant, adminCreateWorkflow } = useApp();
+    const { currentUser, adminCreateWorkflow } = useApp();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'processes' | 'team'>('processes');
 
     // 1. Resolve My Unit
     const myUnit = useMemo(() => {
-        if (!currentUser || !currentTenant) return null;
+        if (!currentUser) return null;
         // Try to find Unit Object by Name (Legacy link)
-        return DB.units.find(u => u.tenantId === currentTenant.id && u.name === currentUser.unit);
-    }, [currentUser, currentTenant]);
+        return DB.units.find(u => u.name === currentUser.unit);
+    }, [currentUser]);
 
     // 2. Fetch Data
     const { subUnits, teamMembers, unitProcesses } = useMemo(() => {
-        if (!currentUser || !currentTenant) return { subUnits: [], teamMembers: [], unitProcesses: [] };
+        if (!currentUser) return { subUnits: [], teamMembers: [], unitProcesses: [] };
 
         const unitName = currentUser.unit;
 
         // Members
         const members = DB.users.filter(u =>
-            u.tenantId === currentTenant.id &&
             u.unit === unitName
         );
 
         // Processes (Workflows) defined for this unit
         const processes = DB.workflowDefinitions.filter(w =>
-            w.tenantId === currentTenant.id &&
             w.unit === unitName
         );
 
@@ -44,7 +42,7 @@ export default function UnitPage() {
             : [];
 
         return { subUnits: subs, teamMembers: members, unitProcesses: processes };
-    }, [currentUser, currentTenant, myUnit]);
+    }, [currentUser, myUnit]);
 
     if (!currentUser) return <div>Cargando...</div>;
 

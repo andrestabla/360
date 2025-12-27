@@ -3,12 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tenantId, provider, config } = body;
+    const { provider, config } = body;
 
-    if (!tenantId || !provider) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Tenant ID y proveedor son requeridos' 
+    if (!provider) {
+      return NextResponse.json({
+        success: false,
+        error: 'Proveedor es requerido'
       }, { status: 400 });
     }
 
@@ -47,16 +47,16 @@ export async function POST(request: NextRequest) {
         break;
 
       default:
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Proveedor no soportado' 
+        return NextResponse.json({
+          success: false,
+          error: 'Proveedor no soportado'
         }, { status: 400 });
     }
 
     if (!isValid) {
-      return NextResponse.json({ 
-        success: false, 
-        error: errorMessage 
+      return NextResponse.json({
+        success: false,
+        error: errorMessage
       });
     }
 
@@ -68,9 +68,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error testing storage config:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Error al verificar la conexión' 
+    return NextResponse.json({
+      success: false,
+      error: 'Error al verificar la conexión'
     }, { status: 500 });
   }
 }

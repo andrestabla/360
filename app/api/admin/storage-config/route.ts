@@ -3,25 +3,16 @@ import { DB, TenantStorageConfig, StorageProvider } from '@/lib/data';
 import { encryptCredentials, decryptCredentials, getSecretFields, maskCredential } from '@/lib/services/storageEncryption';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const tenantId = searchParams.get('tenantId');
+  // Global storage config
+  const configWrapper = DB.platformSettings.storage;
 
-  if (!tenantId) {
-    return NextResponse.json({ error: 'Tenant ID is required' }, { status: 400 });
-  }
-
-  const tenant = DB.tenants.find(t => t.id === tenantId);
-  if (!tenant) {
-    return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
-  }
-
-  if (!tenant.storageConfig) {
+  if (!configWrapper) {
     return NextResponse.json({ success: true, config: null });
   }
 
-  const config = { ...tenant.storageConfig };
+  const config = { ...configWrapper };
   const secretFields = getSecretFields(config.provider);
-  
+
   if (config.encryptedConfig) {
     const decrypted = decryptCredentials(config.encryptedConfig);
     const configData = { ...config.config } as Record<string, any>;
@@ -48,15 +39,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tenantId, provider, config, enabled } = body;
+    const { provider, config, enabled } = body;
 
-    if (!tenantId || !provider) {
-      return NextResponse.json({ error: 'Tenant ID and provider are required' }, { status: 400 });
-    }
-
-    const tenant = DB.tenants.find(t => t.id === tenantId);
-    if (!tenant) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+    // Remove tenantId requirement
+    if (!provider) {
+      return NextResponse.json({ error: 'Provider is required' }, { status: 400 });
     }
 
     const secretFields = getSecretFields(provider);
@@ -71,11 +58,12 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    const encryptedConfig = Object.keys(secretData).length > 0 
-      ? encryptCredentials(secretData) 
+    const encryptedConfig = Object.keys(secretData).length > 0
+      ? encryptCredentials(secretData)
       : undefined;
 
-    const storageConfig: TenantStorageConfig = {
+    // Use any or cast if TenantStorageConfig is not perfectly exported/matching
+    const storageConfig: any = {
       provider: provider as StorageProvider,
       enabled: enabled ?? true,
       config: publicData,
@@ -85,7 +73,7 @@ export async function POST(request: NextRequest) {
       testMessage: 'Configuración guardada correctamente',
     };
 
-    tenant.storageConfig = storageConfig;
+    DB.platformSettings.storage = storageConfig;
     DB.save();
 
     return NextResponse.json({
@@ -99,20 +87,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const tenantId = searchParams.get('tenantId');
-
-  if (!tenantId) {
-    return NextResponse.json({ error: 'Tenant ID is required' }, { status: 400 });
+  // Remove tenantId logic
+  if (DB.platformSettings.storage) {
+    DB.platformSettings.storage = undefined;
+    DB.save();
   }
-
-  const tenant = DB.tenants.find(t => t.id === tenantId);
-  if (!tenant) {
-    return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
-  }
-
-  tenant.storageConfig = undefined;
-  DB.save();
 
   return NextResponse.json({
     success: true,

@@ -27,21 +27,21 @@ const PERMISSION_LABELS: Record<string, string> = {
 };
 
 export default function RolesPage() {
-    const { currentUser, currentTenant, updateLevelPermissions } = useApp();
+    const { currentUser, isSuperAdmin, updateLevelPermissions, platformSettings } = useApp();
     const [templates, setTemplates] = useState<Record<number, string[]>>({});
     const [message, setMessage] = useState<string | null>(null);
 
     useEffect(() => {
-        if (currentTenant) {
-            setTemplates(currentTenant.roleTemplates);
+        if (platformSettings.roleTemplates) {
+            setTemplates(platformSettings.roleTemplates);
         }
-    }, [currentTenant]);
+    }, [platformSettings]);
 
-    if (!currentUser || currentUser.level !== 1) {
+    const isAdmin = isSuperAdmin || (currentUser && (currentUser.level === 1 || currentUser.role?.toLowerCase().includes('admin')));
+
+    if (!isAdmin) {
         return <div className="p-8 text-center text-red-500">Acceso Denegado. Solo Admin Tenant.</div>;
     }
-
-    if (!currentTenant) return <div>Loading...</div>;
 
     const togglePermission = (level: number, permission: string) => {
         if (level === 1) return; // Cannot modify admin

@@ -9,7 +9,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { sanitizeHTML, escapeHTML } from '@/lib/services/sanitize';
 
 export default function ChatWindow() {
-    const { currentUser, currentTenantId, refreshUnreadCount } = useApp();
+    const { currentUser, refreshUnreadCount } = useApp();
     const searchParams = useSearchParams();
     const activeId = searchParams.get('chatId');
 
@@ -45,13 +45,13 @@ export default function ChatWindow() {
     // Search Effect
     useEffect(() => {
         const timer = setTimeout(async () => {
-            if (!msgSearchQuery.trim() || !activeId || !currentTenantId) {
+            if (!msgSearchQuery.trim() || !activeId) {
                 setMsgSearchResults([]);
                 return;
             }
             setIsSearchingMsgs(true);
             try {
-                const results = await ChatService.searchMessages(currentTenantId, msgSearchQuery, activeId);
+                const results = await ChatService.searchMessages(msgSearchQuery, activeId);
                 setMsgSearchResults(results);
             } catch (e) {
                 console.error(e);
@@ -60,7 +60,7 @@ export default function ChatWindow() {
             }
         }, 500);
         return () => clearTimeout(timer);
-    }, [msgSearchQuery, activeId, currentTenantId]);
+    }, [msgSearchQuery, activeId]);
 
     const handleJumpToMessage = (messageId: string) => {
         // 1. Check if message is currently in the loaded list
@@ -92,7 +92,7 @@ export default function ChatWindow() {
 
     // Initial Load
     useEffect(() => {
-        if (!activeId || !currentUser || !currentTenantId) {
+        if (!activeId || !currentUser) {
             setConversation(null);
             setMessages([]);
             return;
@@ -155,7 +155,7 @@ export default function ChatWindow() {
 
         fetchInit();
 
-    }, [activeId, currentUser, currentTenantId]);
+    }, [activeId, currentUser]);
 
     // Infinite Scroll Handler (HU M1.2: Incremental Load)
     const handleScroll = async () => {
@@ -195,7 +195,7 @@ export default function ChatWindow() {
     };
 
     const handleSend = async () => {
-        if ((!input.trim() && attachments.length === 0) || !currentUser || !currentTenantId || !activeId) return;
+        if ((!input.trim() && attachments.length === 0) || !currentUser || !activeId) return;
 
         // If editing
         if (editingMsgId) {
@@ -211,7 +211,6 @@ export default function ChatWindow() {
         const tempId = `TEMP-${Date.now()}`;
         const newMsg: Message = {
             id: tempId,
-            tenant_id: currentTenantId,
             conversation_id: activeId,
             sender_id: currentUser.id,
             body: input || (attachments.length ? 'Archivo adjunto' : ''),
@@ -291,7 +290,7 @@ export default function ChatWindow() {
     };
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files?.length || !currentTenantId) return;
+        if (!e.target.files?.length) return;
 
         const files = Array.from(e.target.files);
         setIsUploading(true);
@@ -301,7 +300,7 @@ export default function ChatWindow() {
         for (const file of files) {
             try {
                 setUploadProgress(0);
-                const attachment = await ChatService.uploadFile(file, currentTenantId, (percent) => setUploadProgress(percent));
+                const attachment = await ChatService.uploadFile(file, (percent) => setUploadProgress(percent));
                 setAttachments(prev => [...prev, attachment]);
             } catch (err: any) {
                 console.error(err);
@@ -370,12 +369,12 @@ export default function ChatWindow() {
     };
 
     const handleReportMessage = async (msg: Message) => {
-        if (!currentUser || !currentTenantId) return;
+        if (!currentUser) return;
         const reason = prompt("Describe el motivo del reporte:");
         if (!reason) return;
 
         try {
-            await ChatService.reportContent(currentUser.id, currentTenantId, {
+            await ChatService.reportContent(currentUser.id, {
                 targetId: msg.id,
                 type: 'message',
                 reason: reason,

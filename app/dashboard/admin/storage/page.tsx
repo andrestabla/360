@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useApp } from '@/context/AppContext';
 import { DB, StorageProvider, TenantStorageConfig } from '@/lib/data';
 import {
     CloudArrowUp,
@@ -22,15 +21,15 @@ import AdminGuide from '@/components/AdminGuide';
 import { storageGuide } from '@/lib/adminGuides';
 import StorageSetupWizard, { StorageConfigData } from '@/components/storage/StorageSetupWizard';
 
-export default function TenantStorageConfigPage() {
-    const { currentTenantId } = useApp();
-    const tenant = DB.tenants.find(t => t.id === currentTenantId);
+export default function StorageConfigPage() {
+    // Global storage config from platform settings
+    const storageSettings = DB.platformSettings.storage;
     const [showWizard, setShowWizard] = useState(false);
 
     const [selectedProvider, setSelectedProvider] = useState<StorageProvider>(
-        tenant?.storageConfig?.provider || 'LOCAL'
+        storageSettings?.provider || 'LOCAL'
     );
-    const [config, setConfig] = useState<any>(tenant?.storageConfig?.config || {});
+    const [config, setConfig] = useState<any>(storageSettings?.config || {});
     const [showSecrets, setShowSecrets] = useState(false);
     const [testing, setTesting] = useState(false);
     const [testResult, setTestResult] = useState<{ status: 'success' | 'failed', message: string } | null>(null);
@@ -49,19 +48,27 @@ export default function TenantStorageConfigPage() {
         setTesting(true);
         setTestResult(null);
 
-        // Simulate API call to test connection
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            const response = await fetch('/api/admin/storage-config/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: selectedProvider,
+                    config: config
+                }),
+            });
 
-        // Mock validation
-        const isValid = validateConfig();
-
-        if (isValid) {
-            setTestResult({ status: 'success', message: 'Conexión exitosa. El proveedor está configurado correctamente.' });
-        } else {
+            const data = await response.json();
+            if (data.success) {
+                setTestResult({ status: 'success', message: 'Conexión exitosa. El proveedor está configurado correctamente.' });
+            } else {
+                setTestResult({ status: 'failed', message: data.error || 'Error de conexión.' });
+            }
+        } catch (error) {
             setTestResult({ status: 'failed', message: 'Error de conexión. Verifica las credenciales.' });
+        } finally {
+            setTesting(false);
         }
-
-        setTesting(false);
     };
 
     const validateConfig = (): boolean => {
@@ -83,27 +90,52 @@ export default function TenantStorageConfigPage() {
         }
     };
 
-    const handleSave = () => {
-        if (!tenant) return;
+    const handleSave = async () => {
+        try {
+            const response = await fetch('/api/admin/storage-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: selectedProvider,
+                    config,
+                    enabled: true
+                }),
+            });
 
-        const storageConfig: TenantStorageConfig = {
-            provider: selectedProvider,
-            enabled: true,
-            config: config,
-            lastTested: testResult?.status === 'success' ? new Date().toISOString() : undefined,
-            testStatus: testResult?.status,
-            testMessage: testResult?.message
-        };
+            if (response.ok) {
+                // Update local partial state for immediate reflection if needed, 
+                // though usually we relying on DB update or context reload.
+                // For demo/mock, we update DB directly too as fallback? 
+                // No, rely on API side effect on DB.
+                // But DB in client might be stale. Update it explicitly for Mock.
+                if (typeof window !== 'undefined') {
+                    DB.platformSettings.storage = {
+                        provider: selectedProvider,
+                        config,
+                        enabled: true
+                    };
+                }
 
-        tenant.storageConfig = storageConfig;
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
+                setSaved(true);
+                setTimeout(() => setSaved(false), 3000);
+            }
+        } catch (error) {
+            console.error('Failed to save', error);
+        }
     };
 
     const handleWizardComplete = (wizardConfig: StorageConfigData) => {
         setSelectedProvider(wizardConfig.provider as StorageProvider);
         setConfig(wizardConfig.config);
         setTestResult({ status: 'success', message: 'Configuración guardada desde el asistente' });
+        // The wizard also saves to API, so we just update local state and show success.
+        if (typeof window !== 'undefined') {
+            DB.platformSettings.storage = {
+                provider: wizardConfig.provider as StorageProvider,
+                config: wizardConfig.config,
+                enabled: true
+            };
+        }
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
     };
@@ -361,7 +393,7 @@ export default function TenantStorageConfigPage() {
                         Configuración de Almacenamiento
                     </h1>
                     <p className="text-slate-600">
-                        Configura el proveedor de almacenamiento en la nube donde se guardarán todos los documentos del sistema.
+                        Configura el proveedor de almacenamiento en la nube para toda la organización.
                     </p>
                 </div>
                 <button
@@ -477,7 +509,7 @@ export default function TenantStorageConfigPage() {
             )}
 
             {/* Warning */}
-            {tenant?.storageConfig && (
+            {storageSettings && (
                 <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
                     <Warning size={24} className="text-amber-600 flex-shrink-0" weight="fill" />
                     <div className="text-sm text-amber-800">
@@ -495,12 +527,11 @@ export default function TenantStorageConfigPage() {
                 isOpen={showWizard}
                 onClose={() => setShowWizard(false)}
                 onComplete={handleWizardComplete}
-                existingConfig={tenant?.storageConfig ? {
-                    provider: tenant.storageConfig.provider,
-                    config: tenant.storageConfig.config || {},
-                    enabled: tenant.storageConfig.enabled
+                existingConfig={storageSettings ? {
+                    provider: storageSettings.provider,
+                    config: storageSettings.config || {},
+                    enabled: storageSettings.enabled
                 } : null}
-                tenantId={currentTenantId || ''}
             />
         </div>
     );

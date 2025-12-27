@@ -11,7 +11,7 @@ let lastCleanup = Date.now();
 function cleanup(): void {
   const now = Date.now();
   if (now - lastCleanup < CLEANUP_INTERVAL) return;
-  
+
   lastCleanup = now;
   for (const [key, entry] of store.entries()) {
     if (entry.resetAt < now) {
@@ -33,7 +33,7 @@ export interface RateLimitResult {
 }
 
 export const RATE_LIMITS = {
-  login: { windowMs: 15 * 60 * 1000, maxRequests: 5 },
+  login: { windowMs: 30 * 1000, maxRequests: 5 },
   api: { windowMs: 60 * 1000, maxRequests: 100 },
   tenantLookup: { windowMs: 60 * 1000, maxRequests: 30 },
   passwordReset: { windowMs: 60 * 60 * 1000, maxRequests: 3 },
@@ -44,20 +44,20 @@ export function checkRateLimit(
   action: keyof typeof RATE_LIMITS
 ): RateLimitResult {
   cleanup();
-  
+
   const config = RATE_LIMITS[action];
   const key = `${action}:${identifier}`;
   const now = Date.now();
-  
+
   let entry = store.get(key);
-  
+
   if (!entry || entry.resetAt < now) {
     entry = { count: 0, resetAt: now + config.windowMs };
     store.set(key, entry);
   }
-  
+
   entry.count++;
-  
+
   if (entry.count > config.maxRequests) {
     const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
     return {
@@ -67,7 +67,7 @@ export function checkRateLimit(
       retryAfter,
     };
   }
-  
+
   return {
     success: true,
     remaining: config.maxRequests - entry.count,
@@ -80,11 +80,11 @@ export function getRateLimitHeaders(result: RateLimitResult): Record<string, str
     'X-RateLimit-Remaining': result.remaining.toString(),
     'X-RateLimit-Reset': result.resetAt.toString(),
   };
-  
+
   if (!result.success && result.retryAfter) {
     headers['Retry-After'] = result.retryAfter.toString();
   }
-  
+
   return headers;
 }
 

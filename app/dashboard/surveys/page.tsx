@@ -19,7 +19,7 @@ import {
 } from '@phosphor-icons/react';
 
 export default function SurveysPage() {
-    const { currentUser, currentTenantId } = useApp();
+    const { currentUser } = useApp();
     const { t } = useTranslation();
     const [view, setView] = useState<'LIST' | 'TEMPLATE_SELECT' | 'BUILDER' | 'RESPOND' | 'RESULTS'>('LIST');
     const [activeTab, setActiveTab] = useState<'OPEN' | 'DRAFT' | 'CLOSED'>('OPEN');
@@ -111,7 +111,6 @@ export default function SurveysPage() {
 
         const newSurvey: Survey = {
             id: `S-${Date.now()}`,
-            tenantId: currentTenantId || 'T1',
             ownerId: currentUser?.id || 'u1',
             title,
             description,
@@ -746,7 +745,7 @@ function SurveyResults({ survey, onBack }: { survey: Survey, onBack: () => void 
     // 1. Get List of Potential Participants (Mock based on Survey Target)
     // If targetUnitId is present, get users from that unit. Else, all tenant users.
     const allPotentialUsers = useMemo(() => {
-        let users = DB.users.filter(u => u.tenantId === survey.tenantId || u.tenantId === 'global');
+        let users = DB.users;
         if (survey.audience === 'UNIT' && survey.targetUnitId) {
             users = users.filter(u => u.unit === survey.targetUnitId);
         }
@@ -818,8 +817,8 @@ function SurveyResults({ survey, onBack }: { survey: Survey, onBack: () => void 
 
     // --- CONTEXT VARIABLES (Restored) ---
     const isDiagnostic = survey.questions.length > 50;
-    const currentTenant = DB.tenants.find(t => t.id === survey.tenantId);
-    const sectorName = currentTenant?.sector || 'Consultoría Empresarial';
+    // const currentTenant = DB.tenants.find(t => t.id === survey.tenantId);
+    const sectorName = 'Consultoría Empresarial';
     const benchmark = SECTOR_BENCHMARKS_LIST.find(b => b.sector === sectorName) || SECTOR_BENCHMARKS_LIST[0];
 
 
@@ -1637,7 +1636,6 @@ function SurveyResponder({ survey, currentUser, onSubmit, onCancel }: { survey: 
         const response: SurveyResponse = {
             id: `R-${Date.now()}`,
             surveyId: survey.id,
-            tenantId: survey.tenantId || currentUser?.tenantId || '',
             userId: currentUser?.id || 'anonymous-user',
             // Always store respondentId for duplication checks, even if anonymous (in real app, use a separate 'participations' table)
             respondentId: currentUser?.id || 'anonymous-user',
@@ -2067,8 +2065,8 @@ function SurveyBuilder({ survey, onSave, onCancel }: { survey: Survey, onSave: (
     };
 
     // Helper for Settings (Audience)
-    const units = DB.units.filter(u => u.tenantId === survey.tenantId);
-    const users = DB.users.filter(u => u.tenantId === survey.tenantId);
+    const units = DB.units;
+    const users = DB.users;
 
     return (
         <div className="h-full flex flex-col bg-slate-50">
@@ -2517,7 +2515,7 @@ function SurveyBuilder({ survey, onSave, onCancel }: { survey: Survey, onSave: (
                                             >
                                                 <option value="GLOBAL">Global (Toda la Organización)</option>
                                                 {DB.units
-                                                    .filter(u => u.tenantId === survey.tenantId && u.type === 'UNIT' && (u.depth === 1 || u.depth === 2))
+                                                    .filter(u => u.type === 'UNIT' && (u.depth === 1 || u.depth === 2))
                                                     .map(u => (
                                                         <option key={u.id} value={u.name}>
                                                             {u.depth === 2 ? `  ↳ ${u.name}` : u.name}
@@ -2543,12 +2541,10 @@ function SurveyBuilder({ survey, onSave, onCancel }: { survey: Survey, onSave: (
                                                         .filter(u => {
                                                             // Buscar la unidad padre por nombre
                                                             const parentUnit = DB.units.find(pu =>
-                                                                pu.tenantId === survey.tenantId &&
                                                                 pu.name === localSurvey.unit
                                                             );
                                                             // Filtrar procesos que pertenecen a esta unidad
-                                                            return u.tenantId === survey.tenantId &&
-                                                                u.type === 'PROCESS' &&
+                                                            return u.type === 'PROCESS' &&
                                                                 parentUnit &&
                                                                 u.parentId === parentUnit.id;
                                                         })

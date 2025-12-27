@@ -1,7 +1,6 @@
 import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import {
-  tenants,
   users,
   units,
   documents,
@@ -9,18 +8,11 @@ import {
   messages,
   workflows,
   surveys,
-  tenantEmailConfigs,
+  emailSettings,
   auditLogs,
-  platformAdmins,
 } from '@shared/schema';
 
-export const insertTenantSchema = createInsertSchema(tenants, {
-  slug: (schema) => schema.min(2).max(50).regex(/^[a-z0-9-]+$/, 'Solo letras minúsculas, números y guiones'),
-  name: (schema) => schema.min(2).max(255),
-  contactEmail: (schema) => schema.email().optional(),
-});
-export const selectTenantSchema = createSelectSchema(tenants);
-export const updateTenantSchema = createUpdateSchema(tenants);
+// Tenants removed in single-organization architecture
 
 export const insertUserSchema = createInsertSchema(users, {
   name: (schema) => schema.min(2).max(255),
@@ -64,27 +56,20 @@ export const insertSurveySchema = createInsertSchema(surveys, {
 export const selectSurveySchema = createSelectSchema(surveys);
 export const updateSurveySchema = createUpdateSchema(surveys);
 
-export const insertEmailConfigSchema = createInsertSchema(tenantEmailConfigs, {
+export const insertEmailConfigSchema = createInsertSchema(emailSettings, {
   fromEmail: (schema) => schema.email().optional(),
   smtpHost: (schema) => schema.min(1).optional(),
 });
-export const selectEmailConfigSchema = createSelectSchema(tenantEmailConfigs);
-export const updateEmailConfigSchema = createUpdateSchema(tenantEmailConfigs);
+export const selectEmailConfigSchema = createSelectSchema(emailSettings);
+export const updateEmailConfigSchema = createUpdateSchema(emailSettings);
 
 export const insertAuditLogSchema = createInsertSchema(auditLogs);
 export const selectAuditLogSchema = createSelectSchema(auditLogs);
 
-export const insertPlatformAdminSchema = createInsertSchema(platformAdmins, {
-  email: (schema) => schema.email(),
-  password: (schema) => schema.min(8),
-  name: (schema) => schema.min(2).max(255),
-});
-export const selectPlatformAdminSchema = createSelectSchema(platformAdmins);
-export const updatePlatformAdminSchema = createUpdateSchema(platformAdmins);
+// Platform Admins merged into users
+// export const insertPlatformAdminSchema ...
 
-export type InsertTenant = z.infer<typeof insertTenantSchema>;
-export type SelectTenant = z.infer<typeof selectTenantSchema>;
-export type UpdateTenant = z.infer<typeof updateTenantSchema>;
+
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type SelectUser = z.infer<typeof selectUserSchema>;
@@ -121,6 +106,4 @@ export type UpdateEmailConfig = z.infer<typeof updateEmailConfigSchema>;
 export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
 export type SelectAuditLog = z.infer<typeof selectAuditLogSchema>;
 
-export type InsertPlatformAdmin = z.infer<typeof insertPlatformAdminSchema>;
-export type SelectPlatformAdmin = z.infer<typeof selectPlatformAdminSchema>;
-export type UpdatePlatformAdmin = z.infer<typeof updatePlatformAdminSchema>;
+

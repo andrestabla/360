@@ -8,10 +8,9 @@ interface ImportUsersModalProps {
     isOpen: boolean;
     onClose: () => void;
     onImport: (users: Partial<User>[]) => void;
-    tenantId: string;
 }
 
-export default function ImportUsersModal({ isOpen, onClose, onImport, tenantId }: ImportUsersModalProps) {
+export default function ImportUsersModal({ isOpen, onClose, onImport }: ImportUsersModalProps) {
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<Partial<User>[]>([]);
     const [errors, setErrors] = useState<string[]>([]);
@@ -80,7 +79,6 @@ export default function ImportUsersModal({ isOpen, onClose, onImport, tenantId }
 
             const user: Partial<User> = {
                 id: `user_${Date.now()}_${i}`,
-                tenantId: tenantId,
                 name: row.name,
                 email: row.email,
                 password: row.password || 'ChangeMe123!',
@@ -297,8 +295,8 @@ export default function ImportUsersModal({ isOpen, onClose, onImport, tenantId }
                                                 <td className="p-2 text-xs">{user.unit || '-'}</td>
                                                 <td className="p-2">
                                                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${user.status === 'ACTIVE'
-                                                            ? 'bg-green-100 text-green-700'
-                                                            : 'bg-slate-100 text-slate-700'
+                                                        ? 'bg-green-100 text-green-700'
+                                                        : 'bg-slate-100 text-slate-700'
                                                         }`}>
                                                         {user.status}
                                                     </span>

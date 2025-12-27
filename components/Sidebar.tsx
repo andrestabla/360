@@ -9,7 +9,8 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 
 export default function Sidebar() {
-    const { currentUser, isSuperAdmin, currentTenant, isSidebarCollapsed, toggleSidebar, unreadChatCount, isMobileMenuOpen, closeMobileMenu } = useApp();
+    // Removed currentTenant
+    const { currentUser, isSuperAdmin, isSidebarCollapsed, toggleSidebar, unreadChatCount, isMobileMenuOpen, closeMobileMenu } = useApp();
     const { t } = useTranslation();
     const router = useRouter();
     const pathname = usePathname();
@@ -40,13 +41,13 @@ export default function Sidebar() {
     return (
         <>
             {isMobileMenuOpen && (
-                <div 
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden" 
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
                     onClick={closeMobileMenu}
                 />
             )}
-            <aside 
-                id="sidebar" 
+            <aside
+                id="sidebar"
                 className={`
                     ${isSuperAdmin ? 'super-mode' : ''} 
                     ${isSidebarCollapsed ? 'collapsed w-[80px]' : 'w-[260px]'} 
@@ -63,10 +64,10 @@ export default function Sidebar() {
                         {!isSidebarCollapsed && (
                             <div className="animate-fadeIn">
                                 <div style={{ fontWeight: 700, color: 'white', fontSize: '15px', letterSpacing: '-0.02em' }}>
-                                    {isSuperAdmin ? 'Antigravity DB' : (currentTenant?.branding?.app_title || 'Maturity360')}
+                                    Maturity360
                                 </div>
                                 <div style={{ fontSize: 10, opacity: 0.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }} id="tenant-label">
-                                    {isSuperAdmin ? 'Global View' : currentTenant?.name}
+                                    {isSuperAdmin ? 'Platform Admin' : 'Organization View'}
                                 </div>
                             </div>
                         )}
@@ -102,61 +103,27 @@ export default function Sidebar() {
                 )}
 
                 <nav className="nav" id="nav-menu">
-                    {isSuperAdmin ? (
+                    {/* Simplified Navigation for Single Tenant */}
+
+                    <div className={`nav-header ${isSidebarCollapsed ? 'text-center opacity-30 text-[9px]' : ''}`}>
+                        {isSidebarCollapsed ? '•••' : 'Menú Principal'}
+                    </div>
+
+                    <NavItem icon={SquaresFour} label={t('nav_dashboard')} path="/dashboard" />
+                    <NavItem icon={ChatCircleDots} label={t('nav_chat')} path="/dashboard/chat" badge={unreadChatCount} />
+                    <NavItem icon={Files} label={t('nav_repository')} path="/dashboard/repository" />
+                    <NavItem icon={Kanban} label={t('nav_workflows')} path="/dashboard/workflows" />
+                    <NavItem icon={ChartPieSlice} label={t('nav_analytics')} path="/dashboard/analytics" />
+                    <NavItem icon={ClipboardText} label={t('nav_surveys')} path="/dashboard/surveys" />
+
+                    {/* Admin Access */}
+                    {(currentUser.role.toLowerCase().includes('admin') || isSuperAdmin || currentUser.level === 1) && (
                         <>
-                            <div className="nav-header">{t('nav_platform')}</div>
-                            <NavItem icon={Planet} label="Global Dashboard" path="/dashboard" />
-                            <NavItem icon={Buildings} label="Tenants" path="/dashboard/tenants" />
-                            <NavItem icon={UsersThree} label="Users & Permissions" path="/dashboard/admin/users" />
-                            <NavItem icon={Globe} label="Platform Params" path="/dashboard/platform" />
-                            <NavItem icon={Gear} label="Config. Plataforma" path="/dashboard/platform/settings" />
-                            <NavItem icon={ShieldCheck} label="Audit Global" path="/dashboard/audit" />
-                        </>
-                    ) : (
-                        <>
-                            <div className={`nav-header ${isSidebarCollapsed ? 'text-center opacity-30 text-[9px]' : ''}`}>
-                                {isSidebarCollapsed ? '•••' : t('nav_operation')}
-                            </div>
-
-                            {(currentTenant?.features?.includes('DASHBOARD') || !currentTenant) && (
-                                <NavItem icon={SquaresFour} label={t('nav_dashboard')} path="/dashboard" />
-                            )}
-
-                            {currentTenant?.features?.includes('CHAT') && (
-                                <NavItem icon={ChatCircleDots} label={t('nav_chat')} path="/dashboard/chat" badge={unreadChatCount} />
-                            )}
-                            {currentTenant?.features?.includes('REPOSITORY') && (
-                                <NavItem icon={Files} label={t('nav_repository')} path="/dashboard/repository" />
-                            )}
-                            {currentTenant?.features?.includes('WORKFLOWS') && (
-                                <NavItem icon={Kanban} label={t('nav_workflows')} path="/dashboard/workflows" />
-                            )}
-                            {currentTenant?.features?.includes('ANALYTICS') && (
-                                <NavItem icon={ChartPieSlice} label={t('nav_analytics')} path="/dashboard/analytics" />
-                            )}
-                            {currentTenant?.features?.includes('SURVEYS') && (
-                                <NavItem icon={ClipboardText} label={t('nav_surveys')} path="/dashboard/surveys" />
-                            )}
-
-                            {(currentUser.level <= 2) && (
-                                <>
-                                    <div className="nav-header">{currentUser.level === 1 ? t('nav_governance') : t('nav_management')}</div>
-                                    {currentUser.level === 1 && (
-                                        <>
-                                            <NavItem icon={Gear} label={t('nav_admin')} path="/dashboard/admin" />
-                                            <NavItem icon={TreeStructure} label={t('nav_units')} path="/dashboard/admin/units" />
-                                            <NavItem icon={ShieldCheck} label={t('nav_roles')} path="/dashboard/admin/roles" />
-                                            <NavItem icon={UsersThree} label={t('nav_users')} path="/dashboard/admin/users" />
-                                            <NavItem icon={Megaphone} label={t('nav_comms')} path="/dashboard/admin/communications" />
-                                            <NavItem icon={GitPullRequest} label="Configuración Técnica" path="/dashboard/admin/settings" />
-                                            <NavItem icon={CloudArrowUp} label="Almacenamiento" path="/dashboard/admin/storage" />
-                                            <NavItem icon={ChartPieSlice} label="Dashboard Storage" path="/dashboard/admin/storage-dashboard" />
-                                        </>
-                                    )}
-                                    <NavItem icon={UsersThree} label={t('nav_unit')} path="/dashboard/unit" />
-                                </>
-                            )}
-
+                            <div className="nav-header">ADMINISTRACIÓN</div>
+                            <NavItem icon={Gear} label="Panel Admin" path="/dashboard/admin" />
+                            <NavItem icon={UsersThree} label="Usuarios Globales" path="/dashboard/admin/users" />
+                            <NavItem icon={TreeStructure} label="Unidades" path="/dashboard/admin/units" />
+                            <NavItem icon={GitPullRequest} label="Configuración" path="/dashboard/admin/settings" />
                         </>
                     )}
                 </nav>

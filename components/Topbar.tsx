@@ -2,11 +2,16 @@
 import { useApp } from '@/context/AppContext';
 import { ChatCircleDots, Moon, SignOut, List } from '@phosphor-icons/react';
 import { usePathname, useRouter } from 'next/navigation';
+import { logout as serverLogout } from '@/app/lib/actions';
 
 export default function Topbar() {
-    const { currentUser, isSuperAdmin, logout, toggleMobileMenu } = useApp();
+    const { currentUser, isSuperAdmin, isMobileMenuOpen, openMobileMenu, closeMobileMenu } = useApp();
     const router = useRouter();
     const pathname = usePathname();
+
+    const handleLogout = async () => {
+        await serverLogout();
+    };
 
     const getTitle = () => {
         if (pathname === '/dashboard') return isSuperAdmin ? 'GLOBAL DASHBOARD' : 'DASHBOARD';
@@ -28,9 +33,9 @@ export default function Topbar() {
     return (
         <header className="topbar">
             <div className="flex items-center gap-3">
-                <button 
-                    className="btn btn-ghost lg:hidden p-2" 
-                    onClick={toggleMobileMenu}
+                <button
+                    className="btn btn-ghost lg:hidden p-2"
+                    onClick={() => isMobileMenuOpen ? closeMobileMenu() : openMobileMenu()}
                     aria-label="Abrir menú"
                 >
                     <List size={24} weight="bold" />
@@ -50,7 +55,7 @@ export default function Topbar() {
                     <Moon size={20} />
                 </button>
 
-                <button className="btn btn-ghost p-2" onClick={logout} title="Salir">
+                <button className="btn btn-ghost p-2" onClick={handleLogout} title="Salir">
                     <SignOut size={20} />
                 </button>
             </div>

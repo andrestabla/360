@@ -8,10 +8,9 @@ interface ImportUnitsModalProps {
     isOpen: boolean;
     onClose: () => void;
     onImport: (units: Partial<Unit>[]) => void;
-    tenantId: string;
 }
 
-export default function ImportUnitsModal({ isOpen, onClose, onImport, tenantId }: ImportUnitsModalProps) {
+export default function ImportUnitsModal({ isOpen, onClose, onImport }: ImportUnitsModalProps) {
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<Partial<Unit>[]>([]);
     const [errors, setErrors] = useState<string[]>([]);
@@ -78,7 +77,6 @@ export default function ImportUnitsModal({ isOpen, onClose, onImport, tenantId }
 
             const unit: Partial<Unit> = {
                 id: row.id,
-                tenantId: tenantId,
                 name: row.name,
                 type: row.type as 'UNIT' | 'PROCESS',
                 depth: row.type === 'UNIT' ? parseInt(row.depth) : undefined,

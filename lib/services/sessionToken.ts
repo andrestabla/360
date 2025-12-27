@@ -15,9 +15,12 @@ const SESSION_SECRET = getSessionSecret();
 
 export interface SessionPayload {
   email: string;
+  userId?: string;
+  role?: string;
   isSuperAdmin: boolean;
   timestamp: number;
 }
+
 
 export function createSessionToken(payload: SessionPayload): string {
   const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64');
@@ -28,14 +31,14 @@ export function createSessionToken(payload: SessionPayload): string {
 export function verifySessionToken(token: string): SessionPayload | null {
   try {
     const [payloadBase64, signature] = token.split('.');
-    
+
     if (!payloadBase64 || !signature) {
       console.log('[SessionToken] Invalid token format - missing parts');
       return null;
     }
 
     const expectedSignature = crypto.createHmac('sha256', SESSION_SECRET).update(payloadBase64).digest('hex');
-    
+
     if (signature !== expectedSignature) {
       console.log('[SessionToken] Signature mismatch');
       return null;
@@ -43,7 +46,7 @@ export function verifySessionToken(token: string): SessionPayload | null {
 
     const decoded = Buffer.from(payloadBase64, 'base64').toString('utf-8');
     const payload = JSON.parse(decoded) as SessionPayload;
-    
+
     const sessionAge = Date.now() - payload.timestamp;
     const MAX_SESSION_AGE = 24 * 60 * 60 * 1000;
     if (sessionAge > MAX_SESSION_AGE) {
