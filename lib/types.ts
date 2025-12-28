@@ -102,7 +102,7 @@ export interface TenantIntegration {
   config?: Record<string, unknown>;
 }
 
-export type StorageProvider = 'GOOGLE_DRIVE' | 'DROPBOX' | 'ONEDRIVE' | 'SHAREPOINT' | 'S3' | 'LOCAL';
+export type StorageProvider = 'GOOGLE_DRIVE' | 'DROPBOX' | 'ONEDRIVE' | 'SHAREPOINT' | 'S3' | 'R2' | 'LOCAL';
 
 export interface GoogleDriveConfig {
   clientId: string;
@@ -138,10 +138,18 @@ export interface S3Config {
   endpoint?: string;
 }
 
+export interface R2Config {
+  accessKeyId: string;
+  secretAccessKey: string;
+  bucket: string;
+  endpoint: string;
+  region?: string;
+}
+
 export interface TenantStorageConfig {
   provider: StorageProvider;
   enabled: boolean;
-  config: GoogleDriveConfig | DropboxConfig | OneDriveConfig | SharePointConfig | S3Config | Record<string, any>;
+  config: GoogleDriveConfig | DropboxConfig | OneDriveConfig | SharePointConfig | S3Config | R2Config | Record<string, any>;
   encryptedConfig?: string;
   lastTested?: string;
   testStatus?: 'success' | 'failed';

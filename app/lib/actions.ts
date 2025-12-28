@@ -130,6 +130,38 @@ export async function updateProfile(formData: FormData) {
     }
 }
 
+// --- Actualizar Preferencias (HU I.3) ---
+export async function updateUserPreferences(preferences: {
+    theme?: 'light' | 'dark' | 'system',
+    notifications?: boolean,
+    sidebarCollapsed?: boolean
+}) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "No autorizado" };
+
+    try {
+        const [user] = await db.select().from(users).where(eq(users.id, session.user.id));
+        if (!user) return { error: "Usuario no encontrado" };
+
+        const currentPrefs = user.preferences as any || {};
+        const updatedPrefs = { ...currentPrefs, ...preferences };
+
+        await db.update(users)
+            .set({
+                preferences: updatedPrefs,
+                updatedAt: new Date()
+            })
+            .where(eq(users.id, session.user.id));
+
+        revalidatePath('/dashboard/profile');
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating preferences:", error);
+        return { error: "Error al guardar preferencias" };
+    }
+}
+
 // --- Actualizar Contraseña (HU I.2) ---
 export async function updatePassword(
     currentPassword: string,

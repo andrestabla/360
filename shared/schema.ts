@@ -67,6 +67,15 @@ export const users = pgTable("users", {
   inviteExpiresAt: timestamp("invite_expires_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  preferences: json("preferences").$type<{
+    theme: 'light' | 'dark' | 'system',
+    notifications: boolean,
+    sidebarCollapsed: boolean
+  }>().default({
+    theme: 'system',
+    notifications: true,
+    sidebarCollapsed: false
+  }),
 }, (table) => [
   index("idx_users_email").on(table.email),
   index("idx_users_status").on(table.status),

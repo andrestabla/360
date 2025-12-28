@@ -3,12 +3,12 @@ import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
 import { Check, EnvelopeSimple, Buildings, Clock, ShieldCheck, LockKey, DeviceMobile, Desktop, SpinnerGap } from '@phosphor-icons/react';
 import { useState, useEffect, useRef, useTransition } from 'react';
-import { updateProfile, updatePassword } from '@/app/lib/actions';
+import { updateProfile, updatePassword, updateUserPreferences } from '@/app/lib/actions';
 
 export default function ProfilePage() {
     const { currentUser, updateUser } = useApp();
     const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState<'INFO' | 'SECURITY'>('INFO');
+    const [activeTab, setActiveTab] = useState<'INFO' | 'SECURITY' | 'PREFS'>('INFO');
     const [formData, setFormData] = useState<any>({
         name: '',
         jobTitle: '',
@@ -126,23 +126,64 @@ export default function ProfilePage() {
         }
     };
 
+    const calculatePasswordStrength = (pass: string) => {
+        if (!pass) return 0;
+        let score = 0;
+        if (pass.length >= 8) score += 25;
+        if (/[0-9]/.test(pass)) score += 25;
+        if (/[A-Z]/.test(pass)) score += 25;
+        if (/[^A-Za-z0-9]/.test(pass)) score += 25;
+        return score;
+    };
+
+    const getStrengthColor = (score: number) => {
+        if (score <= 25) return 'bg-red-500';
+        if (score <= 50) return 'bg-amber-500';
+        if (score <= 75) return 'bg-blue-500';
+        return 'bg-success';
+    };
+
+    const getStrengthLabel = (score: number) => {
+        if (score <= 25) return 'Muy débil';
+        if (score <= 50) return 'Débil';
+        if (score <= 75) return 'Fuerte';
+        return 'Muy fuerte';
+    };
+
+    const passwordScore = calculatePasswordStrength(securityData.new);
+
+    const handlePreferenceUpdate = async (prefs: any) => {
+        startTransition(async () => {
+            const result = await updateUserPreferences(prefs);
+            if (result.success) {
+                updateUser({ preferences: { ...currentUser.preferences, ...prefs } } as any);
+                setSaved(true);
+                setTimeout(() => setSaved(false), 2000);
+            } else {
+                alert('Error al guardar preferencias: ' + result.error);
+            }
+        });
+    };
+
     return (
-        <div className="grid-4" style={{ gridTemplateColumns: 'minmax(300px, 1fr) 2fr', alignItems: 'start', gap: 24, display: 'grid' }}>
-            <div className="card">
-                <div className="card-body" style={{ textAlign: 'center', padding: 30, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] items-start gap-6 max-w-7xl mx-auto">
+            {/* Left Summary Card */}
+            <div className="card sticky top-24 shadow-sm border-slate-200/60 dark:border-slate-800/60">
+                <div className="card-body text-center p-8 flex flex-col items-center">
                     <div
-                        className="relative group cursor-pointer w-24 h-24 mb-4 rounded-full shadow-lg ring-4 ring-white transition-transform hover:scale-105"
+                        className="relative group cursor-pointer w-28 h-28 mb-4 rounded-full shadow-lg ring-4 ring-white dark:ring-slate-800 transition-all hover:scale-105 active:scale-95"
                         onClick={() => fileInputRef.current?.click()}
                     >
                         {formData.avatar ? (
                             <img src={formData.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
                         ) : (
-                            <div className="w-full h-full rounded-full bg-slate-200 flex items-center justify-center text-3xl font-bold text-slate-500 uppercase">
+                            <div className="w-full h-full rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-4xl font-bold text-slate-400 uppercase">
                                 {currentUser.initials || currentUser.name?.substring(0, 2)}
                             </div>
                         )}
-                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <span className="text-white text-[10px] font-bold uppercase tracking-wider">{t('profile_change_photo')}</span>
+                        <div className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <Desktop size={20} className="text-white mb-1" />
+                            <span className="text-white text-[9px] font-bold uppercase tracking-wider">Cambiar</span>
                         </div>
                         <input
                             type="file"
@@ -152,196 +193,280 @@ export default function ProfilePage() {
                             onChange={handleFileChange}
                         />
                     </div>
-                    <h3 style={{ fontSize: 18, margin: '10px 0 5px' }}>{formData.name}</h3>
-                    <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>{formData.jobTitle || currentUser.role}</p>
-                    <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'center' }}>
-                        <span className="badge bg-success">{t('profile_active')}</span>
-                        <span className="badge bg-primary">{t('profile_level')} {currentUser.level}</span>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight mb-1">{formData.name}</h3>
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-6">{formData.jobTitle || currentUser.role}</p>
+
+                    <div className="flex flex-wrap gap-2 justify-center w-full mb-6">
+                        <span className="badge bg-success/10 text-success border border-success/20 py-1 px-3 rounded-full text-[10px] font-bold uppercase">
+                            {t('profile_active')}
+                        </span>
+                        <span className="badge bg-primary/10 text-primary border border-primary/20 py-1 px-3 rounded-full text-[10px] font-bold uppercase">
+                            {t('profile_level')} {currentUser.level}
+                        </span>
                     </div>
-                    <hr style={{ margin: '20px 0', border: 0, borderTop: '1px solid var(--border)' }} />
-                    <div style={{ textAlign: 'left', fontSize: 13, color: 'var(--text-main)' }}>
-                        <p style={{ marginBottom: 8, display: 'flex', alignItems: 'center' }}>
-                            <EnvelopeSimple style={{ marginRight: 8, color: 'var(--text-muted)' }} />
-                            {currentUser.email}
-                        </p>
-                        <p style={{ marginBottom: 8, display: 'flex', alignItems: 'center' }}>
-                            <Buildings style={{ marginRight: 8, color: 'var(--text-muted)' }} />
-                            {currentUser.unit}
-                        </p>
-                        <p style={{ display: 'flex', alignItems: 'center' }}>
-                            <Clock style={{ marginRight: 8, color: 'var(--text-muted)' }} />
-                            {t('profile_last_access')}: {t('profile_today')}
-                        </p>
+
+                    <div className="w-full border-t border-slate-100 dark:border-slate-800 pt-6 text-left space-y-4">
+                        <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
+                            <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center text-slate-400 border border-slate-100 dark:border-slate-700/50">
+                                <EnvelopeSimple size={14} />
+                            </div>
+                            <span className="truncate flex-1 font-medium">{currentUser.email}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
+                            <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center text-slate-400 border border-slate-100 dark:border-slate-700/50">
+                                <Buildings size={14} />
+                            </div>
+                            <span className="truncate flex-1 font-medium">{currentUser.unit}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
+                            <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center text-slate-400 border border-slate-100 dark:border-slate-700/50">
+                                <Clock size={14} />
+                            </div>
+                            <span className="truncate flex-1 font-medium italic opacity-70">Acceso: hoy</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="card">
-                <div className="card-head">
-                    <div className="tabs" style={{ border: 'none', background: 'transparent', padding: 0 }}>
-                        <button
-                            className={`tab ${activeTab === 'INFO' ? 'active' : ''}`}
-                            style={{ padding: '0 15px 10px', borderBottomWidth: 3, cursor: 'pointer', background: 'none' }}
-                            onClick={() => setActiveTab('INFO')}
-                        >
-                            {t('profile_tab_info')}
-                        </button>
-                        <button
-                            className={`tab ${activeTab === 'SECURITY' ? 'active' : ''}`}
-                            style={{ padding: '0 15px 10px', borderBottomWidth: 3, cursor: 'pointer', background: 'none' }}
-                            onClick={() => setActiveTab('SECURITY')}
-                        >
-                            {t('profile_tab_security')}
-                        </button>
+            <div className="card shadow-sm border-slate-200/60 dark:border-slate-800/60 min-h-[600px] overflow-hidden">
+                <div className="card-head px-6 pt-6 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/30 dark:bg-slate-900/10">
+                    <div className="tabs flex gap-8">
+                        {[
+                            { id: 'INFO', label: 'Editar Perfil', icon: ShieldCheck },
+                            { id: 'SECURITY', label: 'Seguridad', icon: LockKey },
+                            { id: 'PREFS', label: 'Preferencias', icon: DeviceMobile }
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                className={`tab relative pb-4 text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${activeTab === tab.id
+                                    ? 'text-primary'
+                                    : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
+                                    }`}
+                                onClick={() => setActiveTab(tab.id as any)}
+                            >
+                                <tab.icon weight={activeTab === tab.id ? "fill" : "bold"} size={16} />
+                                {tab.label}
+                                {activeTab === tab.id && (
+                                    <div className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-primary rounded-full animate-fadeIn" />
+                                )}
+                            </button>
+                        ))}
                     </div>
                 </div>
-                <div className="card-body">
-                    {activeTab === 'INFO' ? (
-                        <div className="animate-fadeIn">
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
-                                <div>
-                                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>{t('profile_name')}</label>
-                                    <input type="text" id="name" value={formData.name} onChange={handleChange} />
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>{t('profile_title')}</label>
-                                    <input type="text" id="jobTitle" value={formData.jobTitle} onChange={handleChange} />
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>{t('profile_phone')}</label>
-                                    <input type="text" id="phone" value={formData.phone} onChange={handleChange} />
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>{t('profile_location')}</label>
-                                    <input type="text" id="location" value={formData.location} onChange={handleChange} />
-                                </div>
-                                <div style={{ gridColumn: 'span 2' }}>
-                                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>{t('profile_bio')}</label>
-                                    <textarea id="bio" rows={3} value={formData.bio} onChange={handleChange} style={{ resize: 'none' }}></textarea>
-                                </div>
-                            </div>
-
-                            <h4 style={{ fontSize: 14, marginBottom: 15, borderBottom: '1px solid var(--border)', paddingBottom: 5 }}>{t('profile_regional')}</h4>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                                <div>
-                                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>{t('profile_lang')}</label>
-                                    <select id="language" value={formData.language} onChange={handleChange}>
-                                        <option value="Es">Español</option>
-                                        <option value="En">Inglés</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>{t('profile_timezone')}</label>
-                                    <select id="timezone" value={formData.timezone} onChange={handleChange}>
-                                        <option value="GMT-5">Bogotá/Lima (GMT-5)</option>
-                                        <option value="GMT-6">México (GMT-6)</option>
-                                    </select>
+                <div className="card-body p-8">
+                    {activeTab === 'INFO' && (
+                        <div className="animate-fadeIn space-y-8">
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    Información General
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{t('profile_name')}</label>
+                                        <input type="text" id="name" value={formData.name} onChange={handleChange} className="w-full bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:ring-primary/20" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{t('profile_title')}</label>
+                                        <input type="text" id="jobTitle" value={formData.jobTitle} onChange={handleChange} className="w-full bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:ring-primary/20" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{t('profile_phone')}</label>
+                                        <input type="text" id="phone" value={formData.phone} onChange={handleChange} className="w-full bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:ring-primary/20" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{t('profile_location')}</label>
+                                        <input type="text" id="location" value={formData.location} onChange={handleChange} className="w-full bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:ring-primary/20" />
+                                    </div>
+                                    <div className="col-span-1 md:col-span-2 space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{t('profile_bio')}</label>
+                                        <textarea id="bio" rows={4} value={formData.bio} onChange={handleChange} className="w-full bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:ring-primary/20 p-3" style={{ resize: 'none' }}></textarea>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div style={{ marginTop: 30, textAlign: 'right' }}>
-                                <button className="btn btn-ghost" style={{ marginRight: 10 }}>{t('cancel')}</button>
+                            <div className="pt-8 border-t border-slate-100 dark:border-slate-800/60">
+                                <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                    Configuración Regional
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{t('profile_lang')}</label>
+                                        <select id="language" value={formData.language} onChange={handleChange} className="w-full bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:ring-primary/20">
+                                            <option value="Es">Español</option>
+                                            <option value="En">Inglés</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{t('profile_timezone')}</label>
+                                        <select id="timezone" value={formData.timezone} onChange={handleChange} className="w-full bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:ring-primary/20">
+                                            <option value="GMT-5">Bogotá/Lima (GMT-5)</option>
+                                            <option value="GMT-6">México (GMT-6)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end pt-8 mt-4 border-t border-slate-50 dark:border-slate-800/40">
+                                <button className="btn btn-ghost px-6 font-bold text-xs uppercase tracking-widest hover:bg-slate-100 dark:hover:bg-slate-800 mr-2">{t('cancel')}</button>
                                 <button
-                                    className={`btn ${saved ? 'bg-success' : 'btn-primary'}`}
+                                    className={`btn px-8 font-bold text-xs uppercase tracking-widest shadow-lg transition-all active:scale-95 ${saved ? 'bg-success text-white' : 'btn-primary shadow-primary/20'}`}
                                     onClick={handleSave}
                                     disabled={isPending}
-                                    style={{ color: saved ? 'var(--success)' : 'white', opacity: isPending ? 0.7 : 1 }}
                                 >
-                                    {isPending && <SpinnerGap className="animate-spin inline-block mr-2" />}
-                                    {saved ? <><Check /> {t('profile_saved')}</> : isPending ? 'Guardando...' : t('profile_save_btn')}
+                                    {isPending && <SpinnerGap className="animate-spin mr-2" />}
+                                    {saved ? <><Check weight="bold" className="mr-2" /> {t('profile_saved')}</> : isPending ? 'Guardando...' : t('profile_save_btn')}
                                 </button>
                             </div>
                         </div>
-                    ) : (
-                        <div className="animate-fadeIn">
-                            {/* --- Security Tab --- */}
-                            <div className="flex flex-col gap-6">
-                                {/* Change Password */}
-                                <div className="p-4 rounded-lg bg-amber-50 border border-amber-100 dark:bg-slate-800 dark:border-slate-700">
-                                    <h4 className="flex items-center gap-2 font-bold text-slate-800 mb-4 pb-2 border-b border-amber-200">
-                                        <LockKey className="text-amber-600" size={20} />
-                                        {t('security_password_title')}
-                                    </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="col-span-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">{t('security_current_pass')}</label>
+                    )}
+
+                    {activeTab === 'SECURITY' && (
+                        <div className="animate-fadeIn max-w-xl mx-auto py-4">
+                            <div className="space-y-8">
+                                <div className="p-8 rounded-3xl bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-inner">
+                                    <div className="flex items-center gap-4 mb-8">
+                                        <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600">
+                                            <LockKey size={28} weight="fill" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-900 dark:text-white leading-tight mb-1">{t('security_password_title')}</h4>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Mantén tu cuenta protegida cambiando tu contraseña periódicamente</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Contraseña Actual</label>
                                             <input
                                                 type="password"
                                                 id="current"
                                                 value={securityData.current}
                                                 onChange={handleSecurityChange}
-                                                className="w-full"
+                                                className="w-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:ring-primary/20"
+                                                placeholder="••••••••"
                                             />
                                         </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">{t('security_new_pass')}</label>
-                                            <input
-                                                type="password"
-                                                id="new"
-                                                value={securityData.new}
-                                                onChange={handleSecurityChange}
-                                                className="w-full"
-                                            />
+
+                                        <div className="pt-6 border-t border-slate-200 dark:border-slate-700 mt-2 space-y-6">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Nueva Contraseña</label>
+                                                <input
+                                                    type="password"
+                                                    id="new"
+                                                    value={securityData.new}
+                                                    onChange={handleSecurityChange}
+                                                    className="w-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:ring-primary/20"
+                                                    placeholder="••••••••"
+                                                />
+
+                                                {/* Password Strength Meter */}
+                                                {securityData.new && (
+                                                    <div className="mt-3 space-y-2 animate-fadeIn">
+                                                        <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest">
+                                                            <span className="text-slate-400">Fortaleza</span>
+                                                            <span className={getStrengthColor(passwordScore).replace('bg-', 'text-')}>
+                                                                {getStrengthLabel(passwordScore)}
+                                                            </span>
+                                                        </div>
+                                                        <div className="h-1 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                            <div
+                                                                className={`h-full transition-all duration-700 ease-out ${getStrengthColor(passwordScore)}`}
+                                                                style={{ width: `${passwordScore}%` }}
+                                                            />
+                                                        </div>
+                                                        <p className="text-[10px] text-slate-400 leading-tight">
+                                                            Usa al menos 8 caracteres, números y símbolos para una mayor seguridad.
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Confirmar Nueva Contraseña</label>
+                                                <input
+                                                    type="password"
+                                                    id="confirm"
+                                                    value={securityData.confirm}
+                                                    onChange={handleSecurityChange}
+                                                    className="w-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:ring-primary/20"
+                                                    placeholder="••••••••"
+                                                />
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">{t('security_confirm_pass')}</label>
-                                            <input
-                                                type="password"
-                                                id="confirm"
-                                                value={securityData.confirm}
-                                                onChange={handleSecurityChange}
-                                                className="w-full"
-                                            />
-                                        </div>
-                                        <div className="col-span-2 flex justify-end mt-2">
+
+                                        <div className="flex justify-end pt-4">
                                             <button
-                                                className={`btn ${securitySaved ? 'bg-success text-white' : 'btn-primary'}`}
+                                                className={`btn w-full font-bold text-xs uppercase tracking-widest py-3 shadow-lg active:scale-[0.98] transition-all ${securitySaved ? 'bg-success text-white border-success' : 'btn-primary shadow-primary/20'}`}
                                                 onClick={handleSecuritySave}
+                                                disabled={isPending}
                                             >
-                                                {securitySaved ? <><Check weight="bold" /> {t('profile_saved')}</> : t('security_change_btn')}
+                                                {securitySaved ? <><Check weight="bold" className="mr-2" /> Contraseña Actualizada</> : 'Actualizar Contraseña'}
                                             </button>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    )}
 
-                                {/* Login Activity / 2FA Mock */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="p-4 rounded-lg bg-white border border-slate-200">
-                                        <h4 className="flex items-center gap-2 font-bold text-slate-800 mb-2">
-                                            <ShieldCheck className="text-green-600" size={20} />
-                                            {t('security_mfa_title')}
-                                        </h4>
-                                        <p className="text-sm text-slate-500 mb-4">{t('security_mfa_desc')}</p>
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <div className="w-10 h-5 bg-slate-200 rounded-full relative">
-                                                <div className="w-4 h-4 bg-white rounded-full shadow absolute top-0.5 left-0.5"></div>
+                    {activeTab === 'PREFS' && (
+                        <div className="animate-fadeIn max-w-xl mx-auto py-4">
+                            <div className="space-y-8">
+                                <div className="p-8 rounded-3xl bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-inner">
+                                    <h4 className="font-bold text-slate-900 dark:text-white mb-8 flex items-center gap-3">
+                                        <div className="w-1.5 h-6 rounded-full bg-primary" />
+                                        Preferencias de Visualización
+                                    </h4>
+
+                                    <div className="space-y-8">
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 block">Tema de la Interfaz</label>
+                                            <div className="grid grid-cols-3 gap-4">
+                                                {[
+                                                    { id: 'light', label: 'Claro', icon: Desktop },
+                                                    { id: 'dark', label: 'Oscuro', icon: Clock },
+                                                    { id: 'system', label: 'Sistema', icon: ShieldCheck }
+                                                ].map((themeOpt) => (
+                                                    <button
+                                                        key={themeOpt.id}
+                                                        onClick={() => handlePreferenceUpdate({ theme: themeOpt.id })}
+                                                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${(currentUser.preferences?.theme || 'system') === themeOpt.id
+                                                                ? 'bg-white dark:bg-slate-700 border-primary border-2 shadow-sm'
+                                                                : 'bg-transparent border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                            }`}
+                                                    >
+                                                        <themeOpt.icon weight="bold" size={24} className={(currentUser.preferences?.theme || 'system') === themeOpt.id ? 'text-primary' : 'text-slate-400'} />
+                                                        <span className={`text-[10px] font-bold uppercase tracking-wider ${(currentUser.preferences?.theme || 'system') === themeOpt.id ? 'text-slate-900 dark:text-white' : 'text-slate-500'
+                                                            }`}>{themeOpt.label}</span>
+                                                    </button>
+                                                ))}
                                             </div>
-                                            <span className="text-sm font-bold text-slate-600">{t('security_mfa_enable')}</span>
-                                        </label>
-                                    </div>
+                                        </div>
 
-                                    <div className="p-4 rounded-lg bg-white border border-slate-200">
-                                        <h4 className="flex items-center gap-2 font-bold text-slate-800 mb-2">
-                                            <Desktop className="text-blue-600" size={20} />
-                                            {t('security_activity_title')}
-                                        </h4>
-                                        <p className="text-sm text-slate-500 mb-4">{t('security_activity_desc')}</p>
-                                        <ul className="space-y-3">
-                                            <li className="flex items-center justify-between text-sm">
-                                                <div className="flex items-center gap-2">
-                                                    <Desktop size={16} className="text-slate-400" />
-                                                    <span className="font-medium text-slate-700">MacBook Pro (This device)</span>
+                                        <div className="pt-8 border-t border-slate-200 dark:border-slate-700">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 block">Notificaciones</label>
+                                            <div className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
+                                                        <EnvelopeSimple size={20} weight="fill" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-slate-800 dark:text-white leading-none mb-1">Alertas del Sistema</p>
+                                                        <p className="text-[10px] text-slate-500 dark:text-slate-400">Recibo correos sobre actividad importante</p>
+                                                    </div>
                                                 </div>
-                                                <span className="text-green-600 text-xs font-bold">{t('profile_active')}</span>
-                                            </li>
-                                            <li className="flex items-center justify-between text-sm opacity-60">
-                                                <div className="flex items-center gap-2">
-                                                    <DeviceMobile size={16} className="text-slate-400" />
-                                                    <span className="font-medium text-slate-700">iPhone 13</span>
-                                                </div>
-                                                <span className="text-slate-400 text-xs">2d ago</span>
-                                            </li>
-                                        </ul>
+                                                <button
+                                                    onClick={() => handlePreferenceUpdate({ notifications: !currentUser.preferences?.notifications })}
+                                                    className={`w-12 h-6 rounded-full transition-all relative ${currentUser.preferences?.notifications !== false ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'
+                                                        }`}
+                                                >
+                                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${currentUser.preferences?.notifications !== false ? 'left-7' : 'left-1'
+                                                        }`} />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

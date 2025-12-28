@@ -41,6 +41,11 @@ export async function POST(request: NextRequest) {
         errorMessage = 'Faltan credenciales: Access Key ID, Secret Access Key, Region o Bucket';
         break;
 
+      case 'R2':
+        isValid = !!(config.accessKeyId && config.secretAccessKey && config.endpoint && config.bucket);
+        errorMessage = 'Faltan credenciales: Access Key ID, Secret Access Key, Endpoint o Bucket';
+        break;
+
       case 'LOCAL':
         isValid = !!config.basePath;
         errorMessage = 'Falta la ruta base de almacenamiento';

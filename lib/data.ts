@@ -76,6 +76,11 @@ export interface User {
   mustChangePassword?: boolean;
   inviteSentAt?: string;
   inviteExpiresAt?: string;
+  preferences?: {
+    theme: 'light' | 'dark' | 'system',
+    notifications: boolean,
+    sidebarCollapsed: boolean
+  };
 }
 
 export interface Unit {
