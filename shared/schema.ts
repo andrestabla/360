@@ -62,6 +62,7 @@ export const users = pgTable("users", {
   avatar: text("avatar"),
   password: text("password"),
   mustChangePassword: boolean("must_change_password").default(false),
+  lastPasswordChange: timestamp("last_password_change"),
   lastLogin: timestamp("last_login"),
   inviteSentAt: timestamp("invite_sent_at"),
   inviteExpiresAt: timestamp("invite_expires_at"),
