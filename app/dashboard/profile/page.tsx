@@ -3,7 +3,7 @@ import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
 import { Check, EnvelopeSimple, Buildings, Clock, ShieldCheck, LockKey, DeviceMobile, Desktop, SpinnerGap } from '@phosphor-icons/react';
 import { useState, useEffect, useRef, useTransition } from 'react';
-import { updateProfile } from '@/app/lib/actions';
+import { updateProfile, updatePassword } from '@/app/lib/actions';
 
 export default function ProfilePage() {
     const { currentUser, updateUser } = useApp();
@@ -91,17 +91,37 @@ export default function ProfilePage() {
         setSecurityData(prev => ({ ...prev, [id]: value }));
     };
 
-    const handleSecuritySave = () => {
-        if (securityData.new !== securityData.confirm) {
-            alert(t('security_pass_mismatch'));
+    const handleSecuritySave = async () => {
+        if (!securityData.current || !securityData.new || !securityData.confirm) {
+            alert('Por favor completa todos los campos');
             return;
         }
-        // Mock API call
-        setSecuritySaved(true);
-        setTimeout(() => {
-            setSecuritySaved(false);
-            setSecurityData({ current: '', new: '', confirm: '' });
-        }, 2000);
+
+        if (securityData.new !== securityData.confirm) {
+            alert('Las contraseñas no coinciden');
+            return;
+        }
+
+        try {
+            const result = await updatePassword(
+                securityData.current,
+                securityData.new,
+                securityData.confirm
+            );
+
+            if (result.success) {
+                setSecuritySaved(true);
+                setTimeout(() => {
+                    setSecuritySaved(false);
+                    setSecurityData({ current: '', new: '', confirm: '' });
+                }, 2000);
+            } else {
+                alert(result.error || 'Error al cambiar la contraseña');
+            }
+        } catch (error) {
+            console.error('Error changing password:', error);
+            alert('Error al cambiar la contraseña');
+        }
     };
 
     return (

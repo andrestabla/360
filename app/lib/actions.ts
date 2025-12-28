@@ -130,6 +130,71 @@ export async function updateProfile(formData: FormData) {
     }
 }
 
+// --- Actualizar Contraseña (HU I.2) ---
+export async function updatePassword(
+    currentPassword: string,
+    newPassword: string,
+    confirmPassword: string
+) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autorizado' };
+    }
+
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+        return { success: false, error: 'Las contraseñas no coinciden' };
+    }
+
+    // Validate password requirements (HU I.2)
+    if (newPassword.length < 8) {
+        return { success: false, error: 'La contraseña debe tener al menos 8 caracteres' };
+    }
+
+    // Check for at least one number
+    if (!/\d/.test(newPassword)) {
+        return { success: false, error: 'La contraseña debe contener al menos un número' };
+    }
+
+    // Check for at least one special character
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword)) {
+        return { success: false, error: 'La contraseña debe contener al menos un carácter especial' };
+    }
+
+    try {
+        // Get current user from database
+        const [user] = await db.select().from(users).where(eq(users.id, session.user.id));
+
+        if (!user || !user.password) {
+            return { success: false, error: 'Usuario no encontrado' };
+        }
+
+        // Verify current password
+        const isValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isValid) {
+            return { success: false, error: 'La contraseña actual es incorrecta' };
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password
+        await db.update(users)
+            .set({
+                password: hashedPassword,
+                mustChangePassword: false,
+                updatedAt: new Date()
+            })
+            .where(eq(users.id, session.user.id));
+
+        revalidatePath('/dashboard/profile');
+        return { success: true };
+    } catch (error) {
+        console.error('Error changing password:', error);
+        return { success: false, error: 'Error al cambiar la contraseña' };
+    }
+}
+
 // --- Actualizar Apariencia (Tenant) ---
 export async function updateTenantBranding(settings: any) {
     const session = await auth();
