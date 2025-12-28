@@ -751,6 +751,11 @@ export default function AdminSettingsPage() {
                                 </div>
                             )}
 
+                            {/* Storage Tab */}
+                            {activeTab === "storage" && (
+                                <StorageConfigPanel />
+                            )}
+
                             {/* Subscription Tab */}
                             {activeTab === "subscription" && isSuperAdmin && (
                                 <div className="space-y-6">
