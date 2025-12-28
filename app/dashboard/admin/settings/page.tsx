@@ -188,8 +188,29 @@ export default function AdminSettingsPage() {
         };
 
         loadSettings();
-        loadEmailSettings();
     }, [platformSettings]);
+
+    // Separate effect for Email Settings to ensure it runs independently of platform settings hydration
+    useEffect(() => {
+        const loadEmailSettings = async () => {
+            try {
+                const settings = await getEmailSettings();
+                if (settings) {
+                    setFormData((prev: any) => ({
+                        ...prev,
+                        emailProvider: settings.provider || "smtp",
+                        smtpHost: settings.smtpHost || "",
+                        smtpPort: settings.smtpPort?.toString() || "587",
+                        smtpUser: settings.smtpUser || "",
+                        smtpPassword: "", // Security
+                        smtpFrom: settings.fromEmail || "",
+                        hasEncryptedPassword: !!settings.smtpPasswordEncrypted
+                    }));
+                }
+            } catch (e) { console.error("Error loading email settings", e); }
+        };
+        loadEmailSettings();
+    }, []);
 
     const [isPending, startTransition] = React.useTransition();
 
@@ -1041,7 +1062,7 @@ export default function AdminSettingsPage() {
                                             className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 bg-white"
                                         >
                                             <CreditCard className="w-4 h-4" />
-                                            Gestionar Facturación
+                                            Configuración Stripe
                                         </button>
                                     </div>
 
