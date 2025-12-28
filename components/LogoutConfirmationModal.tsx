@@ -15,10 +15,21 @@ export default function LogoutConfirmationModal({ isOpen, onClose }: LogoutConfi
     if (!isOpen) return null;
 
     const handleLogout = async () => {
-        setIsLoggingOut(true);
-        // Add a small delay for UX so user sees "Saliendo..."
-        await new Promise(resolve => setTimeout(resolve, 500));
-        await logout();
+        try {
+            setIsLoggingOut(true);
+            console.log('[LogoutModal] Starting logout...');
+
+            // Add a small delay for UX so user sees "Saliendo..."
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            console.log('[LogoutModal] Calling logout()...');
+            await logout();
+            console.log('[LogoutModal] Logout completed');
+        } catch (error) {
+            console.error('[LogoutModal] Logout failed:', error);
+            setIsLoggingOut(false);
+            alert('Error al cerrar sesión. Por favor intenta nuevamente.');
+        }
     };
 
     return (

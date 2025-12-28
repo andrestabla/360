@@ -3,15 +3,15 @@
     "002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797": {
       "workers": {
         "app/dashboard/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
         "app/login/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
         "app/auth/change-password/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
         "app/dashboard/workflows/page": {
@@ -23,7 +23,7 @@
           "async": false
         },
         "app/dashboard/admin/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
         "app/dashboard/admin/users/page": {
@@ -40,7 +40,7 @@
         }
       },
       "layer": {
-        "app/dashboard/page": "action-browser",
+        "app/dashboard/page": "rsc",
         "app/login/page": "action-browser",
         "app/auth/change-password/page": "action-browser",
         "app/dashboard/workflows/page": "action-browser",
@@ -54,15 +54,15 @@
     "60875bdd3bbcaefa198d1719052ed8388c9a4cf8dc": {
       "workers": {
         "app/dashboard/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
         "app/login/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
         "app/auth/change-password/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
         "app/dashboard/workflows/page": {
@@ -74,7 +74,7 @@
           "async": false
         },
         "app/dashboard/admin/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
         "app/dashboard/admin/users/page": {
@@ -91,7 +91,7 @@
         }
       },
       "layer": {
-        "app/dashboard/page": "action-browser",
+        "app/dashboard/page": "rsc",
         "app/login/page": "action-browser",
         "app/auth/change-password/page": "action-browser",
         "app/dashboard/workflows/page": "action-browser",
@@ -105,15 +105,15 @@
     "60db3a7642fe3b1b772dd698cf467832cf715646aa": {
       "workers": {
         "app/dashboard/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
         "app/login/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
         "app/auth/change-password/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
         "app/dashboard/workflows/page": {
@@ -125,7 +125,7 @@
           "async": false
         },
         "app/dashboard/admin/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
         "app/dashboard/admin/users/page": {
@@ -142,7 +142,7 @@
         }
       },
       "layer": {
-        "app/dashboard/page": "action-browser",
+        "app/dashboard/page": "rsc",
         "app/login/page": "action-browser",
         "app/auth/change-password/page": "action-browser",
         "app/dashboard/workflows/page": "action-browser",
@@ -151,6 +151,214 @@
         "app/dashboard/admin/users/page": "action-browser",
         "app/dashboard/profile/page": "action-browser",
         "app/dashboard/chat/page": "action-browser"
+      }
+    },
+    "402b3332ddb015806138ec2d8fac265f00592e4074": {
+      "workers": {
+        "app/login/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/auth/change-password/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/dashboard/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/dashboard/admin/settings/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/login/page": "action-browser",
+        "app/auth/change-password/page": "action-browser",
+        "app/dashboard/page": "rsc",
+        "app/dashboard/admin/settings/page": "action-browser"
+      }
+    },
+    "40fbdd5f558cbe7f9be14e24c687ceb173a5de63e6": {
+      "workers": {
+        "app/login/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/auth/change-password/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/dashboard/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/dashboard/admin/settings/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/login/page": "action-browser",
+        "app/auth/change-password/page": "action-browser",
+        "app/dashboard/page": "rsc",
+        "app/dashboard/admin/settings/page": "action-browser"
+      }
+    },
+    "403b2145954c96c9792c5f40ec74f3a9f0680b80f8": {
+      "workers": {
+        "app/auth/change-password/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/login/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/dashboard/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/dashboard/admin/settings/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/auth/change-password/page": "action-browser",
+        "app/login/page": "action-browser",
+        "app/dashboard/page": "rsc",
+        "app/dashboard/admin/settings/page": "action-browser"
+      }
+    },
+    "408674c3d159b015c0c0a19d77572b1624f033830a": {
+      "workers": {
+        "app/auth/change-password/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/login/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/dashboard/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/dashboard/admin/settings/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/auth/change-password/page": "action-browser",
+        "app/login/page": "action-browser",
+        "app/dashboard/page": "rsc",
+        "app/dashboard/admin/settings/page": "action-browser"
+      }
+    },
+    "409dcfb47a89cf9342fdc1ca5dc4df08fa192add85": {
+      "workers": {
+        "app/auth/change-password/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/login/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/dashboard/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/dashboard/admin/settings/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/auth/change-password/page": "action-browser",
+        "app/login/page": "action-browser",
+        "app/dashboard/page": "rsc",
+        "app/dashboard/admin/settings/page": "action-browser"
+      }
+    },
+    "40a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf": {
+      "workers": {
+        "app/auth/change-password/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/login/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/dashboard/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/dashboard/admin/settings/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/auth/change-password/page": "action-browser",
+        "app/login/page": "action-browser",
+        "app/dashboard/page": "rsc",
+        "app/dashboard/admin/settings/page": "action-browser"
+      }
+    },
+    "40e18327945926cda6de2dafe4fd860128edd05ef1": {
+      "workers": {
+        "app/auth/change-password/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/login/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/dashboard/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/dashboard/admin/settings/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/auth/change-password/page": "action-browser",
+        "app/login/page": "action-browser",
+        "app/dashboard/page": "rsc",
+        "app/dashboard/admin/settings/page": "action-browser"
+      }
+    },
+    "70c1e1ec43ee619090823666ab09b3f5cbe7b71488": {
+      "workers": {
+        "app/dashboard/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/login/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/auth/change-password/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/dashboard/admin/settings/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fandrestabla%2F.gemini%2Fantigravity%2Fscratch%2Fproject_24122025%2F360%2Fapp%2Flib%2Factions.ts%22%2C%5B%5B%22002c35fc5dbe58a4ded2c0854a519c9b2c65cc9797%22%2C%22logout%22%5D%2C%5B%22402b3332ddb015806138ec2d8fac265f00592e4074%22%2C%22updateProfile%22%5D%2C%5B%22403b2145954c96c9792c5f40ec74f3a9f0680b80f8%22%2C%22getPendingTasks%22%5D%2C%5B%22408674c3d159b015c0c0a19d77572b1624f033830a%22%2C%22getUserRecents%22%5D%2C%5B%22409dcfb47a89cf9342fdc1ca5dc4df08fa192add85%22%2C%22saveWorkNote%22%5D%2C%5B%2240a2dd69bc8bd11d0575f74d02bac5d9df5de8c4bf%22%2C%22getUserNotes%22%5D%2C%5B%2240e18327945926cda6de2dafe4fd860128edd05ef1%22%2C%22deleteWorkNote%22%5D%2C%5B%2240fbdd5f558cbe7f9be14e24c687ceb173a5de63e6%22%2C%22updateTenantBranding%22%5D%2C%5B%2260875bdd3bbcaefa198d1719052ed8388c9a4cf8dc%22%2C%22authenticate%22%5D%2C%5B%2260db3a7642fe3b1b772dd698cf467832cf715646aa%22%2C%22changePassword%22%5D%2C%5B%2270c1e1ec43ee619090823666ab09b3f5cbe7b71488%22%2C%22trackUserRecent%22%5D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/dashboard/page": "rsc",
+        "app/login/page": "action-browser",
+        "app/auth/change-password/page": "action-browser",
+        "app/dashboard/admin/settings/page": "action-browser"
       }
     }
   },

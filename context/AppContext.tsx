@@ -219,17 +219,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     const logout = async () => {
+        console.log('[AppContext] Logout initiated');
         try {
+            console.log('[AppContext] Calling /api/auth/logout...');
             // Call logout API to clear cookie
-            await fetch('/api/auth/logout', { method: 'POST' });
+            const response = await fetch('/api/auth/logout', { method: 'POST' });
+            console.log('[AppContext] Logout API response:', response.status);
         } catch (error) {
-            console.error('Logout API error:', error);
+            console.error('[AppContext] Logout API error:', error);
         } finally {
+            console.log('[AppContext] Clearing local state...');
             // Clear local state regardless of API success
             setCurrentUser(null);
             setIsSuperAdmin(false);
             localStorage.removeItem('m360_user');
+            console.log('[AppContext] Redirecting to /login...');
             router.push('/login');
+            console.log('[AppContext] Logout complete');
         }
     };
 
