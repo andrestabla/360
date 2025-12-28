@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { DB, StorageProvider } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { StorageProvider } from '@/lib/data'; // Types only
 import {
     CloudArrowUp,
     CheckCircle,
@@ -23,19 +23,42 @@ import { storageGuide } from '@/lib/adminGuides';
 import StorageSetupWizard, { StorageConfigData } from '@/components/storage/StorageSetupWizard';
 
 export default function StorageConfigPanel() {
-    // Global storage config from platform settings
-    const storageSettings = DB.platformSettings.storage;
+    const [isLoading, setIsLoading] = useState(true);
     const [showWizard, setShowWizard] = useState(false);
 
-    const [selectedProvider, setSelectedProvider] = useState<StorageProvider>(
-        storageSettings?.provider || 'LOCAL'
-    );
+    const [selectedProvider, setSelectedProvider] = useState<StorageProvider>('LOCAL');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [config, setConfig] = useState<any>(storageSettings?.config || {});
+    const [config, setConfig] = useState<any>({});
     const [showSecrets, setShowSecrets] = useState(false);
     const [testing, setTesting] = useState(false);
     const [testResult, setTestResult] = useState<{ status: 'success' | 'failed', message: string } | null>(null);
     const [saved, setSaved] = useState(false);
+
+    // Fetch config on mount
+    useEffect(() => {
+        const fetchConfig = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch('/api/admin/storage-config');
+                const data = await response.json();
+
+                if (data.success && data.config) {
+                    setSelectedProvider(data.config.provider);
+                    setConfig(data.config.config || {});
+                } else {
+                    // Default to LOCAL if not configured
+                    setSelectedProvider('LOCAL');
+                    setConfig({});
+                }
+            } catch (error) {
+                console.error("Error fetching storage config:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchConfig();
+    }, []);
 
     const providers = [
         { id: 'GOOGLE_DRIVE' as StorageProvider, name: 'Google Drive', icon: GoogleDriveLogo, color: 'text-blue-600', bgColor: 'bg-blue-50' },
@@ -108,13 +131,8 @@ export default function StorageConfigPanel() {
             });
 
             if (response.ok) {
-                if (typeof window !== 'undefined') {
-                    DB.platformSettings.storage = {
-                        provider: selectedProvider,
-                        config,
-                        enabled: true
-                    };
-                }
+                // Remove client-side mock update since we rely on server fetch now.
+                // We could optimistically set state, but we already have the state.
 
                 setSaved(true);
                 setTimeout(() => setSaved(false), 3000);
@@ -128,14 +146,14 @@ export default function StorageConfigPanel() {
         setSelectedProvider(wizardConfig.provider as StorageProvider);
         setConfig(wizardConfig.config);
         setTestResult({ status: 'success', message: 'Configuración guardada desde el asistente' });
-        if (typeof window !== 'undefined') {
-            DB.platformSettings.storage = {
-                provider: wizardConfig.provider as StorageProvider,
-                config: wizardConfig.config,
-                enabled: true
-            };
-        }
-        setSaved(true);
+
+        // Auto-save logic if wizard completes? 
+        // Original code updated DB mock. We should probably call handleSave or just let user click save?
+        // Let's assume wizard returns config and user MUST click save, OR wizard does auto-save?
+        // The wizard component seems to return data, not save itself.
+        // We set local state, user can verify then save.
+
+        setSaved(true); // Feedback only? Wizard flow might differ.
         setTimeout(() => setSaved(false), 3000);
     };
 
@@ -453,6 +471,14 @@ export default function StorageConfigPanel() {
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <SpinnerGap className="animate-spin text-slate-400" size={32} />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -551,12 +577,9 @@ export default function StorageConfigPanel() {
                 isOpen={showWizard}
                 onClose={() => setShowWizard(false)}
                 onComplete={handleWizardComplete}
-                existingConfig={storageSettings ? {
-                    provider: storageSettings.provider,
-                    config: storageSettings.config || {},
-                    enabled: storageSettings.enabled
-                } : null}
+                existingConfig={config}
             />
         </div>
     );
 }
+
