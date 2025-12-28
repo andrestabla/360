@@ -102,6 +102,7 @@ export default function StorageDashboardPage() {
         'ONEDRIVE': 'OneDrive',
         'SHAREPOINT': 'SharePoint',
         'S3': 'Amazon S3',
+        'R2': 'Cloudflare R2',
         'LOCAL': 'Almacenamiento Local'
     };
 
