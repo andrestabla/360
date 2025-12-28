@@ -8,6 +8,7 @@ import {
     PlatformSettings,
     Notification
 } from '@/lib/data';
+import { logout as logoutAction } from '@/app/lib/actions';
 // Theme handled via CSS/Tailwind directly
 
 
@@ -218,29 +219,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const logout = async () => {
-        console.log('[AppContext] Logout initiated');
-        try {
-            console.log('[AppContext] Calling /api/auth/logout...');
-            // Call logout API to clear cookie
-            const response = await fetch('/api/auth/logout', { method: 'POST' });
-            console.log('[AppContext] Logout API response:', response.status);
-        } catch (error) {
-            console.error('[AppContext] Logout API error:', error);
-        }
 
-        // Defer ALL state updates and navigation to avoid React errors #406 and #468
-        console.log('[AppContext] Scheduling state cleanup and redirect...');
-        setTimeout(() => {
-            console.log('[AppContext] Clearing local state...');
-            setCurrentUser(null);
-            setIsSuperAdmin(false);
+    const logout = async () => {
+        setIsLoading(true);
+        try {
+            // Clear local storage first (synchronous, safe operation)
             localStorage.removeItem('m360_user');
-            console.log('[AppContext] Redirecting to /login...');
-            router.push('/login');
-            console.log('[AppContext] Logout complete');
-        }, 0);
+
+            // Call server action which handles signOut with redirect
+            // This will trigger NEXT_REDIRECT, so we don't manually update React state
+            await logoutAction();
+
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Only reset loading if redirect fails
+            setIsLoading(false);
+        }
+        // No finally block - redirect will unmount component naturally
     };
+
 
     const updatePlatformSettings = (settings: Partial<PlatformSettings>) => {
         setPlatformSettings(prev => {
