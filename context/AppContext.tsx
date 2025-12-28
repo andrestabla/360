@@ -227,20 +227,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             console.log('[AppContext] Logout API response:', response.status);
         } catch (error) {
             console.error('[AppContext] Logout API error:', error);
-        } finally {
+        }
+
+        // Defer ALL state updates and navigation to avoid React errors #406 and #468
+        console.log('[AppContext] Scheduling state cleanup and redirect...');
+        setTimeout(() => {
             console.log('[AppContext] Clearing local state...');
-            // Clear local state regardless of API success
             setCurrentUser(null);
             setIsSuperAdmin(false);
             localStorage.removeItem('m360_user');
             console.log('[AppContext] Redirecting to /login...');
-
-            // Defer navigation to avoid React error #406 (state update during render)
-            setTimeout(() => {
-                router.push('/login');
-                console.log('[AppContext] Logout complete');
-            }, 0);
-        }
+            router.push('/login');
+            console.log('[AppContext] Logout complete');
+        }, 0);
     };
 
     const updatePlatformSettings = (settings: Partial<PlatformSettings>) => {
