@@ -273,26 +273,55 @@ export async function updateOrganizationBranding(settings: any) {
     }
 
     try {
-        // Config lives in 'branding' field of organization_settings (singleton id=1)
+        console.log("[updateOrganizationBranding] Starting update. Keys:", Object.keys(settings));
+
+        // Use organizationSettings as defined in imports
         const current = await db.select().from(organizationSettings).where(eq(organizationSettings.id, 1)).limit(1);
-        const currentBranding = (current[0]?.branding as Record<string, any>) || {};
+        console.log("[updateOrganizationBranding] Row 1 match:", !!current[0]);
 
-        const newBranding = {
-            ...currentBranding,
-            ...settings
-        };
+        if (current.length === 0) {
+            // Insert if not exists
+            console.log("[updateOrganizationBranding] Inserting new singleton row");
+            await db.insert(organizationSettings).values({
+                id: 1,
+                branding: settings,
+                name: settings.orgName || 'My Organization',
+                plan: 'ENTERPRISE'
+            });
+        } else {
+            // Update existing
+            console.log("[updateOrganizationBranding] Updating existing row");
+            const currentBranding = (current[0]?.branding as Record<string, any>) || {};
+            const newBranding = {
+                ...currentBranding,
+                ...settings
+            };
 
-        await db.update(organizationSettings)
-            .set({
-                branding: newBranding,
-            })
-            .where(eq(organizationSettings.id, 1));
+            await db.update(organizationSettings)
+                .set({
+                    branding: newBranding,
+                })
+                .where(eq(organizationSettings.id, 1));
+        }
 
         revalidatePath('/');
+        console.log("[updateOrganizationBranding] Success");
         return { success: true };
+    } catch (error: any) {
+        console.error("[updateOrganizationBranding] CRITICAL ERROR:", error);
+        // Serialize error safely
+        const errorMsg = error.message || String(error);
+        return { error: `DB Error: ${errorMsg}` };
+    }
+}
+
+export async function getOrganizationSettings() {
+    try {
+        const settings = await db.select().from(organizationSettings).where(eq(organizationSettings.id, 1)).limit(1);
+        return settings[0] || null;
     } catch (error) {
-        console.error("Error updating branding:", error);
-        return { error: "Error guardando configuración" };
+        console.error("Error fetching settings:", error);
+        return null;
     }
 }
 

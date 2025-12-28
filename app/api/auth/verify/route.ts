@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/server/db';
-import { users } from '@/shared/schema';
+import { users, organizationSettings } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
 
 export async function GET() {
@@ -18,6 +18,10 @@ export async function GET() {
         if (!user) {
             return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
         }
+
+        // Fetch organization settings (branding)
+        const organization = await db.select().from(organizationSettings as any).where(eq(organizationSettings.id, 1)).limit(1);
+        const orgSettings = organization[0] || null;
 
         return NextResponse.json({
             success: true,
@@ -38,7 +42,10 @@ export async function GET() {
                 language: user.language,
                 timezone: user.timezone,
                 avatar: user.avatar
-            }
+            },
+            platformSettings: orgSettings ? {
+                branding: orgSettings.branding
+            } : null
         });
 
     } catch (error) {

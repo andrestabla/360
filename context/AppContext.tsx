@@ -158,6 +158,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                     setIsSuperAdmin(!!data.user.isSuperAdmin);
                     // Also update localStorage user backup
                     localStorage.setItem('m360_user', JSON.stringify(data.user));
+
+                    // 3. Update Platform Settings from Server (Branding)
+                    if (data.platformSettings) {
+                        const mergedSettings = {
+                            ...platformSettings,
+                            ...data.platformSettings,
+                            branding: { ...(platformSettings.branding || {}), ...(data.platformSettings.branding || {}) }
+                        };
+                        setPlatformSettings(mergedSettings);
+
+                        // Persist to local storage
+                        localStorage.setItem('m360_platform_settings', JSON.stringify(mergedSettings));
+
+                        // Inject Global Branding CSS
+                        if (mergedSettings.branding?.primaryColor) {
+                            document.documentElement.style.setProperty('--primary', mergedSettings.branding.primaryColor);
+                        }
+                    }
                 } else {
                     // Session invalid or expired
                     // Only clear if we really want to force logout, or just leave as null

@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   compress: true, // Enable gzip compression
 
 
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '4mb',
+    },
+  },
   async headers() {
     return [
       {
