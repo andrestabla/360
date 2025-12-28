@@ -1,0 +1,19 @@
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+    const csvContent = `id,name,type,depth,parentId,parentName,responsibleEmail,description
+DIR,Dirección General,UNIT,0,,,admin@demo.com,Dirección principal de la organización
+OPS,Gerencia de Operaciones,UNIT,1,DIR,Dirección General,ops@demo.com,Área encargada de procesos operativos
+FIN,Administración y Finanzas,UNIT,1,DIR,Dirección General,fin@demo.com,Gestión financiera y administrativa
+CONT,Contabilidad,UNIT,2,FIN,Administración y Finanzas,cont@demo.com,Departamento de contabilidad
+PROC-01,Proceso de Compras,PROCESS,,OPS,Gerencia de Operaciones,compras@demo.com,Flujo estandarizado de adquisiciones`;
+
+    return new NextResponse(csvContent, {
+        status: 200,
+        headers: {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': 'attachment; filename="plantilla-estructura-organizacional.csv"',
+            'Cache-Control': 'no-cache',
+        },
+    });
+}
