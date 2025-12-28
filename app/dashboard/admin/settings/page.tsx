@@ -22,7 +22,7 @@ import {
     X
 } from "@phosphor-icons/react";
 import EmailConfigWizard from "@/components/email/EmailConfigWizard";
-import { updateOrganizationBranding, getEmailSettings, updateEmailSettings, testSmtpConnection } from '@/app/lib/actions';
+import { updateOrganizationBranding, getEmailSettings, updateEmailSettings, testSmtpConnection, updateSecurityPolicies, getOrganizationSettings } from '@/app/lib/actions';
 import StorageConfigPanel from "@/components/storage/StorageConfigPanel";
 import LoginForm from "@/app/login/LoginForm";
 
@@ -76,6 +76,12 @@ export default function AdminSettingsPage() {
         mfaRequired: false,
         sessionTimeout: 60,
         passwordHistory: 3,
+        passwordMinLength: 8,
+        passwordRequireSymbols: false,
+        passwordRequireNumbers: true,
+        passwordRequireUppercase: true,
+        passwordExpiryDays: 90,
+        allowedDomains: "",
     });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -110,21 +116,38 @@ export default function AdminSettingsPage() {
     };
 
     useEffect(() => {
-        const loadSettings = () => {
-            // Hydrate form data from platform settings on load
-            if (platformSettings) {
+        const loadSettings = async () => {
+            const settings = await getOrganizationSettings();
+            if (settings) {
+                const branding = settings.branding as any || {};
+                const policies = settings.policies as any || {};
+
                 setFormData((prev: any) => ({
                     ...prev,
-                    plan: platformSettings.plan || "ENTERPRISE",
-                    customModules: platformSettings.defaultModules || ['DASHBOARD', 'WORKFLOWS', 'REPOSITORY', 'CHAT', 'ANALYTICS'],
-                    appTitle: platformSettings.branding?.appTitle || "Algoritmo",
-                    portalDescription: platformSettings.branding?.portalDescription || "",
-                    supportMessage: platformSettings.branding?.supportMessage || "",
-                    primaryColor: platformSettings.branding?.primaryColor || "#3b82f6",
-                    loginBackgroundColor: platformSettings.branding?.loginBackgroundColor || "#ffffff",
-                    loginBackgroundImage: platformSettings.branding?.loginBackgroundImage || "/images/auth/login-bg-3.jpg",
-                    logoUrl: platformSettings.branding?.logoUrl || "",
-                    faviconUrl: platformSettings.branding?.faviconUrl || "",
+                    plan: settings.plan || "ENTERPRISE",
+                    customModules: (settings.features as string[]) || prev.customModules,
+
+                    // Branding
+                    orgName: settings.name || "Maturity 360 Corp",
+                    appTitle: branding.appTitle || "Algoritmo",
+                    portalDescription: branding.portalDescription || "",
+                    supportMessage: branding.supportMessage || "",
+                    primaryColor: branding.primaryColor || "#3b82f6",
+                    loginBackgroundColor: branding.loginBackgroundColor || "#ffffff",
+                    loginBackgroundImage: branding.loginBackgroundImage || "/images/auth/login-bg-3.jpg",
+                    logoUrl: branding.logoUrl || "",
+                    faviconUrl: branding.faviconUrl || "",
+
+                    // Security Policies
+                    mfaRequired: policies.mfaRequired || false,
+                    sessionTimeout: policies.sessionTimeout || 60,
+                    passwordHistory: policies.passwordHistory || 3,
+                    passwordMinLength: policies.passwordMinLength || 8,
+                    passwordRequireSymbols: policies.passwordRequireSymbols || false,
+                    passwordRequireNumbers: policies.passwordRequireNumbers !== undefined ? policies.passwordRequireNumbers : true,
+                    passwordRequireUppercase: policies.passwordRequireUppercase !== undefined ? policies.passwordRequireUppercase : true,
+                    passwordExpiryDays: policies.passwordExpiryDays || 90,
+                    allowedDomains: policies.allowedDomains || "",
                 }));
             }
             setIsLoading(true);
@@ -206,6 +229,18 @@ export default function AdminSettingsPage() {
                     fromName: formData.appTitle // Reuse app title as From Name default
                 };
                 result = await updateEmailSettings(emailData);
+            } else if (activeTab === 'security') {
+                result = await updateSecurityPolicies({
+                    mfaRequired: formData.mfaRequired,
+                    sessionTimeout: Number(formData.sessionTimeout),
+                    passwordHistory: Number(formData.passwordHistory),
+                    passwordMinLength: Number(formData.passwordMinLength),
+                    passwordRequireSymbols: formData.passwordRequireSymbols,
+                    passwordRequireNumbers: formData.passwordRequireNumbers,
+                    passwordRequireUppercase: formData.passwordRequireUppercase,
+                    passwordExpiryDays: Number(formData.passwordExpiryDays),
+                    allowedDomains: formData.allowedDomains
+                });
             } else {
                 // Placeholder for other tabs if they need a generic save
                 result = { success: true, message: "Settings saved successfully." }; // Or handle other specific saves
@@ -245,13 +280,16 @@ export default function AdminSettingsPage() {
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
+        const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+
         setFormData((prev: any) => ({
             ...prev,
-            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+            [name]: val
         }));
     };
+
 
     if (!isAdmin) {
         return (
@@ -337,7 +375,6 @@ export default function AdminSettingsPage() {
                                 : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                                 }`}
                         >
-                            <Shield className="w-4 h-4" />
                             <Shield className="w-4 h-4" />
                             Seguridad
                         </button>
@@ -847,7 +884,6 @@ export default function AdminSettingsPage() {
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Historial de contraseñas</label>
                                             <input
-                                                type="number"
                                                 name="passwordHistory"
                                                 value={formData.passwordHistory}
                                                 onChange={handleChange}
@@ -855,9 +891,99 @@ export default function AdminSettingsPage() {
                                             />
                                             <p className="text-xs text-slate-500">Número de contraseñas anteriores que no pueden ser reutilizadas.</p>
                                         </div>
+
+                                        <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
+                                            <h4 className="font-bold text-slate-900 dark:text-white mb-4">Complejidad de Contraseñas</h4>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Longitud Mínima</label>
+                                                    <div className="flex items-center gap-4">
+                                                        <input
+                                                            type="range"
+                                                            name="passwordMinLength"
+                                                            min="6"
+                                                            max="20"
+                                                            value={formData.passwordMinLength}
+                                                            onChange={handleChange}
+                                                            className="flex-1"
+                                                        />
+                                                        <span className="font-bold w-8 text-center">{formData.passwordMinLength}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Expiración (días)</label>
+                                                    <input
+                                                        type="number"
+                                                        name="passwordExpiryDays"
+                                                        value={formData.passwordExpiryDays}
+                                                        onChange={handleChange}
+                                                        className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <label className="flex items-center gap-3 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="passwordRequireUppercase"
+                                                        checked={formData.passwordRequireUppercase}
+                                                        onChange={handleChange}
+                                                        className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                    />
+                                                    <span className="text-sm text-slate-700 dark:text-slate-300">Requerir Mayúsculas (A-Z)</span>
+                                                </label>
+
+                                                <label className="flex items-center gap-3 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="passwordRequireNumbers"
+                                                        checked={formData.passwordRequireNumbers}
+                                                        onChange={handleChange}
+                                                        className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                    />
+                                                    <span className="text-sm text-slate-700 dark:text-slate-300">Requerir Números (0-9)</span>
+                                                </label>
+
+                                                <label className="flex items-center gap-3 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="passwordRequireSymbols"
+                                                        checked={formData.passwordRequireSymbols}
+                                                        onChange={handleChange}
+                                                        className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                    />
+                                                    <span className="text-sm text-slate-700 dark:text-slate-300">Requerir Símbolos (!@#)</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Globe className="w-5 h-5 text-slate-500" />
+                                                <h4 className="font-bold text-slate-900 dark:text-white">Restricción de Dominios</h4>
+                                            </div>
+                                            <p className="text-sm text-slate-500 mb-3">
+                                                Si se especifica, solo se permitirán registros/invitaciones de estos dominios. Deja vacío para permitir cualquiera.
+                                            </p>
+                                            <div className="space-y-2">
+                                                <input
+                                                    type="text"
+                                                    name="allowedDomains"
+                                                    value={formData.allowedDomains}
+                                                    onChange={handleChange}
+                                                    placeholder="ej: miempresa.com, subsidiaria.com"
+                                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm"
+                                                />
+                                                <p className="text-xs text-slate-400">Separar múltiples dominios con comas.</p>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
                             )}
+
 
                             {/* Storage Tab */}
                             {activeTab === "storage" && (
@@ -948,42 +1074,47 @@ export default function AdminSettingsPage() {
                                 </div>
                             )}
                         </div>
-                    )}
-                </div>
-            </div>
+                    )
+                    }
+                </div >
+            </div >
 
             {/* Preview Modal */}
-            {showPreviewConfig && (
-                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="relative w-full max-w-6xl h-[90vh] bg-transparent rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center">
-                        <button
-                            onClick={() => setShowPreviewConfig(false)}
-                            className="absolute top-4 right-4 z-[110] bg-white text-slate-900 rounded-full p-2 hover:bg-slate-200 transition-colors shadow-lg"
-                        >
-                            <X className="w-6 h-6" />
-                        </button>
-                        <div className="w-full h-full bg-slate-100 rounded-2xl overflow-hidden">
-                            <LoginForm branding={formData} mode="preview" />
+            {
+                showPreviewConfig && (
+                    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                        <div className="relative w-full max-w-6xl h-[90vh] bg-transparent rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center">
+                            <button
+                                onClick={() => setShowPreviewConfig(false)}
+                                className="absolute top-4 right-4 z-[110] bg-white text-slate-900 rounded-full p-2 hover:bg-slate-200 transition-colors shadow-lg"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                            <div className="w-full h-full bg-slate-100 rounded-2xl overflow-hidden">
+                                <LoginForm branding={formData} mode="preview" />
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-            {showEmailWizard && (
-                <EmailConfigWizard
-                    isOpen={showEmailWizard}
-                    onClose={() => setShowEmailWizard(false)}
-                    onSave={(config) => {
-                        setFormData((prev: any) => ({
-                            ...prev,
-                            ...config,
-                            smtpFrom: config.fromEmail,
-                        }));
-                        setMessage({ type: 'success', text: 'Configuración aplicada desde el asistente. No olvides guardar.' });
-                        setShowEmailWizard(false);
-                    }}
-                />
-            )}
-        </div>
+            {
+                showEmailWizard && (
+                    <EmailConfigWizard
+                        isOpen={showEmailWizard}
+                        onClose={() => setShowEmailWizard(false)}
+                        onSave={(config) => {
+                            setFormData((prev: any) => ({
+                                ...prev,
+                                ...config,
+                                smtpFrom: config.fromEmail,
+                            }));
+                            setMessage({ type: 'success', text: 'Configuración aplicada desde el asistente. No olvides guardar.' });
+                            setShowEmailWizard(false);
+                        }}
+                    />
+                )
+            }
+        </div >
     );
 }

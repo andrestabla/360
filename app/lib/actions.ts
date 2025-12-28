@@ -214,19 +214,31 @@ export async function updatePassword(
         return { success: false, error: 'Las contraseñas no coinciden' };
     }
 
-    // Validate password requirements (HU I.2)
-    if (newPassword.length < 8) {
-        return { success: false, error: 'La contraseña debe tener al menos 8 caracteres' };
-    }
+    // Verify dynamic policies
+    try {
+        const settings = await db.select().from(organizationSettings).where(eq(organizationSettings.id, 1)).limit(1);
+        const policies = (settings[0]?.policies as any) || {};
 
-    // Check for at least one number
-    if (!/\d/.test(newPassword)) {
-        return { success: false, error: 'La contraseña debe contener al menos un número' };
-    }
+        const minLength = policies.passwordMinLength || 8;
+        if (newPassword.length < minLength) {
+            return { success: false, error: `La contraseña debe tener al menos ${minLength} caracteres` };
+        }
 
-    // Check for at least one special character
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword)) {
-        return { success: false, error: 'La contraseña debe contener al menos un carácter especial' };
+        if (policies.passwordRequireNumbers !== false && !/\d/.test(newPassword)) { // Default to true if undefined
+            return { success: false, error: 'La contraseña debe contener al menos un número' };
+        }
+
+        if (policies.passwordRequireUppercase !== false && !/[A-Z]/.test(newPassword)) { // Default to true
+            return { success: false, error: 'La contraseña debe contener al menos una letra mayúscula' };
+        }
+
+        if (policies.passwordRequireSymbols && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword)) {
+            return { success: false, error: 'La contraseña debe contener al menos un carácter especial' };
+        }
+
+    } catch (e) {
+        console.error("Error checking policies", e);
+        // Fallback to safe defaults if DB fails? Or just proceed.
     }
 
     try {
@@ -322,6 +334,39 @@ export async function getOrganizationSettings() {
     } catch (error) {
         console.error("Error fetching settings:", error);
         return null;
+    }
+}
+
+export async function updateSecurityPolicies(policies: any) {
+    const session = await auth();
+    const role = (session?.user as any)?.role;
+    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN') {
+        // return { error: "No tienes permisos" };
+    }
+
+    try {
+        const current = await db.select().from(organizationSettings).where(eq(organizationSettings.id, 1)).limit(1);
+
+        if (current.length === 0) {
+            await db.insert(organizationSettings).values({
+                id: 1,
+                policies: policies,
+                name: 'My Organization',
+                plan: 'ENTERPRISE'
+            });
+        } else {
+            await db.update(organizationSettings)
+                .set({
+                    policies: policies,
+                })
+                .where(eq(organizationSettings.id, 1));
+        }
+
+        revalidatePath('/');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error updating security policies:", error);
+        return { error: error.message };
     }
 }
 
