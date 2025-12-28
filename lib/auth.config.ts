@@ -30,18 +30,30 @@ export const authConfig = {
                 // @ts-ignore
                 session.user.role = token.role;
             }
+            // Restore essential UI fields
+            if (token.email && session.user) session.user.email = token.email;
+            if (token.name && session.user) session.user.name = token.name;
+            if (token.picture && session.user) session.user.image = token.picture;
+
+            return session;
             // Data will be populated via /api/auth/verify in the UIContext
 
             return session;
         },
         async jwt({ token, user, trigger, session }) {
-            // STRICT MINIMALIZATION
-            // We ignore updates and extra fields to ensure the token effectively never grows.
-            // Any user data update must be fetched via /api/auth/verify
+            // STRICT MINIMALIZATION WITH UI COMPATIBILITY
+            // We ignore updates to avoid merging huge objects, but we MUST keep essential fields
             if (user) {
                 token.sub = user.id;
+                token.email = user.email;
+                token.name = user.name;
                 // @ts-ignore
                 token.role = user.role;
+
+                // Handle image safely: Only allow non-data URLs (prevent huge base64 bloat)
+                if (user.image && !user.image.startsWith('data:')) {
+                    token.picture = user.image;
+                }
             }
             return token;
         }

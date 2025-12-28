@@ -76,9 +76,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                             const returnUser = {
                                 id: user.id,
-                                name: user.name,
                                 email: user.email,
-                                // image: user.image, // Removed to prevent large base64 strings in cookie
+                                // Only include image if it is NOT a data URL (base64) to prevent header bloat
+                                image: (user.image && !user.image.startsWith('data:')) ? user.image : null,
                                 role: user.role
                             };
 
