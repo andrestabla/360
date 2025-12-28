@@ -7,8 +7,12 @@ import { users } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
-// @ts-ignore - Internal Next.js import for handling redirects in server actions
-import { isRedirectError } from 'next/dist/client/components/redirect';
+
+// Helper seguro para detectar redirecciones sin depender de imports internos inestables
+function isRedirectError(error: any) {
+    return error?.message === 'NEXT_REDIRECT' ||
+        (typeof error === 'object' && error !== null && 'digest' in error && (error as any).digest?.startsWith('NEXT_REDIRECT'));
+}
 
 export async function authenticate(
     prevState: string | undefined,
@@ -26,8 +30,6 @@ export async function authenticate(
 
     } catch (error) {
         // Critical: Allow redirect errors to propagate
-        // Next.js throws a NEXT_REDIRECT error to handle client-side navigation.
-        // We must re-throw it so that the redirect actually happens.
         if (isRedirectError(error)) {
             throw error;
         }
