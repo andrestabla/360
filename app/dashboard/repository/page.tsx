@@ -295,7 +295,7 @@ export default function RepositoryPage() {
                         </div>
                         <button
                             onClick={() => setShowUploadModal(true)}
-                            className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 active:scale-95 transition-all"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95 transition-all"
                         >
                             <UploadSimple weight="bold" size={18} /> <span>{t('repo_upload_btn')}</span>
                         </button>
