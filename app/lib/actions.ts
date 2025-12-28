@@ -7,6 +7,8 @@ import { users } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
+// @ts-ignore - Internal Next.js import for handling redirects in server actions
+import { isRedirectError } from 'next/dist/client/components/redirect';
 
 export async function authenticate(
     prevState: string | undefined,
@@ -17,14 +19,19 @@ export async function authenticate(
         console.log('[Action] Authenticating with:', { ...data, password: '***' });
 
         // Let signIn handle its own redirect internally - it will set the JWT properly
-        const result = await signIn('credentials', {
+        await signIn('credentials', {
             ...data,
             redirectTo: '/dashboard',
         });
 
-        console.log('[Action] SignIn result:', result);
-
     } catch (error) {
+        // Critical: Allow redirect errors to propagate
+        // Next.js throws a NEXT_REDIRECT error to handle client-side navigation.
+        // We must re-throw it so that the redirect actually happens.
+        if (isRedirectError(error)) {
+            throw error;
+        }
+
         console.error('Auth Action Error:', error);
         if (error instanceof AuthError) {
             console.error('AuthError Type:', error.type);
