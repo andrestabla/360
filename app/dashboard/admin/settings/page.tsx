@@ -22,7 +22,7 @@ import {
     X
 } from "@phosphor-icons/react";
 import EmailConfigWizard from "@/components/email/EmailConfigWizard";
-import { updateOrganizationBranding } from '@/app/lib/actions';
+import { updateOrganizationBranding, getEmailSettings, updateEmailSettings, testSmtpConnection } from '@/app/lib/actions';
 import StorageConfigPanel from "@/components/storage/StorageConfigPanel";
 import LoginForm from "@/app/login/LoginForm";
 
@@ -38,6 +38,8 @@ export default function AdminSettingsPage() {
     const [testEmail, setTestEmail] = useState("");
     const [showEmailWizard, setShowEmailWizard] = useState(false);
     const [showPreviewConfig, setShowPreviewConfig] = useState(false);
+    const [isTestingEmail, setIsTestingEmail] = useState(false);
+    const [testEmailResult, setTestEmailResult] = useState<{ success: boolean; message: string } | null>(null);
 
     // Form State
     const [formData, setFormData] = useState<any>({
@@ -60,6 +62,8 @@ export default function AdminSettingsPage() {
         smtpUser: "",
         smtpPassword: "",
         smtpFrom: "no-reply@maturity360.com",
+        testEmailTo: "", // For test input
+        hasEncryptedPassword: false,
 
         // Branding
         appTitle: "Algoritmo",
@@ -106,26 +110,48 @@ export default function AdminSettingsPage() {
     };
 
     useEffect(() => {
-        // Hydrate form data from platform settings on load
-        if (platformSettings) {
-            setFormData((prev: any) => ({
-                ...prev,
-                plan: platformSettings.plan || "ENTERPRISE",
-                customModules: platformSettings.defaultModules || ['DASHBOARD', 'WORKFLOWS', 'REPOSITORY', 'CHAT', 'ANALYTICS'],
-                appTitle: platformSettings.branding?.appTitle || "Algoritmo",
-                portalDescription: platformSettings.branding?.portalDescription || "",
-                supportMessage: platformSettings.branding?.supportMessage || "",
-                primaryColor: platformSettings.branding?.primaryColor || "#3b82f6",
-                loginBackgroundColor: platformSettings.branding?.loginBackgroundColor || "#ffffff",
-                loginBackgroundImage: platformSettings.branding?.loginBackgroundImage || "/images/auth/login-bg-3.jpg",
-                logoUrl: platformSettings.branding?.logoUrl || "",
-                faviconUrl: platformSettings.branding?.faviconUrl || "",
-            }));
-        }
-        setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 500);
+        const loadSettings = () => {
+            // Hydrate form data from platform settings on load
+            if (platformSettings) {
+                setFormData((prev: any) => ({
+                    ...prev,
+                    plan: platformSettings.plan || "ENTERPRISE",
+                    customModules: platformSettings.defaultModules || ['DASHBOARD', 'WORKFLOWS', 'REPOSITORY', 'CHAT', 'ANALYTICS'],
+                    appTitle: platformSettings.branding?.appTitle || "Algoritmo",
+                    portalDescription: platformSettings.branding?.portalDescription || "",
+                    supportMessage: platformSettings.branding?.supportMessage || "",
+                    primaryColor: platformSettings.branding?.primaryColor || "#3b82f6",
+                    loginBackgroundColor: platformSettings.branding?.loginBackgroundColor || "#ffffff",
+                    loginBackgroundImage: platformSettings.branding?.loginBackgroundImage || "/images/auth/login-bg-3.jpg",
+                    logoUrl: platformSettings.branding?.logoUrl || "",
+                    faviconUrl: platformSettings.branding?.faviconUrl || "",
+                }));
+            }
+            setIsLoading(true);
+            setTimeout(() => {
+                setIsLoading(false);
+            }, 500);
+        };
+
+        const loadEmailSettings = async () => {
+            const settings = await getEmailSettings();
+            if (settings) {
+                setFormData((prev: any) => ({
+                    ...prev,
+                    emailProvider: settings.provider || "smtp",
+                    smtpHost: settings.smtpHost || "",
+                    smtpPort: settings.smtpPort?.toString() || "587",
+                    smtpUser: settings.smtpUser || "",
+                    smtpPassword: "", // Don't fill password for security
+                    smtpFrom: settings.fromEmail || "",
+                    // If we have encrypted password, we keep track internally to not overwrite if empty
+                    hasEncryptedPassword: !!settings.smtpPasswordEncrypted
+                }));
+            }
+        };
+
+        loadSettings();
+        loadEmailSettings();
     }, [platformSettings]);
 
     const [isPending, startTransition] = React.useTransition();
@@ -134,35 +160,56 @@ export default function AdminSettingsPage() {
         setIsSaving(true);
         setMessage(null);
 
-        // Optimistic UI update
-        updatePlatformSettings({
-            plan: formData.plan,
-            defaultModules: formData.plan === 'CUSTOM' ? formData.customModules : undefined,
-            branding: {
-                appTitle: formData.appTitle,
-                portalDescription: formData.portalDescription,
-                supportMessage: formData.supportMessage,
-                primaryColor: formData.primaryColor,
-                loginBackgroundColor: formData.loginBackgroundColor,
-                loginBackgroundImage: formData.loginBackgroundImage,
-            }
-        });
+        // Optimistic UI update (only for general settings that affect UI immediately)
+        if (activeTab === 'general') {
+            updatePlatformSettings({
+                plan: formData.plan,
+                defaultModules: formData.plan === 'CUSTOM' ? formData.customModules : undefined,
+                branding: {
+                    appTitle: formData.appTitle,
+                    portalDescription: formData.portalDescription,
+                    supportMessage: formData.supportMessage,
+                    primaryColor: formData.primaryColor,
+                    loginBackgroundColor: formData.loginBackgroundColor,
+                    loginBackgroundImage: formData.loginBackgroundImage,
+                }
+            });
 
-        const root = document.documentElement;
-        root.style.setProperty('--primary', formData.primaryColor);
+            const root = document.documentElement;
+            root.style.setProperty('--primary', formData.primaryColor);
+        }
+
 
         // Server Action
         startTransition(async () => {
-            const result = await updateOrganizationBranding({
-                appTitle: formData.appTitle,
-                portalDescription: formData.portalDescription,
-                supportMessage: formData.supportMessage,
-                primaryColor: formData.primaryColor,
-                loginBackgroundColor: formData.loginBackgroundColor,
-                loginBackgroundImage: formData.loginBackgroundImage,
-                logoUrl: formData.logoUrl,
-                faviconUrl: formData.faviconUrl
-            });
+            let result;
+            if (activeTab === 'general') {
+                result = await updateOrganizationBranding({
+                    appTitle: formData.appTitle,
+                    portalDescription: formData.portalDescription,
+                    supportMessage: formData.supportMessage,
+                    primaryColor: formData.primaryColor,
+                    loginBackgroundColor: formData.loginBackgroundColor,
+                    loginBackgroundImage: formData.loginBackgroundImage,
+                    logoUrl: formData.logoUrl,
+                    faviconUrl: formData.faviconUrl
+                });
+            } else if (activeTab === 'email') {
+                const emailData = {
+                    provider: formData.emailProvider,
+                    smtpHost: formData.smtpHost,
+                    smtpPort: parseInt(formData.smtpPort),
+                    smtpUser: formData.smtpUser,
+                    // Only send password if changed (non-empty)
+                    ...(formData.smtpPassword ? { smtpPassword: formData.smtpPassword } : {}),
+                    fromEmail: formData.smtpFrom,
+                    fromName: formData.appTitle // Reuse app title as From Name default
+                };
+                result = await updateEmailSettings(emailData);
+            } else {
+                // Placeholder for other tabs if they need a generic save
+                result = { success: true, message: "Settings saved successfully." }; // Or handle other specific saves
+            }
 
             if (result.success) {
                 setMessage({ type: 'success', text: 'Configuración guardada en servidor exitosamente' });
@@ -171,6 +218,31 @@ export default function AdminSettingsPage() {
             }
             setIsSaving(false);
         });
+    };
+
+    const handleTestConnection = async () => {
+        setIsTestingEmail(true);
+        setTestEmailResult(null);
+        try {
+            const result = await testSmtpConnection({
+                smtpHost: formData.smtpHost,
+                smtpPort: parseInt(formData.smtpPort),
+                smtpUser: formData.smtpUser,
+                smtpPassword: formData.smtpPassword,
+                fromEmail: formData.smtpFrom,
+                fromName: formData.appTitle
+            }, formData.testEmailTo);
+
+            if (result.success) {
+                setTestEmailResult({ success: true, message: "Conexión exitosa. Revisa tu bandeja de entrada." });
+            } else {
+                setTestEmailResult({ success: false, message: result.error || "Falló la conexión." });
+            }
+        } catch (error: any) {
+            setTestEmailResult({ success: false, message: error.message || "Error testing connection." });
+        } finally {
+            setIsTestingEmail(false);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -682,8 +754,9 @@ export default function AdminSettingsPage() {
                                                     </div>
                                                     <input
                                                         type="email"
-                                                        value={testEmail}
-                                                        onChange={(e) => setTestEmail(e.target.value)}
+                                                        name="testEmailTo"
+                                                        value={formData.testEmailTo}
+                                                        onChange={handleChange}
                                                         placeholder="tu@email.com"
                                                         className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
                                                     />
@@ -691,67 +764,22 @@ export default function AdminSettingsPage() {
                                             </div>
                                             <div className="flex gap-2 w-full md:w-auto">
                                                 <button
-                                                    onClick={async () => {
-                                                        setIsTesting(true);
-                                                        try {
-                                                            const res = await fetch('/api/admin/email-config/test', {
-                                                                method: 'POST',
-                                                                headers: { 'Content-Type': 'application/json' },
-                                                                // Send current form data to test without saving first
-                                                                body: JSON.stringify({ ...formData, isDraft: true })
-                                                            });
-                                                            const data = await res.json();
-                                                            if (data.success) {
-                                                                setMessage({ type: 'success', text: data.message || 'Conexión SMTP exitosa.' });
-                                                            } else {
-                                                                setMessage({ type: 'error', text: data.error || 'Error al conectar con SMTP.' });
-                                                            }
-                                                        } catch (e) {
-                                                            setMessage({ type: 'error', text: 'Error de conexión.' });
-                                                        } finally {
-                                                            setIsTesting(false);
-                                                        }
-                                                    }}
-                                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium border border-slate-200 dark:border-slate-700"
-                                                    disabled={isTesting}
+                                                    onClick={handleTestConnection}
+                                                    className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium border border-slate-200 dark:border-slate-700 ${isTestingEmail ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    disabled={isTestingEmail || !formData.testEmailTo}
                                                 >
-                                                    {isTesting ? <SpinnerGap className="animate-spin" /> : <Lightning />}
-                                                    Probar Conexión
-                                                </button>
-                                                <button
-                                                    onClick={async () => {
-                                                        if (!testEmail) {
-                                                            setMessage({ type: 'error', text: 'Ingresa un email para la prueba.' });
-                                                            return;
-                                                        }
-                                                        setIsTesting(true);
-                                                        try {
-                                                            const res = await fetch('/api/admin/email-config/test', {
-                                                                method: 'POST',
-                                                                headers: { 'Content-Type': 'application/json' },
-                                                                // Use sendTestTo to trigger actual email send
-                                                                body: JSON.stringify({ ...formData, sendTestTo: testEmail, isDraft: true })
-                                                            });
-                                                            const data = await res.json();
-                                                            if (data.success) {
-                                                                setMessage({ type: 'success', text: `Correo enviado a ${testEmail}` });
-                                                            } else {
-                                                                setMessage({ type: 'error', text: data.error || 'Error al enviar correo.' });
-                                                            }
-                                                        } catch (e) {
-                                                            setMessage({ type: 'error', text: 'Error de conexión.' });
-                                                        } finally {
-                                                            setIsTesting(false);
-                                                        }
-                                                    }}
-                                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
-                                                    disabled={isTesting || !testEmail}
-                                                >
-                                                    {isTesting ? <SpinnerGap className="animate-spin" /> : <PaperPlaneRight />}
-                                                    Enviar Prueba
+                                                    {isTestingEmail ? <SpinnerGap className="animate-spin" /> : <Lightning />}
+                                                    {isTestingEmail ? "Probando..." : "Enviar Prueba"}
                                                 </button>
                                             </div>
                                         </div>
+
+                                        {testEmailResult && (
+                                            <div className={`mt-4 p-3 rounded-lg flex items-center gap-3 text-sm ${testEmailResult.success ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                                                {testEmailResult.success ? <CheckCircle className="w-5 h-5 flex-shrink-0" /> : <WarningCircle className="w-5 h-5 flex-shrink-0" />}
+                                                <span>{testEmailResult.message}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}

@@ -3,7 +3,7 @@
 import { signIn, signOut, auth } from '@/lib/auth';
 import { AuthError } from 'next-auth';
 import { db } from '@/server/db';
-import { users, organizationSettings, userNotes, workflowCases, userRecents } from '@/shared/schema';
+import { users, organizationSettings, userNotes, workflowCases, userRecents, emailSettings } from '@/shared/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
@@ -425,5 +425,121 @@ export async function trackUserRecent(resourceId: string, resourceType: 'PROJECT
         revalidatePath('/dashboard');
     } catch (e) {
         console.error("Error tracking recent:", e);
+    }
+}
+
+// --- EMAIL ACTIONS ---
+import nodemailer from 'nodemailer';
+
+export async function getEmailSettings() {
+    try {
+        const settings = await db.select().from(emailSettings).where(eq(emailSettings.id, 1)).limit(1);
+        return settings[0] || null;
+    } catch (error) {
+        console.error("Error fetching email settings:", error);
+        return null;
+    }
+}
+
+export async function updateEmailSettings(settings: any) {
+    const session = await auth();
+    const role = (session?.user as any)?.role;
+    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN') {
+        return { error: "No tienes permisos" };
+    }
+
+    try {
+        const current = await db.select().from(emailSettings).where(eq(emailSettings.id, 1)).limit(1);
+
+        const dataToUpdate = {
+            ...settings,
+            updatedAt: new Date()
+        };
+
+        if (current.length === 0) {
+            await db.insert(emailSettings).values({
+                id: 1,
+                ...dataToUpdate
+            });
+        } else {
+            await db.update(emailSettings)
+                .set(dataToUpdate)
+                .where(eq(emailSettings.id, 1));
+        }
+
+        revalidatePath('/dashboard/admin/settings');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error updating email settings:", error);
+        return { error: error.message };
+    }
+}
+
+export async function testSmtpConnection(settings: any, targetEmail: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "No autorizado" };
+
+    try {
+        const transportConfig = {
+            host: settings.smtpHost,
+            port: parseInt(settings.smtpPort),
+            secure: settings.smtpSecure || false, // true for 465, false for other ports
+            auth: {
+                user: settings.smtpUser,
+                pass: settings.smtpPassword || settings.smtpPasswordEncrypted,
+            },
+            tls: {
+                rejectUnauthorized: false // Often needed for self-signed or non-strict certs in some corp envs
+            }
+        };
+
+        const transporter = nodemailer.createTransport(transportConfig);
+
+        // Verify connection config
+        await transporter.verify();
+
+        // Send test email
+        await transporter.sendMail({
+            from: `"${settings.fromName || 'System'}" <${settings.fromEmail || settings.smtpUser}>`,
+            to: targetEmail,
+            subject: `Test de Conexión - ${settings.orgName || 'Maturity 360'}`,
+            text: `Este es un correo de prueba para verificar la configuración SMTP.\n\nConfiguración usada:\nHost: ${settings.smtpHost}\nPuerto: ${settings.smtpPort}\nUsuario: ${settings.smtpUser}\n\nSi recibes esto, la conexión es exitosa.`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                    <h2 style="color: #2563eb;">Conexión Exitosa</h2>
+                    <p>La configuración SMTP de <strong>${settings.orgName || 'Maturity 360'}</strong> funciona correctamente.</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+                    <p style="font-size: 12px; color: #666;">
+                        <strong>Detalles Técnicos:</strong><br/>
+                        Host: ${settings.smtpHost}<br/>
+                        Puerto: ${settings.smtpPort}<br/>
+                        Usuario: ${settings.smtpUser}
+                    </p>
+                </div>
+            `
+        });
+
+        // Update DB with success status
+        await db.update(emailSettings).set({
+            lastTestedAt: new Date(),
+            lastTestResult: true,
+            lastTestError: null,
+            isEnabled: true
+        }).where(eq(emailSettings.id, 1));
+
+        return { success: true };
+
+    } catch (error: any) {
+        console.error("SMTP Test Error:", error);
+
+        // Update DB with failure
+        await db.update(emailSettings).set({
+            lastTestedAt: new Date(),
+            lastTestResult: false,
+            lastTestError: error.message,
+            isEnabled: false
+        }).where(eq(emailSettings.id, 1));
+
+        return { error: error.message };
     }
 }

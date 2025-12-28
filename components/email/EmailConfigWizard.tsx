@@ -15,6 +15,7 @@ import {
     PaperPlaneTilt,
     Gear
 } from '@phosphor-icons/react';
+import { testSmtpConnection } from '@/app/lib/actions';
 
 interface EmailConfigWizardProps {
     isOpen: boolean;
@@ -106,15 +107,18 @@ export default function EmailConfigWizard({ isOpen, onClose, onSave }: EmailConf
         setVerifying(true);
         setVerificationResult(null);
         try {
-            const res = await fetch('/api/admin/email-config/test', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...config, isDraft: true })
-            });
-            const data = await res.json();
-            setVerificationResult(data);
-        } catch (error) {
-            setVerificationResult({ success: false, error: 'Error de conexión' });
+            const result = await testSmtpConnection({
+                ...config,
+                smtpSecure: selectedProvider?.id === 'gmail' || selectedProvider?.id === 'aws' // Smarter default
+            }, config.smtpUser); // Use smtpUser as test target for self-test
+
+            if (result.success) {
+                setVerificationResult({ success: true, message: "Conexión exitosa" });
+            } else {
+                setVerificationResult({ success: false, error: result.error });
+            }
+        } catch (error: any) {
+            setVerificationResult({ success: false, error: error.message || 'Error de conexión' });
         } finally {
             setVerifying(false);
         }
