@@ -597,3 +597,34 @@ export async function testSmtpConnection(settings: any, targetEmail: string) {
         return { error: error.message };
     }
 }
+
+export async function createCheckoutSession(planId: string, interval: 'monthly' | 'yearly') {
+    const session = await auth();
+    const role = (session?.user as any)?.role;
+    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN') {
+        return { error: "No tienes permisos" };
+    }
+
+    // Mock delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    try {
+        await db.update(organizationSettings).set({
+            plan: planId,
+            billingPeriod: interval,
+            subscriptionStatus: 'active',
+            updatedAt: new Date()
+        }).where(eq(organizationSettings.id, 1));
+
+        revalidatePath('/');
+        return { success: true };
+    } catch (e: any) {
+        return { error: "Failed to create checkout session: " + e.message };
+    }
+}
+
+export async function getBillingPortalUrl() {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Mock URL
+    return { url: "https://billing.stripe.com/p/login/test" };
+}

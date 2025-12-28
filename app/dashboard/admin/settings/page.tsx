@@ -22,7 +22,7 @@ import {
     X
 } from "@phosphor-icons/react";
 import EmailConfigWizard from "@/components/email/EmailConfigWizard";
-import { updateOrganizationBranding, getEmailSettings, updateEmailSettings, testSmtpConnection, updateSecurityPolicies, getOrganizationSettings } from '@/app/lib/actions';
+import { updateOrganizationBranding, getEmailSettings, updateEmailSettings, testSmtpConnection, updateSecurityPolicies, getOrganizationSettings, createCheckoutSession, getBillingPortalUrl } from '@/app/lib/actions';
 import StorageConfigPanel from "@/components/storage/StorageConfigPanel";
 import LoginForm from "@/app/login/LoginForm";
 
@@ -81,7 +81,13 @@ export default function AdminSettingsPage() {
         passwordRequireNumbers: true,
         passwordRequireUppercase: true,
         passwordExpiryDays: 90,
+
         allowedDomains: "",
+
+        // Billing (Safe Init)
+        billingPeriod: 'monthly',
+        subscriptionStatus: 'active',
+        stripeCustomerId: null
     });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -147,7 +153,13 @@ export default function AdminSettingsPage() {
                     passwordRequireNumbers: policies.passwordRequireNumbers !== undefined ? policies.passwordRequireNumbers : true,
                     passwordRequireUppercase: policies.passwordRequireUppercase !== undefined ? policies.passwordRequireUppercase : true,
                     passwordExpiryDays: policies.passwordExpiryDays || 90,
+
                     allowedDomains: policies.allowedDomains || "",
+
+                    // Billing Hydration (Defensive)
+                    billingPeriod: settings.billingPeriod || 'monthly',
+                    subscriptionStatus: settings.subscriptionStatus || 'active',
+                    stripeCustomerId: settings.stripeCustomerId || null,
                 }));
             }
             setIsLoading(true);
@@ -291,6 +303,37 @@ export default function AdminSettingsPage() {
     };
 
 
+    const handleCheckout = async (planId: string) => {
+        if (isSaving) return;
+        setIsSaving(true);
+        try {
+            const result = await createCheckoutSession(planId, formData.billingPeriod || 'monthly');
+            if (result.success) {
+                setMessage({ type: 'success', text: `¡Plan ${planId} activado correctamente!` });
+                // Optimistic update
+                setFormData((prev: any) => ({ ...prev, plan: planId, subscriptionStatus: 'active' }));
+            } else {
+                setMessage({ type: 'error', text: result.error || "Error al iniciar pago" });
+            }
+        } catch (e) { setMessage({ type: 'error', text: "Error inesperado" }); }
+        setIsSaving(false);
+    };
+
+    const handleManageBilling = async () => {
+        if (isSaving) return;
+        setIsSaving(true);
+        try {
+            const result = await getBillingPortalUrl();
+            if (result?.url) {
+                window.open(result.url, '_blank');
+                setMessage({ type: 'success', text: "Portal de facturación abierto en nueva pestaña" });
+            }
+        } catch (e) {
+            setMessage({ type: 'error', text: "No se pudo abrir el portal" });
+        }
+        setIsSaving(false);
+    };
+
     if (!isAdmin) {
         return (
             <div className="p-8 text-center text-slate-500">
@@ -397,7 +440,7 @@ export default function AdminSettingsPage() {
                                     }`}
                             >
                                 <CreditCard className="w-4 h-4" />
-                                Suscripción
+                                Suscripción y Pagos
                             </button>
                         )}
                     </nav>
@@ -992,84 +1035,103 @@ export default function AdminSettingsPage() {
 
                             {/* Subscription Tab */}
                             {activeTab === "subscription" && isSuperAdmin && (
-                                <div className="space-y-6">
-                                    <div>
-                                        <h3 className="text-lg font-semibold mb-1">Plan de Suscripción</h3>
-                                        <p className="text-sm text-slate-500 mb-4">Gestiona el plan actual y las características habilitadas.</p>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        {[
-                                            { id: 'STARTER', name: 'Plan Starter', price: '$0/mes', features: ['Usuarios Limitados', 'Soporte Básico'] },
-                                            { id: 'PRO', name: 'Plan Pro', price: '$49/mes', features: ['Usuarios Ilimitados', 'Soporte Prioritario', 'Analítica Avanzada'] },
-                                            { id: 'ENTERPRISE', name: 'Plan Enterprise', price: 'Personalizado', features: ['Todo Ilimitado', 'Soporte 24/7', 'Auditoría Global', 'SSO'] },
-                                            { id: 'CUSTOM', name: 'Personalizado', price: 'A Medida', features: ['Configuración Especial', 'Infraestructura Dedicada'] }
-                                        ].map(plan => (
-                                            <div
-                                                key={plan.id}
-                                                onClick={() => setFormData((prev: any) => ({ ...prev, plan: plan.id }))}
-                                                className={`cursor-pointer rounded-xl border p-4 transition-all ${(formData.plan || 'ENTERPRISE') === plan.id
-                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-slate-900'
-                                                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-slate-50 dark:hover:bg-slate-800'
-                                                    }`}
-                                            >
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <h4 className="font-bold text-slate-900 dark:text-white">{plan.name}</h4>
-                                                    {(formData.plan || 'ENTERPRISE') === plan.id && <CheckCircle className="text-blue-600 w-5 h-5" weight="fill" />}
-                                                </div>
-                                                <div className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-3">{plan.price}</div>
-                                                <ul className="space-y-2">
-                                                    {plan.features.map((f, i) => (
-                                                        <li key={i} className="text-xs text-slate-500 flex items-center gap-2">
-                                                            <CheckCircle className="w-3 h-3 text-green-500" />
-                                                            {f}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Custom Plan Module Selection */}
-                                    {formData.plan === 'CUSTOM' && (
-                                        <div className="mt-6 p-6 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                            <h4 className="text-md font-semibold mb-4 flex items-center gap-2">
-                                                <Gear className="text-slate-500" />
-                                                Configuración de Módulos (Plan Personalizado)
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                {['DASHBOARD', 'WORKFLOWS', 'REPOSITORY', 'CHAT', 'ANALYTICS', 'SURVEYS'].map(module => (
-                                                    <label key={module} className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-400 transition-colors">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={formData.customModules?.includes(module)}
-                                                            onChange={(e) => {
-                                                                const checked = e.target.checked;
-                                                                setFormData((prev: any) => ({
-                                                                    ...prev,
-                                                                    customModules: checked
-                                                                        ? [...(prev.customModules || []), module]
-                                                                        : (prev.customModules || []).filter((m: string) => m !== module)
-                                                                }));
-                                                            }}
-                                                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
-                                                        />
-                                                        <span className="text-sm font-medium capitalize">{module.toLowerCase()}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                            <p className="text-xs text-slate-500 mt-4">
-                                                Seleccione los módulos que estarán disponibles para esta organización bajo el plan personalizado.
-                                            </p>
+                                <div className="space-y-8 animate-in fade-in duration-300">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="text-lg font-semibold mb-1">Suscripción y Pagos</h3>
+                                            <p className="text-sm text-slate-500">Gestiona tu plan, método de pago y facturación.</p>
                                         </div>
-                                    )}
+                                        <button
+                                            onClick={handleManageBilling}
+                                            className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 bg-white"
+                                        >
+                                            <CreditCard className="w-4 h-4" />
+                                            Gestionar Facturación
+                                        </button>
+                                    </div>
 
-                                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm text-yellow-800 dark:text-yellow-200 flex items-start gap-2">
-                                        <WarningCircle className="w-5 h-5 flex-shrink-0" />
-                                        <p>
-                                            Cambiar el plan puede afectar la disponibilidad de módulos y límites de usuarios.
-                                            Los cambios se aplicarán inmediatamente.
-                                        </p>
+                                    {/* Usage Limits */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="font-medium text-slate-700 dark:text-slate-300">Usuarios Activos</span>
+                                                <span className="text-slate-500">5 / {formData.plan === 'STARTER' ? '5' : formData.plan === 'PRO' ? '20' : '∞'}</span>
+                                            </div>
+                                            <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                <div className="h-full bg-blue-500 w-[80%] rounded-full" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="font-medium text-slate-700 dark:text-slate-300">Almacenamiento</span>
+                                                <span className="text-slate-500">1.2GB / {formData.plan === 'STARTER' ? '5GB' : '50GB'}</span>
+                                            </div>
+                                            <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                <div className="h-full bg-green-500 w-[24%] rounded-full" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Billing Interval Toggle */}
+                                    <div className="flex justify-center mb-6">
+                                        <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-lg flex items-center">
+                                            <button
+                                                onClick={() => setFormData((prev: any) => ({ ...prev, billingPeriod: 'monthly' }))}
+                                                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${formData.billingPeriod === 'monthly' ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                Mensual
+                                            </button>
+                                            <button
+                                                onClick={() => setFormData((prev: any) => ({ ...prev, billingPeriod: 'yearly' }))}
+                                                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${formData.billingPeriod === 'yearly' ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                Anual <span className="ml-1 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">-20%</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Pricing Table */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {[
+                                            { id: 'STARTER', name: 'Starter', price: 0, features: ['Hasta 5 Usuarios', '5GB Almacenamiento', 'Soporte por Email'] },
+                                            { id: 'PRO', name: 'Pro', price: 29, features: ['Hasta 20 Usuarios', '50GB Almacenamiento', 'Soporte Prioritario', 'Analítica Básica'] },
+                                            { id: 'ENTERPRISE', name: 'Enterprise', price: 99, features: ['Usuarios Ilimitados', '1TB Almacenamiento', 'Soporte 24/7', 'SSO & Auditoría'] },
+                                        ].map(plan => {
+                                            const isCurrent = (formData.plan || 'ENTERPRISE') === plan.id;
+                                            const price = formData.billingPeriod === 'yearly' ? Math.floor(plan.price * 0.8) : plan.price;
+
+                                            return (
+                                                <div key={plan.id} className={`relative p-6 rounded-xl border-2 transition-all ${isCurrent ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 bg-white dark:bg-slate-800'}`}>
+                                                    {isCurrent && (
+                                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                            Plan Actual
+                                                        </div>
+                                                    )}
+                                                    <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{plan.name}</h4>
+                                                    <div className="flex items-baseline gap-1 mb-6">
+                                                        <span className="text-3xl font-bold text-slate-900 dark:text-white">${price}</span>
+                                                        <span className="text-slate-500">/mes</span>
+                                                    </div>
+                                                    <ul className="space-y-3 mb-8">
+                                                        {plan.features.map((f, i) => (
+                                                            <li key={i} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                                                                <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                                                {f}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                    <button
+                                                        onClick={() => isCurrent ? null : handleCheckout(plan.id)}
+                                                        disabled={isCurrent || isSaving}
+                                                        className={`w-full py-2.5 rounded-lg font-bold transition-all ${isCurrent
+                                                            ? 'bg-slate-200 text-slate-500 cursor-default'
+                                                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20'}`}
+                                                    >
+                                                        {isCurrent ? 'Plan Activo' : 'Mejorar Plan'}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}

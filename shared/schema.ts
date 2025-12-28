@@ -20,6 +20,10 @@ export const organizationSettings = pgTable("organization_settings", {
   contactPhone: varchar("contact_phone", { length: 100 }),
   storage: varchar("storage", { length: 50 }).default("0 GB"),
   plan: varchar("plan", { length: 50 }).notNull().default("ENTERPRISE"),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+  subscriptionStatus: varchar("subscription_status", { length: 50 }).default("active"),
+  billingPeriod: varchar("billing_period", { length: 20 }).default("monthly"),
+  currentPeriodEnd: timestamp("current_period_end"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
