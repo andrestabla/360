@@ -105,13 +105,11 @@ export function getStorageService(): StorageService {
         if (storageConfig.publicUrl) {
           // Remove trailing slash if present
           const baseUrl = storageConfig.publicUrl.replace(/\/$/, '');
-          // Ensure key is properly encoded/joined?
-          // Usually key is safe if sanitized.
           url = `${baseUrl}/${key}`;
         } else {
-          // Fallback to endpoint (might not work for private buckets, but best effort)
-          const endpoint = storageConfig.endpoint?.replace(/\/$/, '') || '';
-          url = `${endpoint}/${storageConfig.bucket}/${key}`;
+          // Fallback to internal proxy if no public URL is defined
+          // This ensures files load even with private buckets
+          url = `/api/storage/${key}`;
         }
 
         return { success: true, url };

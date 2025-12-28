@@ -11,6 +11,7 @@
   "/api/health/route": "/api/health",
   "/api/notifications/send/route": "/api/notifications/send",
   "/api/platform/security-config/route": "/api/platform/security-config",
+  "/api/storage/[...path]/route": "/api/storage/[...path]",
   "/api/users/route": "/api/users",
   "/api/users/send-credentials/route": "/api/users/send-credentials",
   "/auth/change-password/page": "/auth/change-password",

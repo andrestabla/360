@@ -39,6 +39,14 @@
         "nxtPnextauth": "nxtPnextauth"
       },
       "namedRegex": "^/api/auth/(?<nxtPnextauth>.+?)(?:/)?$"
+    },
+    {
+      "page": "/api/storage/[...path]",
+      "regex": "^/api/storage/(.+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPpath": "nxtPpath"
+      },
+      "namedRegex": "^/api/storage/(?<nxtPpath>.+?)(?:/)?$"
     }
   ],
   "staticRoutes": [

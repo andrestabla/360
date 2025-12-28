@@ -11,6 +11,7 @@
   "/api/health/route": "app/api/health/route.js",
   "/api/notifications/send/route": "app/api/notifications/send/route.js",
   "/api/platform/security-config/route": "app/api/platform/security-config/route.js",
+  "/api/storage/[...path]/route": "app/api/storage/[...path]/route.js",
   "/api/users/route": "app/api/users/route.js",
   "/api/users/send-credentials/route": "app/api/users/send-credentials/route.js",
   "/auth/change-password/page": "app/auth/change-password/page.js",
