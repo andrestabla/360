@@ -115,10 +115,10 @@ async function seedUnits() {
   console.log('Seeding organizational units...');
 
   const unitsData = [
-    { id: 'unit-t1-dir', name: 'Dirección', level: 0 },
-    { id: 'unit-t1-ops', name: 'Operaciones', parentId: 'unit-t1-dir', level: 1 },
-    { id: 'unit-t1-sales', name: 'Ventas', parentId: 'unit-t1-dir', level: 1 },
-    { id: 'unit-t1-tech', name: 'Tecnología', parentId: 'unit-t1-dir', level: 1 },
+    { id: 'unit-t1-dir', name: 'Dirección', code: 'DIR', path: '/DIR', level: 0 },
+    { id: 'unit-t1-ops', name: 'Operaciones', code: 'OPS', path: '/DIR/OPS', parentId: 'unit-t1-dir', level: 1 },
+    { id: 'unit-t1-sales', name: 'Ventas', code: 'SALES', path: '/DIR/SALES', parentId: 'unit-t1-dir', level: 1 },
+    { id: 'unit-t1-tech', name: 'Tecnología', code: 'TECH', path: '/DIR/TECH', parentId: 'unit-t1-dir', level: 1 },
   ];
 
   await db.insert(units).values(unitsData);
