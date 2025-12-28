@@ -116,14 +116,7 @@ export default function ImportUnitsModal({ isOpen, onClose, onImport }: ImportUn
         onClose();
     };
 
-    const handleDownloadTemplate = () => {
-        const link = document.createElement('a');
-        link.href = '/templates/estructura-organizacional-ejemplo.csv';
-        link.download = 'plantilla-estructura-organizacional.csv';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
+
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
@@ -167,13 +160,14 @@ export default function ImportUnitsModal({ isOpen, onClose, onImport }: ImportUn
 
                     {/* Download Template */}
                     <div className="flex justify-center">
-                        <button
-                            onClick={handleDownloadTemplate}
+                        <a
+                            href="/templates/estructura-organizacional-ejemplo.csv"
+                            download="plantilla-estructura-organizacional.csv"
                             className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors shadow-lg"
                         >
                             <DownloadSimple size={20} weight="bold" />
                             Descargar Plantilla CSV de Ejemplo
-                        </button>
+                        </a>
                     </div>
 
                     {/* CSV Format Info */}
