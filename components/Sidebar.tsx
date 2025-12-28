@@ -133,9 +133,30 @@ export default function Sidebar() {
                 <div className={`user-profile ${isSidebarCollapsed ? 'justify-center p-3' : ''}`} onClick={() => handleNavigation('/dashboard/profile')}>
                     <div className="avatar relative flex items-center justify-center overflow-hidden" id="u-avatar">
                         {currentUser.avatar ? (
-                            <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
+                            <img
+                                src={currentUser.avatar}
+                                alt={currentUser.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                    const target = e.currentTarget;
+                                    // Fallback to proxy if direct URL fails and it's an avatar path
+                                    if (target.src.includes('/avatars/') && !target.src.includes('/api/storage/')) {
+                                        target.src = '/api/storage' + target.src.substring(target.src.indexOf('/avatars/'));
+                                    } else {
+                                        // If all else fails, hide image and show initials (handled by parent logic or fallback UI)
+                                        target.style.display = 'none';
+                                        const parent = target.parentElement;
+                                        if (parent) {
+                                            // Revert to showing initials if image fails completely
+                                            const initials = currentUser.initials || currentUser.name?.substring(0, 2) || 'U';
+                                            const textNode = document.createTextNode(initials);
+                                            parent.appendChild(textNode);
+                                        }
+                                    }
+                                }}
+                            />
                         ) : (
-                            currentUser.initials
+                            currentUser.initials || currentUser.name?.substring(0, 2)
                         )}
                     </div>
                     {!isSidebarCollapsed && (
