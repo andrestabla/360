@@ -26,6 +26,9 @@ export default function ProfilePage() {
     const [securityData, setSecurityData] = useState({ current: '', new: '', confirm: '' });
     const [securitySaved, setSecuritySaved] = useState(false);
 
+    // Refs must be declared before any conditional returns
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     useEffect(() => {
         if (currentUser) {
             setFormData({
@@ -72,7 +75,6 @@ export default function ProfilePage() {
         setFormData((prev: any) => ({ ...prev, [id]: value }));
     };
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
