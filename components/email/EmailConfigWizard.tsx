@@ -337,46 +337,46 @@ export default function EmailConfigWizard({ isOpen, onClose, onSave }: EmailConf
                                             ) : 'Iniciar Prueba'}
                                         </button>
                                     </div>
-                                    ) : (
-                                    <div className="space-y-6 animate-in zoom-in">
-                                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto ${verificationResult.success ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                                            }`}>
-                                            {verificationResult.success ? (
-                                                <CheckCircle weight="fill" className="w-10 h-10" />
-                                            ) : (
-                                                <WarningCircle weight="fill" className="w-10 h-10" />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                                                {verificationResult.success ? '¡Conexión Exitosa!' : 'Error de Conexión'}
-                                            </h3>
-                                            <p className="text-slate-500 max-w-sm mx-auto">
-                                                {verificationResult.message || verificationResult.error}
-                                            </p>
-                                        </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-6 animate-in zoom-in">
+                                    <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto ${verificationResult.success ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                        }`}>
                                         {verificationResult.success ? (
-                                            <button
-                                                onClick={handleFinish}
-                                                className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-500/20"
-                                            >
-                                                Guardar Configuración
-                                            </button>
+                                            <CheckCircle weight="fill" className="w-10 h-10" />
                                         ) : (
-                                            <button
-                                                onClick={handleVerify}
-                                                className="text-slate-500 hover:text-slate-700 font-medium underline"
-                                            >
-                                                Intentar de nuevo
-                                            </button>
+                                            <WarningCircle weight="fill" className="w-10 h-10" />
                                         )}
                                     </div>
-                            )}
+                                    <div>
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                                            {verificationResult.success ? '¡Conexión Exitosa!' : 'Error de Conexión'}
+                                        </h3>
+                                        <p className="text-slate-500 max-w-sm mx-auto">
+                                            {verificationResult.message || verificationResult.error}
+                                        </p>
+                                    </div>
+                                    {verificationResult.success ? (
+                                        <button
+                                            onClick={handleFinish}
+                                            className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-500/20"
+                                        >
+                                            Guardar Configuración
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={handleVerify}
+                                            className="text-slate-500 hover:text-slate-700 font-medium underline"
+                                        >
+                                            Intentar de nuevo
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
+                    )}
 
-                {/* Footer Nav */}
+                    {/* Footer Nav */}
                     <div className="p-6 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex justify-between">
                         <button
                             onClick={step === 1 ? onClose : handleBack}
@@ -397,6 +397,6 @@ export default function EmailConfigWizard({ isOpen, onClose, onSave }: EmailConf
                     </div>
                 </div>
             </div>
-            );
-}
+        </div>
+    );
 }
