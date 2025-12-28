@@ -234,8 +234,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             setIsSuperAdmin(false);
             localStorage.removeItem('m360_user');
             console.log('[AppContext] Redirecting to /login...');
-            router.push('/login');
-            console.log('[AppContext] Logout complete');
+
+            // Defer navigation to avoid React error #406 (state update during render)
+            setTimeout(() => {
+                router.push('/login');
+                console.log('[AppContext] Logout complete');
+            }, 0);
         }
     };
 
