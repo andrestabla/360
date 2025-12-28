@@ -399,6 +399,8 @@ export interface PlatformSettings {
     loginBackgroundColor?: string;
     loginBackgroundImage?: string;
     logoUrl?: string;
+    faviconUrl?: string;
+    [key: string]: any;
   };
 }
 
