@@ -70,6 +70,12 @@ export default function ProfilePage() {
             const result = await updateProfile(data);
 
             if (result.success) {
+                // Cast to any because the return type might not be fully inferred yet
+                const res = result as any;
+                if (res.avatarUrl) {
+                    updateUser({ ...formData, avatar: res.avatarUrl });
+                    setFormData((prev: any) => ({ ...prev, avatar: res.avatarUrl }));
+                }
                 setSaved(true);
                 setTimeout(() => setSaved(false), 2000);
             } else {
@@ -188,7 +194,12 @@ export default function ProfilePage() {
                         onClick={() => fileInputRef.current?.click()}
                     >
                         {formData.avatar ? (
-                            <img src={formData.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                            <img
+                                src={formData.avatar}
+                                alt="Avatar"
+                                className="w-full h-full rounded-full object-cover"
+                                onError={(e) => console.error("Error loading avatar image:", formData.avatar, e)}
+                            />
                         ) : (
                             <div className="w-full h-full rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-4xl font-bold text-slate-400 uppercase">
                                 {currentUser.initials || currentUser.name?.substring(0, 2)}
