@@ -19,6 +19,7 @@ export default function ProfilePage() {
         timezone: 'GMT-5',
         avatar: ''
     });
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [saved, setSaved] = useState(false);
     const [isPending, startTransition] = useTransition();
 
@@ -54,10 +55,14 @@ export default function ProfilePage() {
             const data = new FormData();
             // Agregar todos los campos al FormData
             Object.entries(formData).forEach(([key, value]) => {
-                if (value !== null && value !== undefined) {
+                if (key !== 'avatar' && value !== null && value !== undefined) {
                     data.append(key, value as string);
                 }
             });
+
+            if (selectedFile) {
+                data.append('avatar', selectedFile);
+            }
 
             const result = await updateProfile(data);
 
@@ -79,6 +84,11 @@ export default function ProfilePage() {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('La imagen no puede superar los 5MB');
+                return;
+            }
+            setSelectedFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64 = reader.result as string;
@@ -433,8 +443,8 @@ export default function ProfilePage() {
                                                         key={themeOpt.id}
                                                         onClick={() => handlePreferenceUpdate({ theme: themeOpt.id })}
                                                         className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${(currentUser.preferences?.theme || 'system') === themeOpt.id
-                                                                ? 'bg-white dark:bg-slate-700 border-primary border-2 shadow-sm'
-                                                                : 'bg-transparent border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                            ? 'bg-white dark:bg-slate-700 border-primary border-2 shadow-sm'
+                                                            : 'bg-transparent border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                                             }`}
                                                     >
                                                         <themeOpt.icon weight="bold" size={24} className={(currentUser.preferences?.theme || 'system') === themeOpt.id ? 'text-primary' : 'text-slate-400'} />

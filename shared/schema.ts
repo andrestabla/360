@@ -1,4 +1,4 @@
-import { pgTable, text, varchar, integer, timestamp, boolean, json, serial, index, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean, json, jsonb, serial, index, primaryKey } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import type { AdapterAccountType } from "next-auth/adapters";
 
@@ -67,7 +67,7 @@ export const users = pgTable("users", {
   inviteExpiresAt: timestamp("invite_expires_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-  preferences: json("preferences").$type<{
+  preferences: jsonb("preferences").$type<{
     theme: 'light' | 'dark' | 'system',
     notifications: boolean,
     sidebarCollapsed: boolean

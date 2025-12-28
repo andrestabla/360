@@ -134,6 +134,22 @@ export interface PublicComment {
   resolved?: boolean;
 }
 
+export interface S3Config {
+  accessKeyId: string;
+  secretAccessKey: string;
+  bucket: string;
+  region: string;
+  endpoint?: string;
+}
+
+export interface R2Config {
+  accessKeyId: string;
+  secretAccessKey: string;
+  bucket: string;
+  endpoint: string;
+  region?: string;
+}
+
 export interface Doc {
   id: string;
   title: string;
@@ -299,7 +315,45 @@ export interface WorkflowCase {
   comments: WorkflowComment[];
 }
 
-export type StorageProvider = 'GOOGLE_DRIVE' | 'DROPBOX' | 'ONEDRIVE' | 'SHAREPOINT' | 'S3' | 'LOCAL';
+export type StorageProvider = 'GOOGLE_DRIVE' | 'DROPBOX' | 'ONEDRIVE' | 'SHAREPOINT' | 'S3' | 'R2' | 'LOCAL';
+
+export interface GoogleDriveConfig {
+  clientId: string;
+  clientSecret: string;
+  refreshToken: string;
+  folderId: string;
+}
+
+export interface DropboxConfig {
+  accessToken: string;
+  folderPath: string;
+}
+
+export interface OneDriveConfig {
+  clientId: string;
+  clientSecret: string;
+  refreshToken: string;
+  tenantId: string;
+  folderPath: string;
+}
+
+export interface SharePointConfig {
+  siteUrl: string;
+  clientId: string;
+  clientSecret: string;
+  tenantId: string;
+  folderPath: string;
+}
+
+export interface TenantStorageConfig {
+  provider: StorageProvider;
+  enabled: boolean;
+  config: GoogleDriveConfig | DropboxConfig | OneDriveConfig | SharePointConfig | S3Config | R2Config | Record<string, any>;
+  encryptedConfig?: string;
+  lastTested?: string;
+  testStatus?: 'success' | 'failed';
+  testMessage?: string;
+}
 
 export interface PlatformAuditEvent {
   id: string;
@@ -334,7 +388,7 @@ export interface PlatformSettings {
     passwordMinLength?: number;
     mfaPolicy?: 'none' | 'optional' | 'required';
   };
-  storage?: any;
+  storage?: TenantStorageConfig;
   roleTemplates?: Record<number, string[]>;
   plan?: 'STARTER' | 'PRO' | 'ENTERPRISE' | 'CUSTOM';
   branding?: {

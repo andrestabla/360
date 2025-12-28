@@ -91,13 +91,14 @@ export async function changePassword(
     redirect('/login?passwordChanged=true');
 }
 
+import { getStorageService } from '@/lib/services/storageService';
+
 // --- Actualizar Perfil de Usuario ---
 export async function updateProfile(formData: FormData) {
     const session = await auth();
     if (!session?.user?.id) return { error: "No autorizado" };
 
     const name = formData.get('name') as string;
-    const avatar = formData.get('avatar') as string;
     const jobTitle = formData.get('jobTitle') as string;
     const phone = formData.get('phone') as string;
     const location = formData.get('location') as string;
@@ -105,20 +106,54 @@ export async function updateProfile(formData: FormData) {
     const language = formData.get('language') as string;
     const timezone = formData.get('timezone') as string;
 
+    let avatarUrl = formData.get('avatar') as string | File;
+    let finalAvatarUrl: string | undefined;
+
+    // Handle File upload if present
+    if (avatarUrl instanceof File) {
+        if (avatarUrl.size > 5 * 1024 * 1024) {
+            return { error: "La imagen no puede superar los 5MB" };
+        }
+
+        try {
+            const storageService = getStorageService();
+            // We pass session.user.id or a tenant ID. For now 'default' as the service config is global in the mock DB
+            const uploadResult = await storageService.upload('default', avatarUrl, 'avatars');
+
+            if (uploadResult.success && uploadResult.url) {
+                finalAvatarUrl = uploadResult.url;
+            } else {
+                console.error("Avatar upload failed:", uploadResult.error);
+                return { error: "Error subiendo la imagen: " + uploadResult.error };
+            }
+        } catch (uploadError) {
+            console.error("Avatar upload failed:", uploadError);
+            return { error: "Error subiendo la imagen" };
+        }
+    } else if (typeof avatarUrl === 'string' && avatarUrl.startsWith('http')) {
+        // If it's already a URL (existing avatar), keep it
+        finalAvatarUrl = avatarUrl;
+    }
+
     try {
+        const updateData: any = {
+            name,
+            jobTitle,
+            phone,
+            location,
+            bio,
+            language,
+            timezone,
+            updatedAt: new Date()
+        };
+
+        if (finalAvatarUrl) {
+            updateData.image = finalAvatarUrl;
+            updateData.avatar = finalAvatarUrl;
+        }
+
         await db.update(users)
-            .set({
-                name,
-                image: avatar, // Auth.js standard
-                avatar: avatar, // App specific
-                jobTitle,
-                phone,
-                location,
-                bio,
-                language,
-                timezone,
-                updatedAt: new Date()
-            })
+            .set(updateData)
             .where(eq(users.id, session.user.id));
 
         revalidatePath('/dashboard/profile');

@@ -102,7 +102,7 @@ export default function Sidebar() {
                     </div>
                 )}
 
-                <nav className="nav" id="nav-menu">
+                <nav className={`nav ${isSidebarCollapsed ? 'scrollbar-hide' : ''}`} id="nav-menu">
                     {/* Simplified Navigation for Single Tenant */}
 
                     <div className={`nav-header ${isSidebarCollapsed ? 'text-center opacity-30 text-[9px]' : ''}`}>
@@ -119,7 +119,9 @@ export default function Sidebar() {
                     {/* Admin Access */}
                     {(currentUser.role.toLowerCase().includes('admin') || isSuperAdmin || currentUser.level === 1) && (
                         <>
-                            <div className="nav-header">ADMINISTRACIÓN</div>
+                            <div className={`nav-header ${isSidebarCollapsed ? 'text-center' : ''}`}>
+                                {isSidebarCollapsed ? 'Adm.' : 'ADMINISTRACIÓN'}
+                            </div>
                             <NavItem icon={Gear} label="Panel Admin" path="/dashboard/admin" />
                             <NavItem icon={UsersThree} label="Usuarios Globales" path="/dashboard/admin/users" />
                             <NavItem icon={TreeStructure} label="Unidades" path="/dashboard/admin/units" />

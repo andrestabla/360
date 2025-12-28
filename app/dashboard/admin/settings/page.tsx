@@ -13,15 +13,16 @@ import {
     WarningCircle,
     CreditCard,
     Desktop,
-    CloudArrowUp,
     ArrowCounterClockwise,
     EnvelopeSimple,
     Lightning,
     PaperPlaneRight,
-    MagicWand
+    MagicWand,
+    CloudArrowUp
 } from "@phosphor-icons/react";
 import EmailConfigWizard from "@/components/email/EmailConfigWizard";
 import { updateTenantBranding } from "@/app/lib/actions";
+import StorageConfigPanel from "@/components/storage/StorageConfigPanel";
 
 export default function AdminSettingsPage() {
     const { isSuperAdmin, currentUser, updatePlatformSettings, platformSettings } = useApp();
@@ -243,7 +244,18 @@ export default function AdminSettingsPage() {
                                 }`}
                         >
                             <Shield className="w-4 h-4" />
+                            <Shield className="w-4 h-4" />
                             Seguridad
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("storage")}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${activeTab === "storage"
+                                ? "bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400"
+                                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                                }`}
+                        >
+                            <CloudArrowUp className="w-4 h-4" />
+                            Almacenamiento
                         </button>
                         {isSuperAdmin && (
                             <button
