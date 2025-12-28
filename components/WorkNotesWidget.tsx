@@ -106,7 +106,7 @@ export default function WorkNotesWidget({ userId }: { userId: string }) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                     <div className="bg-slate-100 p-1 rounded-lg flex items-center">
                         <button
                             onClick={() => setViewMode('LIST')}
