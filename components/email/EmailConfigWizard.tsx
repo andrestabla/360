@@ -85,6 +85,7 @@ export default function EmailConfigWizard({ isOpen, onClose, onSave }: EmailConf
         fromEmail: '',
         fromName: ''
     });
+    const [testEmail, setTestEmail] = useState('');
     const [verifying, setVerifying] = useState(false);
     const [verificationResult, setVerificationResult] = useState<{ success: boolean; message?: string; error?: string } | null>(null);
 
@@ -111,8 +112,10 @@ export default function EmailConfigWizard({ isOpen, onClose, onSave }: EmailConf
                 ...config,
                 // Only use secure (SSL) if port is 465.
                 // For 587 (Amazon SES / Gmail / Outlook), we use STARTTLS (secure: false)
-                smtpSecure: config.smtpPort === 465
-            }, config.smtpUser); // Use smtpUser as test target for self-test
+                smtpSecure: config.smtpPort === 465,
+                // Ensure proper sender is used
+                fromEmail: config.fromEmail || config.smtpUser
+            }, testEmail || config.smtpUser); // Send TO the specified test email (preferred) or fallback to User (if email)
 
             if (result.success) {
                 setVerificationResult({ success: true, message: "Conexión exitosa" });
@@ -265,7 +268,19 @@ export default function EmailConfigWizard({ isOpen, onClose, onSave }: EmailConf
                                     placeholder="usuario@dominio.com"
                                     className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
-                                <p className="text-xs text-slate-500">Se usará también como remitente predeterminado.</p>
+                                <p className="text-xs text-slate-500">Credencial de autenticación (Email o Access Key ID).</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email del Remitente (From)</label>
+                                <input
+                                    type="text"
+                                    value={config.fromEmail}
+                                    onChange={e => setConfig({ ...config, fromEmail: e.target.value })}
+                                    placeholder="notificaciones@tuempresa.com"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                                <p className="text-xs text-slate-500">Dirección que verán los destinatarios.</p>
                             </div>
 
                             <div className="space-y-2">
@@ -289,80 +304,99 @@ export default function EmailConfigWizard({ isOpen, onClose, onSave }: EmailConf
                                         <PaperPlaneTilt weight="fill" className="w-10 h-10" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Verificar Conexión</h3>
-                                        <p className="text-slate-500">Haremos una prueba rápida de conexión SMTP.</p>
-                                    </div>
-                                    <button
-                                        onClick={handleVerify}
-                                        disabled={verifying}
-                                        className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50"
-                                    >
-                                        {verifying ? (
-                                            <span className="flex items-center gap-2">
-                                                <SpinnerGap className="animate-spin" /> Verificando...
-                                            </span>
-                                        ) : 'Iniciar Prueba'}
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="space-y-6 animate-in zoom-in">
-                                    <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto ${verificationResult.success ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                                        }`}>
-                                        {verificationResult.success ? (
-                                            <CheckCircle weight="fill" className="w-10 h-10" />
-                                        ) : (
-                                            <WarningCircle weight="fill" className="w-10 h-10" />
-                                        )}
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                                            {verificationResult.success ? '¡Conexión Exitosa!' : 'Error de Conexión'}
-                                        </h3>
-                                        <p className="text-slate-500 max-w-sm mx-auto">
-                                            {verificationResult.message || verificationResult.error}
-                                        </p>
-                                    </div>
-                                    {verificationResult.success ? (
-                                        <button
-                                            onClick={handleFinish}
-                                            className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-500/20"
-                                        >
-                                            Guardar Configuración
-                                        </button>
-                                    ) : (
+                                        <div className="max-w-sm mx-auto text-left mb-6">
+                                            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                                                Enviar correo de prueba a:
+                                            </label>
+                                            <div className="relative">
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                                    <Envelope weight="fill" />
+                                                </div>
+                                                <input
+                                                    type="email"
+                                                    value={testEmail}
+                                                    onChange={e => setTestEmail(e.target.value)}
+                                                    placeholder="tu@email.com"
+                                                    className="w-full pl-10 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="text-center">
+                                            <p className="text-slate-500 mb-4 text-sm">Haremos una prueba rápida de conexión SMTP.</p>
+                                        </div>
                                         <button
                                             onClick={handleVerify}
-                                            className="text-slate-500 hover:text-slate-700 font-medium underline"
+                                            disabled={verifying || !testEmail}
+                                            className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            Intentar de nuevo
+                                            {verifying ? (
+                                                <span className="flex items-center gap-2">
+                                                    <SpinnerGap className="animate-spin" /> Verificando...
+                                                </span>
+                                            ) : 'Iniciar Prueba'}
                                         </button>
-                                    )}
+                                    </div>
+                                    ) : (
+                                    <div className="space-y-6 animate-in zoom-in">
+                                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto ${verificationResult.success ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                            }`}>
+                                            {verificationResult.success ? (
+                                                <CheckCircle weight="fill" className="w-10 h-10" />
+                                            ) : (
+                                                <WarningCircle weight="fill" className="w-10 h-10" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                                                {verificationResult.success ? '¡Conexión Exitosa!' : 'Error de Conexión'}
+                                            </h3>
+                                            <p className="text-slate-500 max-w-sm mx-auto">
+                                                {verificationResult.message || verificationResult.error}
+                                            </p>
+                                        </div>
+                                        {verificationResult.success ? (
+                                            <button
+                                                onClick={handleFinish}
+                                                className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-500/20"
+                                            >
+                                                Guardar Configuración
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={handleVerify}
+                                                className="text-slate-500 hover:text-slate-700 font-medium underline"
+                                            >
+                                                Intentar de nuevo
+                                            </button>
+                                        )}
+                                    </div>
+                            )}
                                 </div>
                             )}
                         </div>
-                    )}
-                </div>
 
                 {/* Footer Nav */}
-                <div className="p-6 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex justify-between">
-                    <button
-                        onClick={step === 1 ? onClose : handleBack}
-                        className="px-4 py-2 text-slate-500 hover:text-slate-700 font-medium flex items-center gap-2"
-                    >
-                        {step === 1 ? 'Cancelar' : <><ArrowLeft /> Atrás</>}
-                    </button>
-
-                    {step > 1 && step < 4 && (
+                    <div className="p-6 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex justify-between">
                         <button
-                            onClick={handleNext}
-                            disabled={step === 3 && (!config.smtpUser || !config.smtpPassword)}
-                            className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50"
+                            onClick={step === 1 ? onClose : handleBack}
+                            className="px-4 py-2 text-slate-500 hover:text-slate-700 font-medium flex items-center gap-2"
                         >
-                            Siguiente <ArrowRight />
+                            {step === 1 ? 'Cancelar' : <><ArrowLeft /> Atrás</>}
                         </button>
-                    )}
+
+                        {step > 1 && step < 4 && (
+                            <button
+                                onClick={handleNext}
+                                disabled={step === 3 && (!config.smtpUser || !config.smtpPassword)}
+                                className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50"
+                            >
+                                Siguiente <ArrowRight />
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
-    );
+            );
+}
 }
