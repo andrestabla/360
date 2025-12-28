@@ -22,7 +22,7 @@ import {
     X
 } from "@phosphor-icons/react";
 import EmailConfigWizard from "@/components/email/EmailConfigWizard";
-import { updateOrganizationBranding, getEmailSettings, updateEmailSettings, testSmtpConnection, updateSecurityPolicies, getOrganizationSettings, createCheckoutSession, getBillingPortalUrl } from '@/app/lib/actions';
+import { updateOrganizationBranding, getEmailSettings, updateEmailSettings, testSmtpConnection, updateSecurityPolicies, getOrganizationSettings, createCheckoutSession, getBillingPortalUrl, createStripeCheckoutSession } from '@/app/lib/actions';
 import BillingPortalModal from '@/components/billing/BillingPortalModal';
 import StorageConfigPanel from "@/components/storage/StorageConfigPanel";
 import LoginForm from "@/app/login/LoginForm";
@@ -309,9 +309,13 @@ export default function AdminSettingsPage() {
         if (isSaving) return;
         setIsSaving(true);
         try {
-            const result = await createCheckoutSession(planId, formData.billingPeriod || 'monthly');
+            const result = await createStripeCheckoutSession(planId, formData.billingPeriod || 'monthly');
             if (result.success) {
-                setMessage({ type: 'success', text: `¡Plan ${planId} activado correctamente!` });
+                if (result.url) {
+                    window.location.href = result.url;
+                    return;
+                }
+                setMessage({ type: 'success', text: `¡Plan ${planId} activado correctamente! (Mock)` });
                 // Optimistic update
                 setFormData((prev: any) => ({ ...prev, plan: planId, subscriptionStatus: 'active' }));
             } else {

@@ -8,6 +8,7 @@ import { eq, desc, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import Stripe from 'stripe';
 
 // Helper seguro para detectar redirecciones sin depender de imports internos inestables
 function isRedirectError(error: any) {
@@ -627,4 +628,71 @@ export async function getBillingPortalUrl() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     // Mock URL
     return { url: "https://billing.stripe.com/p/login/test" };
+}
+
+export async function updateStripeConfig(config: any) {
+    const session = await auth();
+    const role = (session?.user as any)?.role;
+    if (role !== 'SUPER_ADMIN') return { error: "No autorizado" };
+
+    try {
+        await db.update(organizationSettings).set({ stripeConfig: config }).where(eq(organizationSettings.id, 1));
+        revalidatePath('/');
+        return { success: true };
+    } catch (e: any) {
+        return { error: e.message };
+    }
+}
+
+export async function createStripeCheckoutSession(planId: string, interval: 'monthly' | 'yearly') {
+    const session = await auth();
+    const role = (session?.user as any)?.role;
+    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN') {
+        return { error: "No tienes permisos" };
+    }
+
+    try {
+        const [settings] = await db.select().from(organizationSettings).where(eq(organizationSettings.id, 1));
+        const stripeConfig = settings?.stripeConfig as any;
+
+        if (stripeConfig?.secretKey) {
+            // @ts-ignore
+            const stripe = new Stripe(stripeConfig.secretKey);
+            
+            let priceId = '';
+            if (planId === 'PRO') priceId = stripeConfig.priceIdPro;
+            else if (planId === 'ENTERPRISE') priceId = stripeConfig.priceIdEnterprise;
+            
+            if (!priceId) return { error: 'Price ID no configurado para el plan ' + planId };
+
+            const checkoutSession = await stripe.checkout.sessions.create({
+                mode: 'subscription',
+                payment_method_types: ['card'],
+                line_items: [{ price: priceId, quantity: 1 }],
+                success_url: `${stripeConfig.nextAuthUrl || 'http://localhost:3000'}/dashboard/admin/settings?checkout_success=true`,
+                cancel_url: `${stripeConfig.nextAuthUrl || 'http://localhost:3000'}/dashboard/admin/settings?checkout_canceled=true`,
+                metadata: {
+                    orgId: settings.id.toString(),
+                    plan: planId,
+                    userId: session?.user?.email || 'unknown'
+                }
+            });
+
+            return { success: true, url: checkoutSession.url };
+        }
+
+        // Fallback Mock
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        await db.update(organizationSettings).set({
+            plan: planId,
+            billingPeriod: interval,
+            subscriptionStatus: 'active',
+            updatedAt: new Date()
+        }).where(eq(organizationSettings.id, 1));
+
+        revalidatePath('/');
+        return { success: true }; 
+    } catch (e: any) {
+        return { error: 'Stripe Error: ' + e.message };
+    }
 }

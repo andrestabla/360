@@ -23,7 +23,15 @@ export const organizationSettings = pgTable("organization_settings", {
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
   subscriptionStatus: varchar("subscription_status", { length: 50 }).default("active"),
   billingPeriod: varchar("billing_period", { length: 20 }).default("monthly"),
+
   currentPeriodEnd: timestamp("current_period_end"),
+  stripeConfig: json("stripe_config").$type<{
+    secretKey?: string;
+    webhookSecret?: string;
+    priceIdPro?: string;
+    priceIdEnterprise?: string;
+    nextAuthUrl?: string;
+  }>(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
