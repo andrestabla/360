@@ -109,7 +109,9 @@ export default function EmailConfigWizard({ isOpen, onClose, onSave }: EmailConf
         try {
             const result = await testSmtpConnection({
                 ...config,
-                smtpSecure: selectedProvider?.id === 'gmail' || selectedProvider?.id === 'aws' // Smarter default
+                // Only use secure (SSL) if port is 465.
+                // For 587 (Amazon SES / Gmail / Outlook), we use STARTTLS (secure: false)
+                smtpSecure: config.smtpPort === 465
             }, config.smtpUser); // Use smtpUser as test target for self-test
 
             if (result.success) {

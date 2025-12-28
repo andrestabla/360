@@ -480,16 +480,25 @@ export async function testSmtpConnection(settings: any, targetEmail: string) {
     if (!session?.user) return { error: "No autorizado" };
 
     try {
+        const port = parseInt(settings.smtpPort);
+
+        // Logical default: Secure (SSL) only on 465, otherwise False (STARTTLS)
+        // This fixes common confusing errors with AWS SES / Gmail on 587
+        const isSecure = settings.smtpSecure !== undefined
+            ? settings.smtpSecure
+            : port === 465;
+
         const transportConfig = {
             host: settings.smtpHost,
-            port: parseInt(settings.smtpPort),
-            secure: settings.smtpSecure || false, // true for 465, false for other ports
+            port: port,
+            secure: isSecure,
             auth: {
                 user: settings.smtpUser,
                 pass: settings.smtpPassword || settings.smtpPasswordEncrypted,
             },
             tls: {
-                rejectUnauthorized: false // Often needed for self-signed or non-strict certs in some corp envs
+                // Do not fail on self-signed certs, common in corp intranets
+                rejectUnauthorized: false
             }
         };
 
