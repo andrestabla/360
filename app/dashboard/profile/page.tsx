@@ -450,37 +450,10 @@ export default function ProfilePage() {
                         <div className="animate-fadeIn max-w-xl mx-auto py-4">
                             <div className="space-y-8">
                                 <div className="p-8 rounded-3xl bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-inner">
-                                    <h4 className="font-bold text-slate-900 dark:text-white mb-8 flex items-center gap-3">
-                                        <div className="w-1.5 h-6 rounded-full bg-primary" />
-                                        Preferencias de Visualización
-                                    </h4>
-
                                     <div className="space-y-8">
-                                        <div>
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 block">Tema de la Interfaz</label>
-                                            <div className="grid grid-cols-3 gap-4">
-                                                {[
-                                                    { id: 'light', label: 'Claro', icon: Desktop },
-                                                    { id: 'dark', label: 'Oscuro', icon: Clock },
-                                                    { id: 'system', label: 'Sistema', icon: ShieldCheck }
-                                                ].map((themeOpt) => (
-                                                    <button
-                                                        key={themeOpt.id}
-                                                        onClick={() => handlePreferenceUpdate({ theme: themeOpt.id })}
-                                                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${(currentUser.preferences?.theme || 'system') === themeOpt.id
-                                                            ? 'bg-white dark:bg-slate-700 border-primary border-2 shadow-sm'
-                                                            : 'bg-transparent border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                                                            }`}
-                                                    >
-                                                        <themeOpt.icon weight="bold" size={24} className={(currentUser.preferences?.theme || 'system') === themeOpt.id ? 'text-primary' : 'text-slate-400'} />
-                                                        <span className={`text-[10px] font-bold uppercase tracking-wider ${(currentUser.preferences?.theme || 'system') === themeOpt.id ? 'text-slate-900 dark:text-white' : 'text-slate-500'
-                                                            }`}>{themeOpt.label}</span>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
+                                        {/* Visual Preferences Removed as per user request */}
 
-                                        <div className="pt-8 border-t border-slate-200 dark:border-slate-700">
+                                        <div className="pt-0 border-t-0">
                                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 block">Notificaciones</label>
                                             <div className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700">
                                                 <div className="flex items-center gap-3">
