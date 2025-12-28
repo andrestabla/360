@@ -116,6 +116,29 @@ export default function ImportUnitsModal({ isOpen, onClose, onImport }: ImportUn
         onClose();
     };
 
+    const downloadCSVTemplate = () => {
+        const csvContent = `id,name,type,depth,parentId,parentName,responsibleEmail,description
+DIR,Dirección General,UNIT,0,,,admin@demo.com,Dirección principal de la organización
+OPS,Gerencia de Operaciones,UNIT,1,DIR,Dirección General,ops@demo.com,Área encargada de procesos operativos
+FIN,Administración y Finanzas,UNIT,1,DIR,Dirección General,fin@demo.com,Gestión financiera y administrativa
+CONT,Contabilidad,UNIT,2,FIN,Administración y Finanzas,cont@demo.com,Departamento de contabilidad
+PROC-01,Proceso de Compras,PROCESS,,OPS,Gerencia de Operaciones,compras@demo.com,Flujo estandarizado de adquisiciones`;
+
+        // Create blob with BOM for Excel compatibility
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'plantilla-estructura-organizacional.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    };
 
 
     return (
