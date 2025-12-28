@@ -668,6 +668,28 @@ export default function AdminSettingsPage() {
                                         </button>
                                     </div>
 
+                                    {formData.smtpHost && formData.smtpUser ? (
+                                        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center justify-between mb-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center text-green-600 dark:text-green-400">
+                                                    <CheckCircle weight="fill" className="w-6 h-6" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-green-900 dark:text-green-100">Servicio de Correo Configurado</h4>
+                                                    <p className="text-sm text-green-700 dark:text-green-300">
+                                                        Actualmente enviando a través de <strong>{formData.smtpHost}</strong>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => setShowEmailWizard(true)}
+                                                className="text-sm font-semibold text-green-700 hover:text-green-800 underline decoration-green-300 hover:decoration-green-500 underline-offset-2"
+                                            >
+                                                Reconfigurar
+                                            </button>
+                                        </div>
+                                    ) : null}
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2 md:col-span-2">
                                             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Proveedor</label>
