@@ -129,7 +129,13 @@ export default function Sidebar() {
                 </nav>
 
                 <div className={`user-profile ${isSidebarCollapsed ? 'justify-center p-3' : ''}`} onClick={() => handleNavigation('/dashboard/profile')}>
-                    <div className="avatar" id="u-avatar">{currentUser.initials}</div>
+                    <div className="avatar relative flex items-center justify-center overflow-hidden" id="u-avatar">
+                        {currentUser.avatar ? (
+                            <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
+                        ) : (
+                            currentUser.initials
+                        )}
+                    </div>
                     {!isSidebarCollapsed && (
                         <div style={{ flex: 1, overflow: 'hidden' }} className="animate-fadeIn">
                             <div id="u-name" style={{ fontWeight: 600, color: 'white' }}>{currentUser.name}</div>
