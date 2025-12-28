@@ -755,7 +755,7 @@ export default function AdminSettingsPage() {
                                                     <CheckCircle weight="fill" className="w-6 h-6" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-bold text-green-900 dark:text-green-100">Servicio de Correo Configurado</h4>
+                                                    <h4 className="font-bold text-green-900 dark:text-green-100">Configuración Exitosa</h4>
                                                     <p className="text-sm text-green-700 dark:text-green-300">
                                                         Actualmente enviando a través de <strong>{formData.smtpHost}</strong>
                                                     </p>
