@@ -160,13 +160,14 @@ export default function ImportUnitsModal({ isOpen, onClose, onImport }: ImportUn
 
                     {/* Download Template */}
                     <div className="flex justify-center">
-                        <a
-                            href="/api/templates/units"
+                        <button
+                            onClick={downloadCSVTemplate}
+                            type="button"
                             className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors shadow-lg"
                         >
                             <DownloadSimple size={20} weight="bold" />
                             Descargar Plantilla CSV de Ejemplo
-                        </a>
+                        </button>
                     </div>
 
                     {/* CSV Format Info */}
