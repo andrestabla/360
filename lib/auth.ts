@@ -17,17 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         verificationTokensTable: verificationTokens,
     }),
     session: { strategy: "jwt" }, // Use JWT for credentials provider compatibility
-    cookies: {
-        sessionToken: {
-            name: `__Secure-m360-auth.session-token`, // RENAMED to bypass old bloated cookies
-            options: {
-                httpOnly: true,
-                sameSite: 'lax',
-                path: '/',
-                secure: true,
-            }
-        }
-    },
+    // cookies section removed to revert to default behavior (next-auth.session-token)
     providers: [
         Credentials({
             credentials: {
