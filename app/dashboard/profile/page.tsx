@@ -1,8 +1,9 @@
 'use client';
 import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
-import { Check, EnvelopeSimple, Buildings, Clock, ShieldCheck, LockKey, DeviceMobile, Desktop } from '@phosphor-icons/react';
-import { useState, useEffect, useRef } from 'react';
+import { Check, EnvelopeSimple, Buildings, Clock, ShieldCheck, LockKey, DeviceMobile, Desktop, SpinnerGap } from '@phosphor-icons/react';
+import { useState, useEffect, useRef, useTransition } from 'react';
+import { updateProfile } from '@/app/lib/actions';
 
 export default function ProfilePage() {
     const { currentUser, updateUser } = useApp();
@@ -19,6 +20,7 @@ export default function ProfilePage() {
         avatar: ''
     });
     const [saved, setSaved] = useState(false);
+    const [isPending, startTransition] = useTransition();
 
     // Security Form State
     const [securityData, setSecurityData] = useState({ current: '', new: '', confirm: '' });
@@ -42,9 +44,27 @@ export default function ProfilePage() {
     if (!currentUser) return null;
 
     const handleSave = () => {
+        // Actualización optimista del contexto local
         updateUser(formData);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+
+        startTransition(async () => {
+            const data = new FormData();
+            // Agregar todos los campos al FormData
+            Object.entries(formData).forEach(([key, value]) => {
+                if (value !== null && value !== undefined) {
+                    data.append(key, value as string);
+                }
+            });
+
+            const result = await updateProfile(data);
+
+            if (result.success) {
+                setSaved(true);
+                setTimeout(() => setSaved(false), 2000);
+            } else {
+                alert('Error al guardar los cambios en el servidor: ' + result.error);
+            }
+        });
     };
 
     const handleChange = (e: any) => {
@@ -85,7 +105,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="grid-4" style={{ gridTemplateColumns: '1fr 2fr', alignItems: 'start', gap: 24 }}>
+        <div className="grid-4" style={{ gridTemplateColumns: 'minmax(300px, 1fr) 2fr', alignItems: 'start', gap: 24, display: 'grid' }}>
             <div className="card">
                 <div className="card-body" style={{ textAlign: 'center', padding: 30, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <div
@@ -95,8 +115,8 @@ export default function ProfilePage() {
                         {formData.avatar ? (
                             <img src={formData.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
                         ) : (
-                            <div className="w-full h-full rounded-full bg-slate-200 flex items-center justify-center text-3xl font-bold text-slate-500">
-                                {currentUser.initials}
+                            <div className="w-full h-full rounded-full bg-slate-200 flex items-center justify-center text-3xl font-bold text-slate-500 uppercase">
+                                {currentUser.initials || currentUser.name?.substring(0, 2)}
                             </div>
                         )}
                         <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -120,7 +140,7 @@ export default function ProfilePage() {
                     <div style={{ textAlign: 'left', fontSize: 13, color: 'var(--text-main)' }}>
                         <p style={{ marginBottom: 8, display: 'flex', alignItems: 'center' }}>
                             <EnvelopeSimple style={{ marginRight: 8, color: 'var(--text-muted)' }} />
-                            {currentUser.id}@company.com
+                            {currentUser.email}
                         </p>
                         <p style={{ marginBottom: 8, display: 'flex', alignItems: 'center' }}>
                             <Buildings style={{ marginRight: 8, color: 'var(--text-muted)' }} />
@@ -128,7 +148,7 @@ export default function ProfilePage() {
                         </p>
                         <p style={{ display: 'flex', alignItems: 'center' }}>
                             <Clock style={{ marginRight: 8, color: 'var(--text-muted)' }} />
-                            {t('profile_last_access')}: {t('profile_today')} 08:30 AM
+                            {t('profile_last_access')}: {t('profile_today')}
                         </p>
                     </div>
                 </div>
@@ -202,9 +222,11 @@ export default function ProfilePage() {
                                 <button
                                     className={`btn ${saved ? 'bg-success' : 'btn-primary'}`}
                                     onClick={handleSave}
-                                    style={{ color: saved ? 'var(--success)' : 'white' }}
+                                    disabled={isPending}
+                                    style={{ color: saved ? 'var(--success)' : 'white', opacity: isPending ? 0.7 : 1 }}
                                 >
-                                    {saved ? <><Check /> {t('profile_saved')}</> : t('profile_save_btn')}
+                                    {isPending && <SpinnerGap className="animate-spin inline-block mr-2" />}
+                                    {saved ? <><Check /> {t('profile_saved')}</> : isPending ? 'Guardando...' : t('profile_save_btn')}
                                 </button>
                             </div>
                         </div>

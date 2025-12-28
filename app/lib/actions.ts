@@ -3,10 +3,11 @@
 import { signIn, signOut, auth } from '@/lib/auth';
 import { AuthError } from 'next-auth';
 import { db } from '@/server/db';
-import { users } from '@/shared/schema';
+import { users, organizationSettings } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 
 // Helper seguro para detectar redirecciones sin depender de imports internos inestables
 function isRedirectError(error: any) {
@@ -88,4 +89,77 @@ export async function changePassword(
 
     // Redirect to login page with a message
     redirect('/login?passwordChanged=true');
+}
+
+// --- Actualizar Perfil de Usuario ---
+export async function updateProfile(formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "No autorizado" };
+
+    const name = formData.get('name') as string;
+    const avatar = formData.get('avatar') as string;
+    const jobTitle = formData.get('jobTitle') as string;
+    const phone = formData.get('phone') as string;
+    const location = formData.get('location') as string;
+    const bio = formData.get('bio') as string;
+    const language = formData.get('language') as string;
+    const timezone = formData.get('timezone') as string;
+
+    try {
+        await db.update(users)
+            .set({ 
+                name, 
+                image: avatar, // Auth.js standard
+                avatar: avatar, // App specific
+                jobTitle,
+                phone,
+                location,
+                bio,
+                language,
+                timezone,
+                updatedAt: new Date()
+            })
+            .where(eq(users.id, session.user.id));
+
+        revalidatePath('/dashboard/profile');
+        revalidatePath('/dashboard'); // Para que el sidebar/topbar se actualicen
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        return { error: "Error al guardar cambios" };
+    }
+}
+
+// --- Actualizar Apariencia (Tenant) ---
+export async function updateTenantBranding(settings: any) {
+    const session = await auth();
+    // Verificación de rol simplificada para demo
+    const role = (session?.user as any)?.role;
+    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN') {
+        // return { error: "No tienes permisos" };
+    }
+
+    try {
+        // En este esquema, la configuración visual vive en el campo JSON 'branding'
+        // Primero obtenemos la configuración actual para hacer merge
+        const current = await db.select().from(organizationSettings).where(eq(organizationSettings.id, 1)).limit(1);
+        const currentBranding = (current[0]?.branding as Record<string, any>) || {};
+
+        const newBranding = {
+            ...currentBranding,
+            ...settings
+        };
+
+        await db.update(organizationSettings)
+            .set({
+                branding: newBranding,
+            })
+            .where(eq(organizationSettings.id, 1)); 
+
+        revalidatePath('/');
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating branding:", error);
+        return { error: "Error guardando configuración" };
+    }
 }
