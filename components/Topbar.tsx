@@ -3,11 +3,14 @@ import { useApp } from '@/context/AppContext';
 import { ChatCircleDots, Moon, SignOut, List } from '@phosphor-icons/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { logout as serverLogout } from '@/app/lib/actions';
+import { useState } from 'react';
+import LogoutConfirmationModal from './LogoutConfirmationModal';
 
 export default function Topbar() {
     const { currentUser, isSuperAdmin, isMobileMenuOpen, openMobileMenu, closeMobileMenu } = useApp();
     const router = useRouter();
     const pathname = usePathname();
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     const handleLogout = async () => {
         await serverLogout();
@@ -55,10 +58,11 @@ export default function Topbar() {
                     <Moon size={20} />
                 </button>
 
-                <button className="btn btn-ghost p-2" onClick={handleLogout} title="Salir">
+                <button className="btn btn-ghost p-2" onClick={() => setShowLogoutModal(true)} title="Salir">
                     <SignOut size={20} />
                 </button>
             </div>
+            <LogoutConfirmationModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} />
         </header>
     );
 }

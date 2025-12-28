@@ -229,6 +229,35 @@ export const auditLogs = pgTable("audit_logs", {
   index("idx_audit_logs_created").on(table.createdAt),
 ]);
 
+export const workflowCases = pgTable("workflow_cases", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  workflowId: varchar("workflow_id", { length: 255 }), // Removed constraints for flexibility
+  title: text("title").notNull(),
+  status: varchar("status", { length: 50 }).default("PENDING"),
+  creatorId: varchar("creator_id", { length: 255 }),
+  assigneeId: varchar("assignee_id", { length: 255 }),
+  priority: varchar("priority", { length: 20 }).default("MEDIUM"),
+  dueDate: timestamp("due_date"),
+  data: json("data").$type<Record<string, unknown>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_workflow_cases_assignee").on(table.assigneeId),
+  index("idx_workflow_cases_status").on(table.status),
+]);
+
+export const userRecents = pgTable("user_recents", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  resourceId: varchar("resource_id", { length: 255 }).notNull(),
+  resourceType: varchar("resource_type", { length: 50 }).notNull(), // PROJECT, DOC
+  title: text("title"),
+  lastVisitedAt: timestamp("last_visited_at").defaultNow(),
+}, (table) => [
+  index("idx_user_recents_user").on(table.userId),
+  index("idx_user_recents_visited").on(table.lastVisitedAt),
+]);
+
 // =========================================================================
 // 2. TABLAS DE PRODUCTIVIDAD PERSONAL
 // =========================================================================
@@ -304,3 +333,7 @@ export type EmailSettings = typeof emailSettings.$inferSelect;
 export type InsertEmailSettings = typeof emailSettings.$inferInsert;
 export type SystemEnvironment = typeof systemEnvironment.$inferSelect;
 export type InsertSystemEnvironment = typeof systemEnvironment.$inferInsert;
+export type WorkflowCase = typeof workflowCases.$inferSelect;
+export type InsertWorkflowCase = typeof workflowCases.$inferInsert;
+export type UserRecent = typeof userRecents.$inferSelect;
+export type InsertUserRecent = typeof userRecents.$inferInsert;

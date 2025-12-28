@@ -1,13 +1,20 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
     Calendar, List, Plus, Trash, Check, PencilSimple,
-    CaretLeft, CaretRight, Bell, Star, DotsThreeVertical,
-    X, CheckCircle, Clock
+    CaretLeft, CaretRight, Bell, Star, X, CheckCircle, Clock
 } from '@phosphor-icons/react';
-import { WorkNote, DB, NoteReminder } from '@/lib/data';
+import { UserNote } from '@/shared/schema';
+import { saveWorkNote, deleteWorkNote } from '@/app/lib/actions';
 import { useApp } from '@/context/AppContext';
+
+// Re-define internal types as Schema JSON is generic
+interface NoteReminder {
+    date: string;
+    channel: 'internal' | 'email' | 'both';
+    sent: boolean;
+}
 
 const NOTE_COLORS = [
     { name: 'Azul', value: 'bg-blue-500', border: 'border-blue-100', text: 'text-blue-600', light: 'bg-blue-50' },
@@ -18,30 +25,34 @@ const NOTE_COLORS = [
     { name: 'Slate', value: 'bg-slate-500', border: 'border-slate-100', text: 'text-slate-600', light: 'bg-slate-50' },
 ];
 
-export default function WorkNotesWidget({ userId }: { userId: string }) {
+export default function WorkNotesWidget({ initialNotes, userId }: { initialNotes: UserNote[], userId: string }) {
     const [viewMode, setViewMode] = useState<'LIST' | 'CALENDAR'>('LIST');
     const [showAddModal, setShowAddModal] = useState(false);
-    const [editingNote, setEditingNote] = useState<WorkNote | null>(null);
-    const [notes, setNotes] = useState<WorkNote[]>(() =>
-        DB.workNotes.filter(n => n.userId === userId)
-    );
+    const [editingNote, setEditingNote] = useState<UserNote | null>(null);
+    const [notes, setNotes] = useState<UserNote[]>(initialNotes || []);
     const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ACTIVE');
 
     // Calendar State
     const [currentMonth, setCurrentMonth] = useState(new Date());
 
+    // Sync with initialNotes if they change (server refresh)
+    useEffect(() => {
+        if (initialNotes) setNotes(initialNotes);
+    }, [initialNotes]);
+
     const filteredNotes = useMemo(() => {
         return notes.filter(n => {
             if (filter === 'ALL') return true;
             return n.status === filter;
-        }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        }).sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
     }, [notes, filter]);
 
-    const handleAddNote = (note: Partial<WorkNote>) => {
-        const newNote: WorkNote = {
-            id: `note-${Date.now()}`,
+    const handleAddNote = async (note: Partial<UserNote>) => {
+        // Optimistic UI
+        const tempId = `temp-${Date.now()}`;
+        const newNote: any = {
+            id: tempId,
             userId,
-            title: note.title || '',
             content: note.content || '',
             date: note.date || new Date().toISOString().split('T')[0],
             isImportant: note.isImportant || false,
@@ -49,38 +60,48 @@ export default function WorkNotesWidget({ userId }: { userId: string }) {
             pinned: note.pinned || false,
             reminder: note.reminder,
             color: note.color || 'bg-blue-500',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
         };
-        const updatedNotes = [newNote, ...notes];
-        setNotes(updatedNotes);
-        DB.workNotes.unshift(newNote); // Keep mock DB in sync
+
+        setNotes(prev => [newNote, ...prev]);
         setShowAddModal(false);
-    };
 
-    const handleUpdateNote = (id: string, updates: Partial<WorkNote>) => {
-        const updatedNotes = notes.map(n => n.id === id ? { ...n, ...updates, updatedAt: new Date().toISOString() } : n);
-        setNotes(updatedNotes);
-        // Update Mock DB
-        const dbIdx = DB.workNotes.findIndex(n => n.id === id);
-        if (dbIdx > -1) DB.workNotes[dbIdx] = { ...DB.workNotes[dbIdx], ...updates, updatedAt: new Date().toISOString() };
-        setEditingNote(null);
-    };
-
-    const handleDeleteNote = (id: string) => {
-        if (confirm('¿Estás seguro de eliminar esta nota?')) {
-            const updatedNotes = notes.filter(n => n.id !== id);
-            setNotes(updatedNotes);
-            DB.workNotes = DB.workNotes.filter(n => n.id !== id);
+        // Server Action
+        // We generally need to handle real ID replacement but for now we rely on revalidatePath in parent causing refresh
+        const result = await saveWorkNote({ ...newNote, id: crypto.randomUUID() }); // Generate real ID
+        if (!result.success) {
+            // Revert?
+            console.error("Failed to save note");
         }
     };
 
-    const toggleComplete = (note: WorkNote) => {
-        handleUpdateNote(note.id, { status: note.status === 'ACTIVE' ? 'COMPLETED' : 'ACTIVE' });
+    const handleUpdateNote = async (id: string, updates: Partial<UserNote>) => {
+        setNotes(prev => prev.map(n => n.id === id ? { ...n, ...updates, updatedAt: new Date() } : n));
+
+        // If it's a temp note (not saved yet), we can't update properly on server without real ID.
+        // But for editing existing notes:
+        if (!id.startsWith('temp-')) {
+            await saveWorkNote({ ...updates, id } as any);
+        }
+    };
+
+    const handleDeleteNote = async (id: string) => {
+        if (confirm('¿Estás seguro de eliminar esta nota?')) {
+            setNotes(prev => prev.filter(n => n.id !== id));
+            if (!id.startsWith('temp-')) {
+                await deleteWorkNote(id);
+            }
+        }
+    };
+
+    const toggleComplete = (note: UserNote) => {
+        const newStatus = note.status === 'ACTIVE' ? 'COMPLETED' : 'ACTIVE';
+        handleUpdateNote(note.id, { status: newStatus });
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[500px]">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full min-h-[500px]">
             {/* Header */}
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <div className="flex items-center gap-2">
@@ -151,16 +172,18 @@ export default function WorkNotesWidget({ userId }: { userId: string }) {
             {showAddModal && (
                 <NoteModal
                     onClose={() => setShowAddModal(false)}
-                    onSave={(note: Partial<WorkNote>) => handleAddNote(note)}
+                    onSave={(note: Partial<UserNote>) => handleAddNote(note)}
                     title="Nueva Nota de Trabajo"
+                    isNew={true}
                 />
             )}
             {editingNote && (
                 <NoteModal
                     note={editingNote}
                     onClose={() => setEditingNote(null)}
-                    onSave={(updates: Partial<WorkNote>) => handleUpdateNote(editingNote.id, updates)}
+                    onSave={(updates: Partial<UserNote>) => handleUpdateNote(editingNote.id, updates)}
                     title="Editar Nota"
+                    isNew={false}
                 />
             )}
         </div>
@@ -170,9 +193,9 @@ export default function WorkNotesWidget({ userId }: { userId: string }) {
 // --- SUB-COMPONENTS ---
 
 interface ListViewProps {
-    notes: WorkNote[];
-    onToggleComplete: (note: WorkNote) => void;
-    onEdit: (note: WorkNote) => void;
+    notes: UserNote[];
+    onToggleComplete: (note: UserNote) => void;
+    onEdit: (note: UserNote) => void;
     onDelete: (id: string) => void;
 }
 
@@ -188,7 +211,7 @@ function ListView({ notes, onToggleComplete, onEdit, onDelete }: ListViewProps) 
 
     return (
         <div className="space-y-3">
-            {notes.map((note: WorkNote) => (
+            {notes.map((note: UserNote) => (
                 <div
                     key={note.id}
                     className={`p-3 rounded-xl border transition-all group ${(() => {
@@ -209,7 +232,7 @@ function ListView({ notes, onToggleComplete, onEdit, onDelete }: ListViewProps) 
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2 mb-1">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase">
-                                    {new Date(note.date || note.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                                    {new Date(note.date || note.createdAt || '').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                                 </span>
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button onClick={() => onEdit(note)} className="p-1 text-slate-400 hover:text-blue-600 transition-colors">
@@ -220,13 +243,14 @@ function ListView({ notes, onToggleComplete, onEdit, onDelete }: ListViewProps) 
                                     </button>
                                 </div>
                             </div>
-                            <p className={`text-sm text-slate-700 leading-relaxed ${note.status === 'COMPLETED' ? 'line-through opacity-50' : ''}`}>
+                            <p className={`text-sm text-slate-700 leading-relaxed font-medium break-all whitespace-pre-wrap ${note.status === 'COMPLETED' ? 'line-through opacity-50' : ''}`}>
                                 {note.content}
                             </p>
                             {note.reminder && (
                                 <div className="mt-2 flex items-center gap-1.5 text-[10px] font-medium text-blue-600 bg-blue-50 w-fit px-2 py-0.5 rounded-full">
                                     <Bell size={12} weight="fill" />
-                                    {new Date(note.reminder.date).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                    {/* Cast to any to access generic JSON fields safely */}
+                                    {new Date((note.reminder as any).date).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                             )}
                         </div>
@@ -238,10 +262,10 @@ function ListView({ notes, onToggleComplete, onEdit, onDelete }: ListViewProps) 
 }
 
 interface CalendarViewProps {
-    notes: WorkNote[];
+    notes: UserNote[];
     currentMonth: Date;
     setCurrentMonth: (date: Date) => void;
-    onEdit: (note: WorkNote) => void;
+    onEdit: (note: UserNote) => void;
 }
 
 function CalendarView({ notes, currentMonth, setCurrentMonth, onEdit }: CalendarViewProps) {
@@ -252,21 +276,20 @@ function CalendarView({ notes, currentMonth, setCurrentMonth, onEdit }: Calendar
     const days = [];
     const totalDays = daysInMonth(currentMonth.getMonth(), currentMonth.getFullYear());
 
-    // Padding for first day
     for (let i = 0; i < firstDayOfMonth; i++) {
         days.push(<div key={`pad-${i}`} className="h-14 border-b border-r border-slate-50 bg-slate-50/20" />);
     }
 
     for (let d = 1; d <= totalDays; d++) {
         const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-        const dayNotes = notes.filter((n: WorkNote) => n.date === dateStr);
+        const dayNotes = notes.filter((n: UserNote) => n.date === dateStr);
         const isToday = new Date().toISOString().split('T')[0] === dateStr;
 
         days.push(
             <div key={d} className={`h-14 border-b border-r border-slate-100 p-1 relative hover:bg-slate-50 transition-colors group ${isToday ? 'bg-blue-50/30' : ''}`}>
                 <span className={`text-[10px] font-bold ${isToday ? 'text-blue-600' : 'text-slate-400'}`}>{d}</span>
                 <div className="flex flex-wrap gap-0.5 mt-0.5 overflow-hidden">
-                    {dayNotes.map((n: WorkNote) => (
+                    {dayNotes.map((n: UserNote) => (
                         <button
                             key={n.id}
                             onClick={() => onEdit(n)}
@@ -306,70 +329,95 @@ function CalendarView({ notes, currentMonth, setCurrentMonth, onEdit }: Calendar
 }
 
 interface NoteModalProps {
-    note?: WorkNote;
+    note?: UserNote;
     onClose: () => void;
-    onSave: (note: Partial<WorkNote>) => void;
+    onSave: (note: Partial<UserNote>) => void;
     title: string;
+    isNew: boolean;
 }
 
-function NoteModal({ note, onClose, onSave, title }: NoteModalProps) {
+function NoteModal({ note, onClose, onSave, title, isNew }: NoteModalProps) {
     const [content, setContent] = useState(note?.content || '');
     const [date, setDate] = useState(note?.date || new Date().toISOString().split('T')[0]);
     const [isImportant, setIsImportant] = useState(note?.isImportant || false);
     const [hasReminder, setHasReminder] = useState(!!note?.reminder);
+    // Safe handling of reminder which is unknown/json in schema
+    const reminderData = note?.reminder as any;
     const [reminderTime, setReminderTime] = useState(() => {
-        if (note?.reminder) {
-            return new Date(note.reminder.date).toISOString().slice(0, 16);
+        if (reminderData && reminderData.date) {
+            return new Date(reminderData.date).toISOString().slice(0, 16);
         }
         return new Date().toISOString().slice(0, 16);
     });
-    const [reminderChannel, setReminderChannel] = useState<'internal' | 'email' | 'both'>(note?.reminder?.channel || 'internal');
+    const [reminderChannel, setReminderChannel] = useState<'internal' | 'email' | 'both'>(reminderData?.channel || 'internal');
     const [color, setColor] = useState(note?.color || NOTE_COLORS[0].value);
+    const [savedStatus, setSavedStatus] = useState<'idle' | 'saved'>('idle');
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    // Debounce Auto-Save for existing notes
+    useEffect(() => {
+        if (isNew) return; // Only auto-save existing notes to avoid creating many duplicates while typing new
+        const timer = setTimeout(() => {
+            if (content !== note?.content || date !== note?.date || isImportant !== note?.isImportant || color !== note?.color) {
+                handleSubmit(undefined, true); // Silent auto-save
+            }
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, [content, date, isImportant, color]); // Dependencies to trigger auto-save
+
+    const handleSubmit = (e?: React.FormEvent, isAutoSave = false) => {
+        if (e) e.preventDefault();
         if (!content.trim()) return;
 
-        const reminder: NoteReminder | undefined = hasReminder ? {
+        const reminder = hasReminder ? {
             date: new Date(reminderTime).toISOString(),
             channel: reminderChannel,
             sent: false
         } : undefined;
 
         onSave({ content, date, isImportant, reminder, color });
+        if (isAutoSave) setSavedStatus('saved');
+        setTimeout(() => setSavedStatus('idle'), 2000);
+
+        if (!isAutoSave) onClose();
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-slideUp">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn" onMouseDown={onClose}>
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-slideUp" onMouseDown={e => e.stopPropagation()}>
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                    <h3 className="font-bold text-slate-800">{title}</h3>
+                    <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-slate-800">{title}</h3>
+                        {savedStatus === 'saved' && <span className="text-[10px] text-emerald-600 font-bold bg-emerald-100 px-2 py-0.5 rounded-full animate-fadeIn">Guardado</span>}
+                    </div>
                     <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
                         <X size={20} weight="bold" />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                <form onSubmit={(e) => handleSubmit(e, false)} className="p-6 space-y-5">
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Contenido de la Nota</label>
                         <textarea
                             autoFocus
-                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                            rows={4}
-                            maxLength={500}
+                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
+                            rows={6}
+                            maxLength={1000}
                             placeholder="¿Qué tienes pendiente?"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                         />
-                        <div className="flex justify-end mt-1">
-                            <span className={`text-[10px] font-medium ${content.length > 450 ? 'text-amber-600' : 'text-slate-400'}`}>
-                                {content.length}/500
+                        <div className="flex justify-between mt-1">
+                            <span className="text-[10px] text-slate-400 italic">
+                                {isNew ? 'Presiona guardar para crear' : 'Se guarda automáticamente al escribir...'}
+                            </span>
+                            <span className={`text-[10px] font-medium ${content.length > 900 ? 'text-amber-600' : 'text-slate-400'}`}>
+                                {content.length}/1000
                             </span>
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-3 text-center">Color Categoría</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-3 text-center">Etiqueta de Color</label>
                         <div className="flex justify-center gap-3">
                             {NOTE_COLORS.map(c => (
                                 <button
@@ -395,7 +443,7 @@ function NoteModal({ note, onClose, onSave, title }: NoteModalProps) {
                             />
                         </div>
                         <div className="flex items-end pb-1">
-                            <label className="flex items-center gap-2 cursor-pointer group">
+                            <label className="flex items-center gap-2 cursor-pointer group select-none">
                                 <input
                                     type="checkbox"
                                     className="hidden"
@@ -411,7 +459,7 @@ function NoteModal({ note, onClose, onSave, title }: NoteModalProps) {
                     </div>
 
                     <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
-                        <label className="flex items-center gap-2 cursor-pointer mb-3">
+                        <label className="flex items-center gap-2 cursor-pointer mb-3 select-none">
                             <input
                                 type="checkbox"
                                 className="hidden"
@@ -461,14 +509,14 @@ function NoteModal({ note, onClose, onSave, title }: NoteModalProps) {
                             onClick={onClose}
                             className="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition-colors"
                         >
-                            Cancelar
+                            Cerrar
                         </button>
                         <button
                             type="submit"
                             disabled={!content.trim()}
                             className="flex-1 py-3 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 disabled:opacity-50 disabled:shadow-none"
                         >
-                            Guardar Nota
+                            {isNew ? 'Crear Nota' : 'Guardar'}
                         </button>
                     </div>
                 </form>

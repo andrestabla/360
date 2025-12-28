@@ -3,8 +3,8 @@
 import { signIn, signOut, auth } from '@/lib/auth';
 import { AuthError } from 'next-auth';
 import { db } from '@/server/db';
-import { users, organizationSettings } from '@/shared/schema';
-import { eq } from 'drizzle-orm';
+import { users, organizationSettings, userNotes, workflowCases, userRecents } from '@/shared/schema';
+import { eq, desc, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
@@ -107,8 +107,8 @@ export async function updateProfile(formData: FormData) {
 
     try {
         await db.update(users)
-            .set({ 
-                name, 
+            .set({
+                name,
                 image: avatar, // Auth.js standard
                 avatar: avatar, // App specific
                 jobTitle,
@@ -154,12 +154,115 @@ export async function updateTenantBranding(settings: any) {
             .set({
                 branding: newBranding,
             })
-            .where(eq(organizationSettings.id, 1)); 
+            .where(eq(organizationSettings.id, 1));
 
         revalidatePath('/');
         return { success: true };
     } catch (error) {
         console.error("Error updating branding:", error);
         return { error: "Error guardando configuración" };
+    }
+}
+
+// --- PERSONAL WORKSPACE ACTIONS ---
+
+export async function getUserNotes(userId: string) {
+    const session = await auth();
+    if (!session?.user?.id || session.user.id !== userId) return []; // Security check
+
+    const notes = await db.query.userNotes.findMany({
+        where: eq(userNotes.userId, userId),
+        orderBy: [desc(userNotes.createdAt)],
+    });
+    return notes;
+}
+
+export async function saveWorkNote(note: any) { // Using any to avoid strict type mismatch with frontend for now
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    // Ensure note belongs to user
+    if (note.userId && note.userId !== session.user.id) return { success: false, error: "Unauthorized" };
+
+    const noteData = {
+        ...note,
+        userId: session.user.id, // Enforce
+        updatedAt: new Date(),
+    };
+
+    if (!noteData.date) noteData.date = new Date().toISOString().split('T')[0];
+
+    try {
+        const existing = await db.query.userNotes.findFirst({ where: eq(userNotes.id, note.id) });
+
+        if (existing) {
+            await db.update(userNotes).set(noteData).where(eq(userNotes.id, note.id));
+        } else {
+            if (!noteData.createdAt) noteData.createdAt = new Date();
+            await db.insert(userNotes).values(noteData);
+        }
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (error) {
+        console.error("Error saving note:", error);
+        return { success: false, error: "Failed to save" };
+    }
+}
+
+export async function deleteWorkNote(noteId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    await db.delete(userNotes).where(and(eq(userNotes.id, noteId), eq(userNotes.userId, session.user.id)));
+    revalidatePath('/dashboard');
+    return { success: true };
+}
+
+export async function getPendingTasks(userId: string) {
+    // Return pending workflow cases
+    return await db.query.workflowCases.findMany({
+        where: and(eq(workflowCases.assigneeId, userId), eq(workflowCases.status, 'PENDING')),
+        orderBy: [desc(workflowCases.createdAt)],
+        limit: 5
+    });
+}
+
+export async function getUserRecents(userId: string) {
+    return await db.query.userRecents.findMany({
+        where: eq(userRecents.userId, userId),
+        orderBy: [desc(userRecents.lastVisitedAt)],
+        limit: 5
+    });
+}
+
+export async function trackUserRecent(resourceId: string, resourceType: 'PROJECT' | 'DOC', title: string) {
+    const session = await auth();
+    if (!session?.user?.id) return;
+
+    try {
+        const existing = await db.query.userRecents.findFirst({
+            where: and(eq(userRecents.userId, session.user.id), eq(userRecents.resourceId, resourceId))
+        });
+
+        if (existing) {
+            await db.update(userRecents).set({ lastVisitedAt: new Date(), title }).where(eq(userRecents.id, existing.id));
+        } else {
+            // Check count
+            const all = await getUserRecents(session.user.id);
+            if (all.length >= 10) {
+                // Delete oldest (not implemented for speed, just allow grow slightly)
+            }
+
+            await db.insert(userRecents).values({
+                userId: session.user.id,
+                resourceId,
+                resourceType,
+                title,
+                lastVisitedAt: new Date()
+            });
+        }
+        revalidatePath('/dashboard');
+    } catch (e) {
+        console.error("Error tracking recent:", e);
     }
 }
