@@ -62,6 +62,9 @@ export default function ProfilePage() {
 
             if (selectedFile) {
                 data.append('avatar', selectedFile);
+            } else if (formData.avatar && typeof formData.avatar === 'string' && formData.avatar.startsWith('http')) {
+                // If we have an existing URL and no new file, send it explicitly to ensure persistence
+                data.append('avatar', formData.avatar);
             }
 
             const result = await updateProfile(data);

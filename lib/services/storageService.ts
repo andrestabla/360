@@ -100,8 +100,19 @@ export function getStorageService(): StorageService {
           ContentType: file.type,
         }));
 
+
         // For R2/S3, we might return a presigned URL or a public URL if configured
-        const url = `${storageConfig.endpoint}/${storageConfig.bucket}/${key}`;
+        let url = '';
+        if (storageConfig.publicUrl) {
+          // Remove trailing slash if present
+          const baseUrl = storageConfig.publicUrl.replace(/\/$/, '');
+          url = `${baseUrl}/${key}`;
+        } else {
+          // Fallback to endpoint (might not work for private buckets, but best effort)
+          // Ensure endpoint doesn't end with slash
+          const endpoint = storageConfig.endpoint?.replace(/\/$/, '') || '';
+          url = `${endpoint}/${storageConfig.bucket}/${key}`;
+        }
 
         return { success: true, url };
       } catch (error: any) {

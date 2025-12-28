@@ -383,6 +383,18 @@ export default function StorageConfigPanel() {
                                 placeholder="my-maturity360-bucket"
                             />
                         </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Public URL (Opcional)</label>
+                            <input
+                                type="text"
+                                value={config.publicUrl || ''}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                onChange={(e: any) => setConfig({ ...config, publicUrl: e.target.value })}
+                                className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                placeholder="https://pub-xxxxxxxx.r2.dev"
+                            />
+                            <p className="text-xs text-slate-500 mt-1">URL pública para acceder a los archivos (ej. R2.dev o dominio personalizado). Necesario para avatares.</p>
+                        </div>
                     </div>
                 );
 
@@ -433,6 +445,18 @@ export default function StorageConfigPanel() {
                                 className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                                 placeholder="my-r2-bucket"
                             />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Public URL (Opcional)</label>
+                            <input
+                                type="text"
+                                value={config.publicUrl || ''}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                onChange={(e: any) => setConfig({ ...config, publicUrl: e.target.value })}
+                                className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                placeholder="https://pub-xxxxxxxx.r2.dev"
+                            />
+                            <p className="text-xs text-slate-500 mt-1">URL pública para acceder a los archivos (ej. R2.dev o dominio personalizado). Necesario para avatares.</p>
                         </div>
                     </div>
                 );
