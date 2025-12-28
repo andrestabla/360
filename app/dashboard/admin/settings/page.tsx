@@ -23,6 +23,7 @@ import {
 } from "@phosphor-icons/react";
 import EmailConfigWizard from "@/components/email/EmailConfigWizard";
 import { updateOrganizationBranding, getEmailSettings, updateEmailSettings, testSmtpConnection, updateSecurityPolicies, getOrganizationSettings, createCheckoutSession, getBillingPortalUrl } from '@/app/lib/actions';
+import BillingPortalModal from '@/components/billing/BillingPortalModal';
 import StorageConfigPanel from "@/components/storage/StorageConfigPanel";
 import LoginForm from "@/app/login/LoginForm";
 
@@ -38,6 +39,7 @@ export default function AdminSettingsPage() {
     const [testEmail, setTestEmail] = useState("");
     const [showEmailWizard, setShowEmailWizard] = useState(false);
     const [showPreviewConfig, setShowPreviewConfig] = useState(false);
+    const [showBillingModal, setShowBillingModal] = useState(false);
     const [isTestingEmail, setIsTestingEmail] = useState(false);
     const [testEmailResult, setTestEmailResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -320,18 +322,7 @@ export default function AdminSettingsPage() {
     };
 
     const handleManageBilling = async () => {
-        if (isSaving) return;
-        setIsSaving(true);
-        try {
-            const result = await getBillingPortalUrl();
-            if (result?.url) {
-                window.open(result.url, '_blank');
-                setMessage({ type: 'success', text: "Portal de facturación abierto en nueva pestaña" });
-            }
-        } catch (e) {
-            setMessage({ type: 'error', text: "No se pudo abrir el portal" });
-        }
-        setIsSaving(false);
+        setShowBillingModal(true);
     };
 
     if (!isAdmin) {
@@ -1177,6 +1168,12 @@ export default function AdminSettingsPage() {
                     />
                 )
             }
+
+            <BillingPortalModal
+                isOpen={showBillingModal}
+                onClose={() => setShowBillingModal(false)}
+                currentEmail={formData.smtpUser || ''}
+            />
         </div >
     );
 }

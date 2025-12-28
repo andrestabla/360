@@ -1,5 +1,5 @@
 import { db } from '@/server/db';
-import { users } from '@/shared/schema';
+import { users, organizationSettings } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
@@ -56,6 +56,30 @@ export async function createUser(input: CreateUserInput): Promise<{ success: boo
     if (existingUser.length > 0) {
       return { success: false, error: 'Ya existe un usuario con este correo electrónico' };
     }
+
+    // --- ENFORCE PLAN LIMITS (HU 7.4) ---
+    const [settings] = await db.select().from(organizationSettings).limit(1);
+    const plan = settings?.plan || 'ENTERPRISE';
+    const subStatus = settings?.subscriptionStatus || 'active';
+
+    if (subStatus !== 'active' && subStatus !== 'trial') {
+      return { success: false, error: 'La suscripción de la organización no está activa.' };
+    }
+
+    const PLAN_LIMITS: Record<string, number> = {
+      'STARTER': 5,
+      'PRO': 20,
+      'ENTERPRISE': 1000,
+      'CUSTOM': 1000
+    };
+    const limit = PLAN_LIMITS[plan] || 5;
+
+    // Efficient count
+    const allUsers = await db.select({ id: users.id }).from(users);
+    if (allUsers.length >= limit) {
+      return { success: false, error: `Se ha alcanzado el límite de usuarios (${limit}) del plan ${plan}. Actualice su suscripción.` };
+    }
+    // ------------------------------------
 
     const tempPassword = input.password || generateTempPassword();
     const hashedPassword = await hashPassword(tempPassword);
