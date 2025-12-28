@@ -17,7 +17,7 @@ interface AppContextType {
     setCurrentUser: (user: User | null) => void;
     isSuperAdmin: boolean;
     login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-    logout: () => void;
+    logout: () => Promise<void>;
     updateUser: (updates: Partial<User>) => void;
 
     // Impersonation (Stubbed for now)
@@ -218,15 +218,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const logout = () => {
-        setCurrentUser(null);
-        setIsSuperAdmin(false);
-        localStorage.removeItem('m360_user');
-
-        // Call logout API to clear cookie
-        fetch('/api/auth/logout', { method: 'POST' }).catch(console.error);
-
-        router.push('/login');
+    const logout = async () => {
+        try {
+            // Call logout API to clear cookie
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (error) {
+            console.error('Logout API error:', error);
+        } finally {
+            // Clear local state regardless of API success
+            setCurrentUser(null);
+            setIsSuperAdmin(false);
+            localStorage.removeItem('m360_user');
+            router.push('/login');
+        }
     };
 
     const updatePlatformSettings = (settings: Partial<PlatformSettings>) => {
