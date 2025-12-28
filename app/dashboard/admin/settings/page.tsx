@@ -21,6 +21,7 @@ import {
     MagicWand
 } from "@phosphor-icons/react";
 import EmailConfigWizard from "@/components/email/EmailConfigWizard";
+import { updateTenantBranding } from "@/app/lib/actions";
 
 export default function AdminSettingsPage() {
     const { isSuperAdmin, currentUser, updatePlatformSettings, platformSettings } = useApp();
@@ -105,44 +106,48 @@ export default function AdminSettingsPage() {
         }, 500);
     }, [platformSettings]);
 
-    const handleSave = async () => {
+    const [isPending, startTransition] = React.useTransition();
+
+    const handleSave = () => {
         setIsSaving(true);
         setMessage(null);
 
-        try {
-            // Apply updates to global state (mock persistence)
-            updatePlatformSettings({
-                plan: formData.plan,
-                defaultModules: formData.plan === 'CUSTOM' ? formData.customModules : undefined
+        // Optimistic UI update
+        updatePlatformSettings({
+            plan: formData.plan,
+            defaultModules: formData.plan === 'CUSTOM' ? formData.customModules : undefined,
+            branding: {
+                appTitle: formData.appTitle,
+                portalDescription: formData.portalDescription,
+                supportMessage: formData.supportMessage,
+                primaryColor: formData.primaryColor,
+                loginBackgroundColor: formData.loginBackgroundColor,
+                loginBackgroundImage: formData.loginBackgroundImage,
+            }
+        });
+
+        const root = document.documentElement;
+        root.style.setProperty('--primary', formData.primaryColor);
+
+        // Server Action
+        startTransition(async () => {
+            const result = await updateTenantBranding({
+                appTitle: formData.appTitle,
+                portalDescription: formData.portalDescription,
+                supportMessage: formData.supportMessage,
+                primaryColor: formData.primaryColor,
+                loginBackgroundColor: formData.loginBackgroundColor,
+                loginBackgroundImage: formData.loginBackgroundImage,
+                logoUrl: formData.logoUrl
             });
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
 
-            // Apply updates to global state
-            updatePlatformSettings({
-                plan: formData.plan,
-                defaultModules: formData.plan === 'CUSTOM' ? formData.customModules : undefined,
-                branding: {
-                    appTitle: formData.appTitle,
-                    portalDescription: formData.portalDescription,
-                    supportMessage: formData.supportMessage,
-                    primaryColor: formData.primaryColor,
-                    loginBackgroundColor: formData.loginBackgroundColor,
-                    loginBackgroundImage: formData.loginBackgroundImage,
-                }
-            });
-
-            // Update CSS variables immediately
-            const root = document.documentElement;
-            root.style.setProperty('--primary', formData.primaryColor);
-
-            setMessage({ type: 'success', text: 'Configuración guardada exitosamente' });
-        } catch (error) {
-            console.error(error);
-            setMessage({ type: 'error', text: 'Error al guardar la configuración' });
-        } finally {
+            if (result.success) {
+                setMessage({ type: 'success', text: 'Configuración guardada en servidor exitosamente' });
+            } else {
+                setMessage({ type: 'error', text: 'Error al guardar en servidor: ' + result.error });
+            }
             setIsSaving(false);
-        }
+        });
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
