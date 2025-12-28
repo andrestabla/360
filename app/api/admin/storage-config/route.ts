@@ -1,39 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DB, TenantStorageConfig, StorageProvider } from '@/lib/data';
+import { db } from '@/server/db';
+import { organizationSettings } from '@/shared/schema';
+import { eq } from 'drizzle-orm';
+import { StorageProvider } from '@/lib/data';
 import { encryptCredentials, decryptCredentials, getSecretFields, maskCredential } from '@/lib/services/storageEncryption';
 
 export async function GET(request: NextRequest) {
-  // Global storage config
-  const configWrapper = DB.platformSettings.storage;
+  try {
+    const settings = await db.select().from(organizationSettings).where(eq(organizationSettings.id, 1)).limit(1);
 
-  if (!configWrapper) {
-    return NextResponse.json({ success: true, config: null });
-  }
+    if (!settings || settings.length === 0 || !settings[0].storageConfig) {
+      return NextResponse.json({ success: true, config: null });
+    }
 
-  const config = { ...configWrapper };
-  const secretFields = getSecretFields(config.provider);
+    const configWrapper = settings[0].storageConfig as Record<string, any>;
+    const config = { ...configWrapper };
 
-  if (config.encryptedConfig) {
-    const decrypted = decryptCredentials(config.encryptedConfig);
-    const configData = { ...config.config } as Record<string, any>;
-    secretFields.forEach(field => {
-      if (decrypted[field]) {
-        configData[field] = maskCredential(decrypted[field]);
-      }
+    // Safety check for provider
+    if (!config.provider) {
+      return NextResponse.json({ success: true, config: null });
+    }
+
+    const secretFields = getSecretFields(config.provider as StorageProvider);
+
+    if (config.encryptedConfig) {
+      const decrypted = decryptCredentials(config.encryptedConfig);
+      const configData = { ...config.config } as Record<string, any>;
+      secretFields.forEach(field => {
+        if (decrypted[field]) {
+          configData[field] = maskCredential(decrypted[field]);
+        }
+      });
+      config.config = configData;
+    }
+
+    return NextResponse.json({
+      success: true,
+      config: {
+        provider: config.provider,
+        enabled: config.enabled,
+        config: config.config,
+        lastTested: config.lastTested,
+        testStatus: config.testStatus,
+      },
     });
-    config.config = configData;
+  } catch (error) {
+    console.error('Error fetching storage config:', error);
+    return NextResponse.json({ error: 'Error fetching configuration' }, { status: 500 });
   }
-
-  return NextResponse.json({
-    success: true,
-    config: {
-      provider: config.provider,
-      enabled: config.enabled,
-      config: config.config,
-      lastTested: config.lastTested,
-      testStatus: config.testStatus,
-    },
-  });
 }
 
 export async function POST(request: NextRequest) {
@@ -41,7 +55,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { provider, config, enabled } = body;
 
-    // Remove tenantId requirement
     if (!provider) {
       return NextResponse.json({ error: 'Provider is required' }, { status: 400 });
     }
@@ -51,18 +64,61 @@ export async function POST(request: NextRequest) {
     const publicData: Record<string, any> = {};
 
     Object.entries(config || {}).forEach(([key, value]) => {
+      // If the value is masked (starts with *), don't update it, keep existing secret
+      // This logic requires fetching existing encrypted config to merge if needed
+      // BUT for simplicity, we usually assume the UI sends the full config or we handle partials.
+      // However, masking usually implies we don't have the value on client.
+      // If client sends masked value, we should SKIP updating that field in secretData
+      // and reuse the old encrypted value.
+
+      // Ideally, the UI sends everything. If it's masked, it sends the masked string.
+      // We need to detect if it's masked and NOT overwrite the credential if so.
+
       if (secretFields.includes(key)) {
-        secretData[key] = value;
+        if (typeof value === 'string' && value.includes('******')) {
+          // It's masked, we need to preserve the old value.
+          // We'll mark it to be merged from existing DB config later.
+        } else {
+          secretData[key] = value;
+        }
       } else {
         publicData[key] = value;
       }
     });
 
-    const encryptedConfig = Object.keys(secretData).length > 0
-      ? encryptCredentials(secretData)
+    // Check if we need to merge with existing secrets
+    let finalSecretData = { ...secretData };
+
+    // Fetch existing settings to merge secrets if necessary
+    const existingSettings = await db.select().from(organizationSettings).where(eq(organizationSettings.id, 1)).limit(1);
+    let existingConfigWrapper: any = null;
+    if (existingSettings && existingSettings.length > 0) {
+      existingConfigWrapper = existingSettings[0].storageConfig;
+    }
+
+    if (existingConfigWrapper && existingConfigWrapper.encryptedConfig) {
+      const decryptedExisting = decryptCredentials(existingConfigWrapper.encryptedConfig);
+
+      // Merge: If a key is NOT in secretData (because it was masked/omitted), take it from existing
+      // Or if we specifically skipped it above.
+      // Actually, the UI logic usually sends ALL fields.
+      // If the user didn't change the password, the UI might send the masked version OR not send it.
+      // Let's assume for now if it's NOT in secretData, we try to keep existing.
+
+      secretFields.forEach(field => {
+        if (config && config[field] && typeof config[field] === 'string' && config[field].includes('******')) {
+          // The user sent back the masked value, implying no change.
+          if (decryptedExisting[field]) {
+            finalSecretData[field] = decryptedExisting[field];
+          }
+        }
+      });
+    }
+
+    const encryptedConfig = Object.keys(finalSecretData).length > 0
+      ? encryptCredentials(finalSecretData)
       : undefined;
 
-    // Use any or cast if TenantStorageConfig is not perfectly exported/matching
     const storageConfig: any = {
       provider: provider as StorageProvider,
       enabled: enabled ?? true,
@@ -73,8 +129,24 @@ export async function POST(request: NextRequest) {
       testMessage: 'Configuración guardada correctamente',
     };
 
-    DB.platformSettings.storage = storageConfig;
-    DB.save();
+    // Upsert organization settings (assuming id=1 always exists or we create it)
+    // Actually schema says default(1), so we can just update where id=1.
+    // Use .insert().onConflictDoUpdate() if unsure, or just update since we expect seed.
+    // Let's safe bet on update, if fail, insert.
+
+    const result = await db.update(organizationSettings)
+      .set({ storageConfig })
+      .where(eq(organizationSettings.id, 1))
+      .returning();
+
+    if (result.length === 0) {
+      // Fallback if not exists (should have been seeded though)
+      await db.insert(organizationSettings).values({
+        id: 1,
+        name: "My Organization",
+        storageConfig
+      });
+    }
 
     return NextResponse.json({
       success: true,
@@ -87,14 +159,17 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  // Remove tenantId logic
-  if (DB.platformSettings.storage) {
-    DB.platformSettings.storage = undefined;
-    DB.save();
-  }
+  try {
+    await db.update(organizationSettings)
+      .set({ storageConfig: null })
+      .where(eq(organizationSettings.id, 1));
 
-  return NextResponse.json({
-    success: true,
-    message: 'Configuración de almacenamiento eliminada',
-  });
+    return NextResponse.json({
+      success: true,
+      message: 'Configuración de almacenamiento eliminada',
+    });
+  } catch (error) {
+    console.error('Error deleting storage config:', error);
+    return NextResponse.json({ error: 'Error deleting configuration' }, { status: 500 });
+  }
 }
