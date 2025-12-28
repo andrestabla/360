@@ -46,6 +46,7 @@ export default function AdminSettingsPage() {
         primaryColor: "#3b82f6",
         accentColor: "#1d4ed8",
         logoUrl: "",
+        faviconUrl: "",
         supportEmail: "soporte@maturity360.com",
         timezone: "America/Bogota",
         dateFormat: "DD/MM/YYYY",
@@ -74,6 +75,7 @@ export default function AdminSettingsPage() {
     });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const faviconInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -83,6 +85,20 @@ export default function AdminSettingsPage() {
                 setFormData((prev: any) => ({
                     ...prev,
                     loginBackgroundImage: reader.result as string
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData((prev: any) => ({
+                    ...prev,
+                    faviconUrl: reader.result as string
                 }));
             };
             reader.readAsDataURL(file);
@@ -103,6 +119,7 @@ export default function AdminSettingsPage() {
                 loginBackgroundColor: platformSettings.branding?.loginBackgroundColor || "#ffffff",
                 loginBackgroundImage: platformSettings.branding?.loginBackgroundImage || "/images/auth/login-bg-3.jpg",
                 logoUrl: platformSettings.branding?.logoUrl || "",
+                faviconUrl: platformSettings.branding?.faviconUrl || "",
             }));
         }
         setIsLoading(true);
@@ -143,7 +160,8 @@ export default function AdminSettingsPage() {
                 primaryColor: formData.primaryColor,
                 loginBackgroundColor: formData.loginBackgroundColor,
                 loginBackgroundImage: formData.loginBackgroundImage,
-                logoUrl: formData.logoUrl
+                logoUrl: formData.logoUrl,
+                faviconUrl: formData.faviconUrl
             });
 
             if (result.success) {
@@ -523,6 +541,39 @@ export default function AdminSettingsPage() {
                                                 placeholder="https://..."
                                                 className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                                             />
+                                        </div>
+
+                                        <div className="mt-4">
+                                            <h3 className="text-sm font-bold uppercase text-slate-500 mb-2">Favicon</h3>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    name="faviconUrl"
+                                                    value={formData.faviconUrl}
+                                                    onChange={handleChange}
+                                                    placeholder="URL o subir imagen (.ico, .png)"
+                                                    className="flex-1 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                                />
+                                                <input
+                                                    type="file"
+                                                    ref={faviconInputRef}
+                                                    className="hidden"
+                                                    accept="image/x-icon,image/png,image/jpeg"
+                                                    onChange={handleFaviconUpload}
+                                                />
+                                                <button
+                                                    onClick={() => faviconInputRef.current?.click()}
+                                                    className="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-slate-200 transition-colors"
+                                                >
+                                                    <CloudArrowUp className="w-4 h-4" />
+                                                    Subir
+                                                </button>
+                                                {formData.faviconUrl && (
+                                                    <div className="w-10 h-10 border border-slate-200 rounded flex items-center justify-center bg-white">
+                                                        <img src={formData.faviconUrl} alt="Favicon" className="w-6 h-6 object-contain" />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

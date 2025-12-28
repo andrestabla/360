@@ -441,6 +441,17 @@ export interface PlatformSettings {
   };
   storage?: TenantStorageConfig;
   roleTemplates?: Record<number, string[]>;
+  branding?: {
+    appTitle?: string;
+    portalDescription?: string;
+    supportMessage?: string;
+    primaryColor?: string;
+    loginBackgroundColor?: string;
+    loginBackgroundImage?: string;
+    logoUrl?: string;
+    faviconUrl?: string;
+    [key: string]: any;
+  };
 }
 
 export interface Attachment {
