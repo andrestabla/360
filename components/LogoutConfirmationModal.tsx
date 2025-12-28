@@ -33,7 +33,10 @@ export default function LogoutConfirmationModal({ isOpen, onClose }: LogoutConfi
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn" onClick={onClose}>
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn"
+            onClick={isLoggingOut ? undefined : onClose}
+        >
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 transform transition-all scale-100 animate-scaleIn" onClick={e => e.stopPropagation()}>
                 <div className="text-center">
                     <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
