@@ -30,28 +30,18 @@ export const authConfig = {
                 // @ts-ignore
                 session.user.role = token.role;
             }
-            // Ensure email/name persist if available
-            if (token.email && session.user) session.user.email = token.email;
-            if (token.name && session.user) session.user.name = token.name;
+            // Data will be populated via /api/auth/verify in the UIContext
 
             return session;
         },
         async jwt({ token, user, trigger, session }) {
-            // Handle session updates (e.g. role change) but ONLY merge safe fields
-            if (trigger === "update" && session?.user) {
-                // explicit list of allowed fields to update in the token
-                if (session.user.role) token.role = session.user.role;
-                if (session.user.name) token.name = session.user.name;
-                // DO NOT merge full object: return { ...token, ...session.user };
-            }
-
+            // STRICT MINIMALIZATION
+            // We ignore updates and extra fields to ensure the token effectively never grows.
+            // Any user data update must be fetched via /api/auth/verify
             if (user) {
                 token.sub = user.id;
-                token.email = user.email;
-                token.name = user.name;
                 // @ts-ignore
                 token.role = user.role;
-                // Note: We deliberately exclude 'image'/'picture' if it might be a large base64 string
             }
             return token;
         }
