@@ -117,11 +117,22 @@ export default function ImportUnitsModal({ isOpen, onClose, onImport }: ImportUn
     };
 
     const handleDownloadTemplate = () => {
-        // Download the example CSV
+        const csvContent = "id,name,type,depth,parentId,parentName,responsibleEmail,description\n" +
+            "DIR,Dirección General,UNIT,0,,,admin@demo.com,Dirección principal de la organización\n" +
+            "OPS,Gerencia de Operaciones,UNIT,1,DIR,Dirección General,ops@demo.com,Área encargada de procesos operativos\n" +
+            "FIN,Administración y Finanzas,UNIT,1,DIR,Dirección General,fin@demo.com,Gestión financiera y administrativa\n" +
+            "CONT,Contabilidad,UNIT,2,FIN,Administración y Finanzas,cont@demo.com,Departamento de contabilidad\n" +
+            "PROC-01,Proceso de Compras,PROCESS,,OPS,Gerencia de Operaciones,compras@demo.com,Flujo estandarizado de adquisiciones";
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = '/templates/estructura-organizacional-ejemplo.csv';
-        link.download = 'estructura-organizacional-ejemplo.csv';
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'estructura-organizacional-ejemplo.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
     };
 
     return (
