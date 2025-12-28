@@ -18,11 +18,13 @@ import {
     Lightning,
     PaperPlaneRight,
     MagicWand,
-    CloudArrowUp
+    CloudArrowUp,
+    X
 } from "@phosphor-icons/react";
 import EmailConfigWizard from "@/components/email/EmailConfigWizard";
 import { updateOrganizationBranding } from '@/app/lib/actions';
 import StorageConfigPanel from "@/components/storage/StorageConfigPanel";
+import LoginForm from "@/app/login/LoginForm";
 
 export default function AdminSettingsPage() {
     const { isSuperAdmin, currentUser, updatePlatformSettings, platformSettings } = useApp();
@@ -35,6 +37,7 @@ export default function AdminSettingsPage() {
     const [isTesting, setIsTesting] = useState(false);
     const [testEmail, setTestEmail] = useState("");
     const [showEmailWizard, setShowEmailWizard] = useState(false);
+    const [showPreviewConfig, setShowPreviewConfig] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState<any>({
@@ -99,6 +102,7 @@ export default function AdminSettingsPage() {
                 primaryColor: platformSettings.branding?.primaryColor || "#3b82f6",
                 loginBackgroundColor: platformSettings.branding?.loginBackgroundColor || "#ffffff",
                 loginBackgroundImage: platformSettings.branding?.loginBackgroundImage || "/images/auth/login-bg-3.jpg",
+                logoUrl: platformSettings.branding?.logoUrl || "",
             }));
         }
         setIsLoading(true);
@@ -345,7 +349,10 @@ export default function AdminSettingsPage() {
                                                         <Desktop className="text-blue-600" weight="fill" />
                                                         PREVISUALIZACIÓN DEL PORTAL
                                                     </h4>
-                                                    <button className="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-slate-800 transition-colors">
+                                                    <button
+                                                        onClick={() => setShowPreviewConfig(true)}
+                                                        className="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-slate-800 transition-colors"
+                                                    >
                                                         <Desktop />
                                                         Abrir Vista Previa Completa
                                                     </button>
@@ -839,11 +846,28 @@ export default function AdminSettingsPage() {
                                     </div>
                                 </div>
                             )}
-
                         </div>
                     )}
                 </div>
             </div>
+
+            {/* Preview Modal */}
+            {showPreviewConfig && (
+                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="relative w-full max-w-6xl h-[90vh] bg-transparent rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center">
+                        <button
+                            onClick={() => setShowPreviewConfig(false)}
+                            className="absolute top-4 right-4 z-[110] bg-white text-slate-900 rounded-full p-2 hover:bg-slate-200 transition-colors shadow-lg"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                        <div className="w-full h-full bg-slate-100 rounded-2xl overflow-hidden">
+                            <LoginForm branding={formData} mode="preview" />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showEmailWizard && (
                 <EmailConfigWizard
                     isOpen={showEmailWizard}
@@ -852,9 +876,10 @@ export default function AdminSettingsPage() {
                         setFormData((prev: any) => ({
                             ...prev,
                             ...config,
-                            smtpFrom: config.fromEmail, // Map wizard fromEmail to form smtpFrom
+                            smtpFrom: config.fromEmail,
                         }));
                         setMessage({ type: 'success', text: 'Configuración aplicada desde el asistente. No olvides guardar.' });
+                        setShowEmailWizard(false);
                     }}
                 />
             )}

@@ -34,7 +34,9 @@ function LoginButton({ primaryColor }: { primaryColor?: string }) {
     );
 }
 
-export default function LoginForm({ branding }: { branding?: any }) {
+
+export default function LoginForm({ branding, mode = 'page' }: { branding?: any, mode?: 'page' | 'preview' }) {
+
     // @ts-ignore
     const [errorMessage, dispatch] = useActionState(authenticate, undefined);
     const [showPassword, setShowPassword] = useState(false);
@@ -64,8 +66,12 @@ export default function LoginForm({ branding }: { branding?: any }) {
         ? { backgroundImage: `url(${loginBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
         : { backgroundColor: loginColor };
 
+
+    const isPreview = mode === 'preview';
+
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-slate-50">
+        <div className={`${isPreview ? 'h-full w-full rounded-xl' : 'min-h-screen'} flex flex-col items-center justify-center relative overflow-hidden bg-slate-50`}>
+
             {/* Dynamic Background Overlay */}
             <div className={`absolute inset-0 z-0 ${loginBg ? 'opacity-40' : 'opacity-100'}`} style={bgStyle}>
                 {/* Only apply pattern if NO image is set, or adds overly if image IS set? 
@@ -93,8 +99,10 @@ export default function LoginForm({ branding }: { branding?: any }) {
                     <p className="text-slate-500 text-sm mt-2 leading-relaxed">{portalDescription}</p>
                 </div>
 
-                <div className="px-8 pb-8">
-                    <form action={dispatch} className="space-y-4">
+
+                <div className={`px-8 pb-8 ${isPreview ? 'pointer-events-none select-none' : ''}`}>
+                    <form action={isPreview ? undefined : dispatch} className="space-y-4">
+
                         <div>
                             <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Email</label>
                             <div className="relative group">

@@ -3,6 +3,8 @@ import LoginForm from './LoginForm';
 import { getOrganizationSettings } from '@/app/lib/actions';
 import { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
     title: 'Login | Maturity 360',
     description: 'Portal de acceso seguro',
