@@ -198,7 +198,18 @@ export default function ProfilePage() {
                                 src={formData.avatar}
                                 alt="Avatar"
                                 className="w-full h-full rounded-full object-cover"
-                                onError={(e) => console.error("Error loading avatar image:", formData.avatar, e)}
+                                onError={(e) => {
+                                    const target = e.currentTarget;
+                                    // Fallback to proxy if direct URL fails and it's an avatar path
+                                    if (target.src.includes('/avatars/') && !target.src.includes('/api/storage/')) {
+                                        console.log('Falling back to storage proxy for avatar');
+                                        target.src = '/api/storage' + target.src.substring(target.src.indexOf('/avatars/'));
+                                    } else {
+                                        console.error("Error loading avatar image:", formData.avatar);
+                                        // Optional: Set a placeholder if proxy also fails
+                                        // target.src = '/placeholder-avatar.png'; 
+                                    }
+                                }}
                             />
                         ) : (
                             <div className="w-full h-full rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-4xl font-bold text-slate-400 uppercase">

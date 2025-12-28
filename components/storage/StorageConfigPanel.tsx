@@ -393,7 +393,7 @@ export default function StorageConfigPanel() {
                                 className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                                 placeholder="https://pub-xxxxxxxx.r2.dev"
                             />
-                            <p className="text-xs text-slate-500 mt-1">URL pública para acceder a los archivos (ej. R2.dev o dominio personalizado). Necesario para avatares.</p>
+                            <p className="text-xs text-slate-500 mt-1">Opcional. DEJE VACÍO para usar el proxy seguro interno. Solo úselo si ya configuró un dominio personalizado (CNAME).</p>
                         </div>
                     </div>
                 );
@@ -456,7 +456,7 @@ export default function StorageConfigPanel() {
                                 className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                                 placeholder="https://pub-xxxxxxxx.r2.dev"
                             />
-                            <p className="text-xs text-slate-500 mt-1">URL pública para acceder a los archivos (ej. R2.dev o dominio personalizado). Necesario para avatares.</p>
+                            <p className="text-xs text-slate-500 mt-1">Opcional. DEJE VACÍO para usar el proxy seguro interno. Solo úselo si ya configuró un dominio personalizado (CNAME).</p>
                         </div>
                     </div>
                 );
