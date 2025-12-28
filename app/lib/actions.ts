@@ -117,8 +117,8 @@ export async function updateProfile(formData: FormData) {
 
         try {
             const storageService = getStorageService();
-            // We pass session.user.id or a tenant ID. For now 'default' as the service config is global in the mock DB
-            const uploadResult = await storageService.upload('default', avatarUrl, 'avatars');
+            // Refactored: No tenantId passed anymore
+            const uploadResult = await storageService.upload(avatarUrl, 'avatars');
 
             if (uploadResult.success && uploadResult.url) {
                 finalAvatarUrl = uploadResult.url;
@@ -158,7 +158,8 @@ export async function updateProfile(formData: FormData) {
 
         revalidatePath('/dashboard/profile');
         revalidatePath('/dashboard'); // Para que el sidebar/topbar se actualicen
-        return { success: true };
+        console.log('[updateProfile] Success. Final Avatar URL:', updateData.avatar);
+        return { success: true, avatarUrl: finalAvatarUrl };
     } catch (error) {
         console.error("Error updating profile:", error);
         return { error: "Error al guardar cambios" };
@@ -262,18 +263,17 @@ export async function updatePassword(
     }
 }
 
-// --- Actualizar Apariencia (Tenant) ---
-export async function updateTenantBranding(settings: any) {
+// --- Actualizar Apariencia (Organization) ---
+export async function updateOrganizationBranding(settings: any) {
     const session = await auth();
-    // Verificación de rol simplificada para demo
+    // Simplified role check
     const role = (session?.user as any)?.role;
     if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN') {
         // return { error: "No tienes permisos" };
     }
 
     try {
-        // En este esquema, la configuración visual vive en el campo JSON 'branding'
-        // Primero obtenemos la configuración actual para hacer merge
+        // Config lives in 'branding' field of organization_settings (singleton id=1)
         const current = await db.select().from(organizationSettings).where(eq(organizationSettings.id, 1)).limit(1);
         const currentBranding = (current[0]?.branding as Record<string, any>) || {};
 

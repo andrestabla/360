@@ -26,11 +26,11 @@ export interface StorageFile {
 }
 
 export interface StorageService {
-  upload: (tenantId: string, file: File, path?: string) => Promise<{ success: boolean; url?: string; error?: string }>;
-  download: (tenantId: string, fileId: string) => Promise<{ success: boolean; url?: string; error?: string }>;
-  delete: (tenantId: string, fileId: string) => Promise<{ success: boolean; error?: string }>;
-  list: (tenantId?: string, path?: string) => Promise<{ success: boolean; files?: StorageFile[]; error?: string }>;
-  getStats: (tenantId?: string) => Promise<{ success: boolean; stats?: StorageStats; error?: string }>;
+  upload: (file: File, path?: string) => Promise<{ success: boolean; url?: string; error?: string }>;
+  download: (fileId: string) => Promise<{ success: boolean; url?: string; error?: string }>;
+  delete: (fileId: string) => Promise<{ success: boolean; error?: string }>;
+  list: (path?: string) => Promise<{ success: boolean; files?: StorageFile[]; error?: string }>;
+  getStats: () => Promise<{ success: boolean; stats?: StorageStats; error?: string }>;
 }
 
 function createS3Client(config: Record<string, any>) {
@@ -78,7 +78,7 @@ async function getStorageConfig() {
 export function getStorageService(): StorageService {
 
   return {
-    upload: async (tenantId: string, file: File, path?: string) => {
+    upload: async (file: File, path?: string) => {
       const config = await getStorageConfig();
 
       if (!config?.enabled || (config.provider !== 'S3' && config.provider !== 'R2')) {
@@ -88,7 +88,7 @@ export function getStorageService(): StorageService {
       try {
         const storageConfig = config.config as any;
         const client = createS3Client(storageConfig);
-        const fileId = `file-${Date.now()}-${file.name}`;
+        const fileId = `file-${Date.now()}-${file.name.replace(/\s+/g, '-')}`; // Sanitize filename
         const key = path ? `${path}/${fileId}` : fileId;
 
         const buffer = Buffer.from(await file.arrayBuffer());
@@ -100,16 +100,16 @@ export function getStorageService(): StorageService {
           ContentType: file.type,
         }));
 
-
-        // For R2/S3, we might return a presigned URL or a public URL if configured
+        // For R2/S3, return a public URL if configured
         let url = '';
         if (storageConfig.publicUrl) {
           // Remove trailing slash if present
           const baseUrl = storageConfig.publicUrl.replace(/\/$/, '');
+          // Ensure key is properly encoded/joined?
+          // Usually key is safe if sanitized.
           url = `${baseUrl}/${key}`;
         } else {
           // Fallback to endpoint (might not work for private buckets, but best effort)
-          // Ensure endpoint doesn't end with slash
           const endpoint = storageConfig.endpoint?.replace(/\/$/, '') || '';
           url = `${endpoint}/${storageConfig.bucket}/${key}`;
         }
@@ -121,7 +121,7 @@ export function getStorageService(): StorageService {
       }
     },
 
-    download: async (tenantId: string, fileId: string) => {
+    download: async (fileId: string) => {
       const config = await getStorageConfig();
       if (!config?.enabled || (config.provider !== 'S3' && config.provider !== 'R2')) {
         return { success: false, error: 'Almacenamiento no configurado' };
@@ -143,7 +143,7 @@ export function getStorageService(): StorageService {
       }
     },
 
-    delete: async (tenantId: string, fileId: string) => {
+    delete: async (fileId: string) => {
       const config = await getStorageConfig();
       if (!config?.enabled || (config.provider !== 'S3' && config.provider !== 'R2')) {
         return { success: false, error: 'Almacenamiento no configurado' };
@@ -163,7 +163,7 @@ export function getStorageService(): StorageService {
       }
     },
 
-    list: async (tenantId?: string, path?: string) => {
+    list: async (path?: string) => {
       const config = await getStorageConfig();
       if (!config?.enabled || (config.provider !== 'S3' && config.provider !== 'R2')) {
         // Return empty or mock if needed, but for now empty
@@ -195,7 +195,7 @@ export function getStorageService(): StorageService {
       }
     },
 
-    getStats: async (tenantId?: string) => {
+    getStats: async () => {
       // Mock stats for now
       return {
         success: true, stats: {
@@ -210,7 +210,7 @@ export function getStorageService(): StorageService {
   };
 }
 
-export async function testStorageConnection(config: TenantStorageConfig): Promise<{
+export async function testStorageConnection(config: any): Promise<{
   success: boolean;
   message: string;
 }> {

@@ -21,7 +21,7 @@ import {
     CloudArrowUp
 } from "@phosphor-icons/react";
 import EmailConfigWizard from "@/components/email/EmailConfigWizard";
-import { updateTenantBranding } from "@/app/lib/actions";
+import { updateOrganizationBranding } from '@/app/lib/actions';
 import StorageConfigPanel from "@/components/storage/StorageConfigPanel";
 
 export default function AdminSettingsPage() {
@@ -132,7 +132,7 @@ export default function AdminSettingsPage() {
 
         // Server Action
         startTransition(async () => {
-            const result = await updateTenantBranding({
+            const result = await updateOrganizationBranding({
                 appTitle: formData.appTitle,
                 portalDescription: formData.portalDescription,
                 supportMessage: formData.supportMessage,
