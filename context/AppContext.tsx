@@ -9,6 +9,12 @@ import {
     Notification
 } from '@/lib/data';
 import { logout as logoutAction } from '@/app/lib/actions';
+import {
+    getUnitsAction,
+    createUnitAction,
+    updateUnitAction,
+    deleteUnitAction
+} from '@/app/lib/unitActions';
 // Theme handled via CSS/Tailwind directly
 
 
@@ -100,6 +106,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [dataVersion, setDataVersion] = useState(0);
+    const [unitsData, setUnitsData] = useState<import("@/lib/data").Unit[]>([]);
 
     // UI State
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -113,7 +120,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const refreshUnreadCount = useCallback(async () => {
         if (!currentUser) return;
         try {
-            // Dynamically import to avoid circular dep if any, or just direct import
             const { ChatService } = await import('@/lib/services/chatService');
             const convs = await ChatService.getConversations(currentUser.id);
             if (convs.success) {
@@ -125,9 +131,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     }, [currentUser]);
 
+    const loadUnits = useCallback(async () => {
+        const res = await getUnitsAction();
+        if (res.success && res.data) {
+            const mapped: import("@/lib/data").Unit[] = res.data.map((u: any) => ({
+                id: u.id,
+                name: u.name,
+                code: u.code,
+                parentId: u.parentId || undefined,
+                ownerId: u.managerId || undefined,
+                description: u.description || undefined,
+                type: (u.type || 'UNIT') as any,
+                depth: u.level || 0,
+                color: u.color || undefined,
+                members: (u.members as string[]) || []
+            }));
+            setUnitsData(mapped);
+            // Keep DB object in sync for legacy compatibility
+            DB.units = mapped as any;
+        }
+    }, []);
+
     useEffect(() => {
         refreshUnreadCount();
-    }, [refreshUnreadCount]);
+        loadUnits();
+    }, [refreshUnreadCount, loadUnits]);
 
     // Initialize
     useEffect(() => {
@@ -344,32 +372,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         refreshData();
     };
 
-    const createUnit = (unit: Partial<import("@/lib/data").Unit>) => {
-        const newUnit: import("@/lib/data").Unit = {
-            id: Date.now().toString(),
-            name: '',
-            type: 'UNIT',
-            depth: 0,
-            members: [],
-            ...unit
-        } as import("@/lib/data").Unit;
-        DB.units.push(newUnit);
-        refreshData();
-    };
-
-    const updateUnit = (id: string, updates: Partial<import("@/lib/data").Unit>) => {
-        const index = DB.units.findIndex(u => u.id === id);
-        if (index !== -1) {
-            DB.units[index] = { ...DB.units[index], ...updates };
+    const createUnit = async (unit: Partial<import("@/lib/data").Unit>) => {
+        const dbData = {
+            id: unit.id,
+            name: unit.name,
+            code: unit.code,
+            parentId: unit.parentId,
+            managerId: unit.ownerId,
+            description: unit.description,
+            type: unit.type,
+            level: unit.depth,
+            color: unit.color,
+            members: unit.members
+        };
+        const res = await createUnitAction(dbData);
+        if (res.success) {
+            await loadUnits();
             refreshData();
+        } else {
+            addNotification({ title: 'Error', message: res.error || 'No se pudo crear la unidad', type: 'error' });
         }
     };
 
-    const deleteUnit = (id: string) => {
-        const index = DB.units.findIndex(u => u.id === id);
-        if (index !== -1) {
-            DB.units.splice(index, 1);
+    const updateUnit = async (id: string, updates: Partial<import("@/lib/data").Unit>) => {
+        const dbUpdates: any = {};
+        if (updates.name !== undefined) dbUpdates.name = updates.name;
+        if (updates.code !== undefined) dbUpdates.code = updates.code;
+        if (updates.parentId !== undefined) dbUpdates.parentId = updates.parentId;
+        if (updates.ownerId !== undefined) dbUpdates.managerId = updates.ownerId;
+        if (updates.description !== undefined) dbUpdates.description = updates.description;
+        if (updates.type !== undefined) dbUpdates.type = updates.type;
+        if (updates.depth !== undefined) dbUpdates.level = updates.depth;
+        if (updates.color !== undefined) dbUpdates.color = updates.color;
+        if (updates.members !== undefined) dbUpdates.members = updates.members;
+
+        const res = await updateUnitAction(id, dbUpdates);
+        if (res.success) {
+            await loadUnits();
             refreshData();
+        } else {
+            addNotification({ title: 'Error', message: res.error || 'No se pudo actualizar la unidad', type: 'error' });
+        }
+    };
+
+    const deleteUnit = async (id: string) => {
+        const res = await deleteUnitAction(id);
+        if (res.success) {
+            await loadUnits();
+            refreshData();
+        } else {
+            addNotification({ title: 'Error', message: res.error || 'No se pudo eliminar la unidad', type: 'error' });
         }
     };
 

@@ -164,9 +164,15 @@ export const authenticators = pgTable(
 export const units = pgTable("units", {
   id: varchar("id", { length: 255 }).primaryKey(),
   name: text("name").notNull(),
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  path: text("path"),
   parentId: varchar("parent_id", { length: 255 }),
   managerId: varchar("manager_id", { length: 255 }),
+  description: text("description"),
+  type: varchar("type", { length: 50 }).default("UNIT"),
   level: integer("level").default(0),
+  color: varchar("color", { length: 50 }),
+  members: json("members").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
