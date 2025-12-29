@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { hashPassword, generateSecurePassword } from '@/lib/utils/passwordUtils';
 import { generateWelcomeEmail } from '@/lib/email/templates/welcomeEmail';
-import { sendEmail } from '@/lib/services/emailService';
+import { sendEmail } from '@/lib/services/tenantEmailService';
 
 export async function getUsersAction() {
     try {
@@ -69,7 +69,7 @@ export async function createUserAction(userData: any, sendInvitation: boolean = 
                 await sendEmail({
                     to: newUser.email,
                     subject: emailContent.subject,
-                    body: emailContent.html, // Use HTML version as body
+                    html: emailContent.html,
                 });
             } catch (emailError) {
                 console.error('Error sending welcome email:', emailError);
@@ -158,7 +158,7 @@ export async function sendWelcomeEmailAction(userId: string, temporaryPassword: 
         await sendEmail({
             to: user.email || '',
             subject: emailContent.subject,
-            body: emailContent.html, // Use HTML version as body
+            html: emailContent.html,
         });
 
         // Update invite timestamps
