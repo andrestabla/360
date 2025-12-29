@@ -7,7 +7,7 @@ import { TreeStructure, Folder, FolderOpen, Plus, Pencil, Trash, UserCircle, Che
 import ImportUnitsModal from '@/components/ImportUnitsModal';
 import AdminGuide from '@/components/AdminGuide';
 import { unitsGuide } from '@/lib/adminGuides';
-import { getEligibleUsersAction } from '@/app/lib/unitActions';
+import { getEligibleUsersAction, getUnitsAction } from '@/app/lib/unitActions';
 
 export default function UnitsPage() {
     const { currentUser, isSuperAdmin, createUnit, updateUnit, deleteUnit, version: dataVersion } = useApp();
@@ -16,6 +16,8 @@ export default function UnitsPage() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isLoadingUsers, setIsLoadingUsers] = useState(false);
     const [eligibleUsers, setEligibleUsers] = useState<User[]>([]);
+    const [units, setUnits] = useState<Unit[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const [formData, setFormData] = useState<Partial<Unit>>({
         name: '',
@@ -27,17 +29,40 @@ export default function UnitsPage() {
         type: 'UNIT'
     });
 
-    const handleImport = (units: Partial<Unit>[]) => {
-        // Import all units
-        units.forEach(unit => {
-            createUnit(unit);
-        });
+    const handleImport = async (importedUnits: Partial<Unit>[]) => {
+        setIsLoading(true);
+        // Sequential import to ensure parent dependencies are met
+        for (const unit of importedUnits) {
+            await createUnit(unit);
+        }
+        await loadUnitsLocal();
+        setIsLoading(false);
     };
 
-    // Get all units directly from DB object which is synced by AppContext
+    const loadUnitsLocal = async () => {
+        setIsLoading(true);
+        try {
+            const res = await getUnitsAction();
+            if (res.success && res.data) {
+                const mappedUnits = res.data.map((u: any) => ({
+                    ...u,
+                    depth: u.level || 0, // Map DB 'level' to UI 'depth'
+                    type: u.type as any,
+                    ownerId: u.managerId // Map managerId to ownerId if needed, or keep separate
+                }));
+                setUnits(mappedUnits as Unit[]);
+            }
+        } catch (error) {
+            console.error('Failed to load units', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Use local units state instead of DB.units
     const tenantUnits = useMemo(() => {
-        return DB.units;
-    }, [dataVersion]);
+        return units;
+    }, [units]);
 
     // Build hierarchy
     const rootUnits = useMemo(() => tenantUnits.filter(u => !u.parentId || u.parentId === 'ROOT' || u.depth === 0), [tenantUnits]);
@@ -66,6 +91,7 @@ export default function UnitsPage() {
 
         if (isAdmin) {
             fetchUsers();
+            loadUnitsLocal();
         }
     }, [isAdmin]);
 
