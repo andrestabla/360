@@ -197,28 +197,28 @@ export default function UsersPage() {
         } else {
             // Create
             const result = await createUserAction(formData, sendInvitation);
-            if (result.success) {
+            const anyResult = result as any; // Cast to any to avoid persistent TS build errors with union types
+
+            if (anyResult.success) {
                 // Check if email was requested but failed
-                // Cast to any to avoid TS error: Property 'emailSent' does not exist on type...
-                const successResult = result as any;
-                if (sendInvitation && successResult.emailSent === false) {
+                if (sendInvitation && anyResult.emailSent === false) {
                     addNotification({
                         title: 'Usuario creado con advertencia',
-                        message: `Usuario creado pero el email falló: ${successResult.emailError || 'Error desconocido'}`,
+                        message: `Usuario creado pero el email falló: ${anyResult.emailError || 'Error desconocido'}`,
                         type: 'warning'
                     });
                 }
 
                 setCreatedUser({
                     email: formData.email || '',
-                    password: successResult.temporaryPassword,
-                    emailSent: successResult.emailSent !== false // true if sent or not requested
+                    password: anyResult.temporaryPassword,
+                    emailSent: anyResult.emailSent !== false
                 });
                 setIsSuccessModalOpen(true);
                 await loadUsers();
                 setIsModalOpen(false);
             } else {
-                addNotification({ title: 'Error', message: result.error || 'No se pudo crear el usuario', type: 'error' });
+                addNotification({ title: 'Error', message: anyResult.error || 'No se pudo crear el usuario', type: 'error' });
             }
         }
         setLoading(false);
