@@ -66,11 +66,11 @@ export default function UsersPage() {
             const convertedUsers: User[] = result.data.map((dbUser: any) => ({
                 ...dbUser,
                 email: dbUser.email || undefined,
-                inviteSentAt: dbUser.inviteSentAt ? dbUser.inviteSentAt.toISOString() : undefined,
-                inviteExpiresAt: dbUser.inviteExpiresAt ? dbUser.inviteExpiresAt.toISOString() : undefined,
-                emailVerified: dbUser.emailVerified ? dbUser.emailVerified.toISOString() : undefined,
-                createdAt: dbUser.createdAt ? dbUser.createdAt.toISOString() : undefined,
-                updatedAt: dbUser.updatedAt ? dbUser.updatedAt.toISOString() : undefined,
+                inviteSentAt: dbUser.inviteSentAt,
+                inviteExpiresAt: dbUser.inviteExpiresAt,
+                emailVerified: dbUser.emailVerified,
+                createdAt: dbUser.createdAt,
+                updatedAt: dbUser.updatedAt,
             }));
             setUsers(convertedUsers);
         } else {
