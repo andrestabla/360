@@ -28,7 +28,12 @@ export default function ConversationList() {
         setLoading(true);
         try {
             const res = await ChatService.getConversations(currentUser.id);
-            const enriched = res.data.map(c => c.id === activeId ? { ...c, unreadCount: 0 } : c);
+            const enriched = res.data.map(c => ({
+                ...c,
+                participants: c.participants || [],
+                title: c.title || null,
+                unreadCount: c.id === activeId ? 0 : c.unreadCount
+            })) as Conversation[];
             setConversations(enriched);
         } catch (e) {
             console.error(e);
@@ -47,7 +52,12 @@ export default function ConversationList() {
             // For prototype, simple SWR-like refresh is fine
             ChatService.getConversations(currentUser!.id).then(res => {
                 setConversations(prev => {
-                    return res.data.map(c => c.id === activeId ? { ...c, unreadCount: 0 } : c);
+                    return res.data.map(c => ({
+                        ...c,
+                        participants: c.participants || [],
+                        title: c.title || null,
+                        unreadCount: c.id === activeId ? 0 : c.unreadCount
+                    })) as Conversation[];
                 });
             });
         }, 5000);
@@ -208,13 +218,13 @@ export default function ConversationList() {
                                     {conv.title}
                                 </h4>
                                 <span className={`text-[10px] font-medium ${conv.unreadCount && conv.unreadCount > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
-                                    {formatTime(conv.last_message_at)}
+                                    {formatTime(conv.lastMessageAt as string)}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <p className={`text-xs truncate max-w-[85%] ${conv.unreadCount && conv.unreadCount > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
                                     {conv.type === 'dm' && activeId !== conv.id ? 'Tu: ' : ''}{/* Simple logic, needs improvement based on sender */}
-                                    {conv.lastMessagePreview}
+                                    {conv.lastMessage}
                                 </p>
                                 {conv.unreadCount != undefined && conv.unreadCount > 0 && (
                                     <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm shadow-blue-200">
