@@ -211,8 +211,8 @@ export default function UsersPage() {
 
                 setCreatedUser({
                     email: formData.email || '',
-                    password: result.temporaryPassword,
-                    emailSent: (result as any).emailSent !== false // true if sent or not requested
+                    password: successResult.temporaryPassword,
+                    emailSent: successResult.emailSent !== false // true if sent or not requested
                 });
                 setIsSuccessModalOpen(true);
                 await loadUsers();
