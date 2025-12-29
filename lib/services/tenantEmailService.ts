@@ -16,7 +16,7 @@ function getEncryptionKey(): Buffer {
   return crypto.scryptSync(keyString, 'maturity360-salt', 32);
 }
 
-function encryptPassword(password: string): string {
+export function encryptPassword(password: string): string {
   try {
     const key = getEncryptionKey();
     const iv = crypto.randomBytes(IV_LENGTH);

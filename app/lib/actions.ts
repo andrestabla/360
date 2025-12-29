@@ -474,8 +474,8 @@ export async function trackUserRecent(resourceId: string, resourceType: 'PROJECT
     }
 }
 
-// --- EMAIL ACTIONS ---
 import nodemailer from 'nodemailer';
+import { encryptPassword } from '@/lib/services/tenantEmailService';
 
 export async function getEmailSettings() {
     try {
@@ -496,6 +496,11 @@ export async function updateEmailSettings(settings: any) {
 
     try {
         const current = await db.select().from(emailSettings).where(eq(emailSettings.id, 1)).limit(1);
+
+        if (settings.smtpPassword) {
+            settings.smtpPasswordEncrypted = encryptPassword(settings.smtpPassword);
+            delete settings.smtpPassword; // Remove raw password
+        }
 
         const dataToUpdate = {
             ...settings,
