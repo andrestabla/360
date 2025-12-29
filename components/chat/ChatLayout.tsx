@@ -1,7 +1,7 @@
 'use client';
 import { ReactNode, useEffect, useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { ChatService } from '@/lib/services/chatService';
+import { checkNewMessagesAction } from '@/app/lib/chatActions';
 import { X, BellRinging } from '@phosphor-icons/react';
 import { Message } from '@/types/chat';
 
@@ -22,7 +22,7 @@ export default function ChatLayout({ sidebar, children }: { sidebar: ReactNode; 
                 // Pass '' or 'global' or 'platform' as tenantId if the service requires it strictly string
                 // But generally we should update ChatService.checkNewMessages signature too. 
                 // Assuming we'll fix service next, or pass a placeholder.
-                const newMsgs = await ChatService.checkNewMessages(currentUser.id, lastCheck);
+                const newMsgs = await checkNewMessagesAction(currentUser.id, lastCheck);
                 if (newMsgs.length > 0) {
                     setNotifications(prev => [...prev, ...newMsgs]);
                 }
@@ -57,7 +57,7 @@ export default function ChatLayout({ sidebar, children }: { sidebar: ReactNode; 
                         </div>
                         <div className="flex-1 min-w-0">
                             <h4 className="font-bold text-xs text-gray-800">{n.senderName || 'Nuevo mensaje'}</h4>
-                            <p className="text-xs text-gray-500 truncate mt-0.5">{n.body_type === 'text' ? n.body : `📎 Archivo adjunto`}</p>
+                            <p className="text-xs text-gray-500 truncate mt-0.5">{n.bodyType === 'text' ? n.body : `📎 Archivo adjunto`}</p>
                         </div>
                         <button onClick={() => removeNotif(n.id)} className="text-gray-400 hover:text-gray-600">
                             <X size={14} />

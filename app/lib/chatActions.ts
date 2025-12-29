@@ -133,3 +133,15 @@ export async function uploadFileAction(formData: FormData) {
         created_at: new Date().toISOString()
     };
 }
+
+export async function checkNewMessagesAction(userId: string, since: string) {
+    const session = await auth();
+    // Allow check if authorized as user
+    if (!session?.user?.id || session.user.id !== userId) return [];
+
+    // Validate since is a valid date string
+    // if (!Date.parse(since)) return [];
+
+    const res = await ChatService.checkNewMessages(userId, since);
+    return serialize(res);
+}
