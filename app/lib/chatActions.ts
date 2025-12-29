@@ -1,10 +1,9 @@
 'use server';
 
-import { ChatService, ChatServiceResponse, ChatMessage, ChatConversation } from '@/lib/services/chatService';
-import { StorageService, getStorageService } from '@/lib/services/storageService';
+import { ChatService } from '@/lib/services/chatService';
+import { getStorageService } from '@/lib/services/storageService';
 import { revalidatePath } from 'next/cache';
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getServerSession } from "next-auth";
+import { auth } from "@/lib/auth";
 
 // Helper to serialize Dates to strings
 function serialize<T>(obj: T): T {
@@ -25,7 +24,7 @@ export async function sendMessageAction(
     attachments?: any[]
 ) {
     // Verify auth for security
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session || session.user.id !== senderId) {
         throw new Error("Unauthorized");
     }
@@ -41,7 +40,7 @@ export async function markAsReadAction(conversationId: string, userId: string) {
 }
 
 export async function editMessageAction(messageId: string, userId: string, newBody: string) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session || session.user.id !== userId) throw new Error("Unauthorized");
 
     const res = await ChatService.editMessage(messageId, userId, newBody);
@@ -49,7 +48,7 @@ export async function editMessageAction(messageId: string, userId: string, newBo
 }
 
 export async function deleteMessageAction(messageId: string, userId: string) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session || session.user.id !== userId) throw new Error("Unauthorized");
 
     const res = await ChatService.deleteMessage(messageId, userId);

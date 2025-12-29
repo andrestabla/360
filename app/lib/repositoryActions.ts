@@ -1,12 +1,11 @@
 'use server';
 
 import { db } from '@/server/db';
-import { documents, folders, units as unitsTable, users } from '@/shared/schema';
-import { eq, and, like, desc, asc, isNull, inArray, sql } from 'drizzle-orm';
+import { documents, folders } from '@/shared/schema';
+import { eq, and, like, desc, isNull, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { StorageService, getStorageService } from '@/lib/services/storageService';
+import { auth } from '@/lib/auth';
+import { getStorageService } from '@/lib/services/storageService';
 
 // --- Types ---
 export type RepositoryFile = typeof documents.$inferSelect;
@@ -34,7 +33,7 @@ export async function getFoldersAction(parentId: string | null, unitId?: string)
 }
 
 export async function createFolderAction(data: { name: string; parentId?: string | null; unitId?: string; description?: string }) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) throw new Error("Unauthorized");
 
     const [newFolder] = await db.insert(folders).values({
@@ -52,7 +51,7 @@ export async function createFolderAction(data: { name: string; parentId?: string
 }
 
 export async function updateFolderAction(folderId: string, data: Partial<RepositoryFolder>) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) throw new Error("Unauthorized");
 
     // Validate ownership/permissions if needed
@@ -67,7 +66,7 @@ export async function updateFolderAction(folderId: string, data: Partial<Reposit
 }
 
 export async function deleteFolderAction(folderId: string) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) throw new Error("Unauthorized");
 
     // Cascade delete is handled by DB constraints usually, but for S3 files inside we might need manual cleanup if strict.
@@ -105,7 +104,7 @@ export async function getDocumentsAction(folderId: string | null, unitId?: strin
 }
 
 export async function uploadDocumentAction(formData: FormData) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) throw new Error("Unauthorized");
 
     const file = formData.get('file') as File;
@@ -143,7 +142,7 @@ export async function uploadDocumentAction(formData: FormData) {
 }
 
 export async function deleteDocumentAction(docId: string) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) throw new Error("Unauthorized");
 
     // 1. Get doc to find S3 key/url
@@ -161,7 +160,7 @@ export async function deleteDocumentAction(docId: string) {
 }
 
 export async function toggleLikeAction(docId: string) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) throw new Error("Unauthorized");
 
     // Simple toggle logic: In real app we need a `likes` table. 
@@ -177,7 +176,7 @@ export async function toggleLikeAction(docId: string) {
 }
 
 export async function moveItemAction(itemId: string, type: 'folder' | 'doc', newParentId: string | null) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) throw new Error("Unauthorized");
 
     if (type === 'folder') {
