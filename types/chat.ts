@@ -1,38 +1,35 @@
 import { Message as SchemaMessage, Conversation as SchemaConversation, User } from '@/shared/schema';
 
+// Unified to camelCase to match Schema/Drizzle conventions
 export type Attachment = {
     id: string;
     url: string;
     name: string;
-    file_name: string; // The schema has 'name', but UI uses file_name. We should probably map or use one. Let's keep strict to UI usage for now but mapped.
+    fileName: string;
     size: number;
     type: string;
-    mime_type: string;
-    created_at: string; // UI uses string
+    mimeType: string;
+    createdAt: string;
 };
 
-export type Conversation = Omit<SchemaConversation, 'participants'> & {
-    participants: string[]; // Schema has them as JSON string[], assume parsed
-    title?: string;
+export type Conversation = Omit<SchemaConversation, 'participants' | 'title' | 'lastMessageAt'> & {
+    participants: string[];
+    title: string | null; // Nullable to match Drizzle text()
     avatar?: string;
     unreadCount?: number;
-    // Map snake_case to camelCase where schema differs or keep schema?
-    // Schema: createdAt, lastMessageAt.
-    // UI used: created_at.
-    // We will switch UI to camelCase to match Schema.
+    lastMessageAt?: string | Date | null; // Handle serialization
 };
 
-export type Message = Omit<SchemaMessage, 'createdAt' | 'editedAt' | 'deletedAt'> & {
-    createdAt: string; // Serialized
+export type Message = Omit<SchemaMessage, 'createdAt' | 'editedAt' | 'deletedAt' | 'attachments' | 'reactions'> & {
+    createdAt: string;
     editedAt?: string | null;
     deletedAt?: string | null;
 
     senderName?: string;
     senderAvatar?: string;
-    // Schema: conversationId, senderId, bodyType, replyToMessageId
-    // UI used: conversation_id, sender_id
 
-    // We will use Schema keys (camelCase) in UI.
+    // Use Schema definitions for IDs (camelCase)
+    // conversationId, senderId, bodyType, replyToMessageId
 
     replyTo?: {
         id: string;
@@ -40,15 +37,12 @@ export type Message = Omit<SchemaMessage, 'createdAt' | 'editedAt' | 'deletedAt'
         body: string;
     };
 
-    // Attachments in schema is json. In UI it's Attachment[].
     attachments?: Attachment[];
 
-    // Reactions in schema is json.
     reactions?: {
-        message_id: string;
-        user_id: string;
+        messageId: string;
+        userId: string;
         emoji: string;
-        created_at: string;
+        createdAt: string;
     }[];
 };
-

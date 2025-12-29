@@ -15,6 +15,11 @@ export async function getMessagesAction(conversationId: string, cursor?: string,
     return serialize(res);
 }
 
+export async function getConversationAction(conversationId: string) {
+    const res = await ChatService.getConversation(conversationId);
+    return serialize(res);
+}
+
 export async function sendMessageAction(
     conversationId: string,
     senderId: string,
@@ -126,11 +131,11 @@ export async function uploadFileAction(formData: FormData) {
         id: `att-${Date.now()}`,
         url: uploadRes.url,
         name: file.name,
-        file_name: file.name,
+        fileName: file.name,
         size: file.size,
         type: file.type,
-        mime_type: file.type,
-        created_at: new Date().toISOString()
+        mimeType: file.type,
+        createdAt: new Date().toISOString()
     };
 }
 

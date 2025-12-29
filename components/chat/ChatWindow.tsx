@@ -19,9 +19,10 @@ import {
     getGroupMembersAction,
     unblockUserAction,
     blockUserAction,
-    reportContentAction
+    reportContentAction,
+    getConversationAction
 } from '@/app/lib/chatActions';
-import { DB } from '@/lib/data'; // Kept for minimal metadata lookup fallback if needed, ideally moved to actions too
+
 import { PaperPlaneRight, Paperclip, Smiley, Phone, VideoCamera, Info, Checks, CircleNotch, ArrowDown, DotsThreeVertical, Trash, PencilSimple, X, BellSlash, SignOut, ArrowUUpLeft, Heart, ThumbsUp, SmileyWink, File, Download, MagnifyingGlass } from '@phosphor-icons/react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { sanitizeHTML, escapeHTML } from '@/lib/services/sanitize';
@@ -119,38 +120,40 @@ export default function ChatWindow() {
         const fetchInit = async () => {
             setLoading(true);
             try {
-                // Get Metadata directly from Service/DB
-                // We use DB here to get the Title quickly as getConversations returns list
-                // Ideally we should use getConversationAction(activeId)
-                const convDef = DB.conversations.find(c => c.id === activeId);
+                // Fetch Conversation Metadata from Server
+                const convRes = await getConversationAction(activeId);
+                let convDef = convRes.data;
+
                 if (convDef) {
                     let title = convDef.title;
                     if (convDef.type === 'dm') {
-                        const otherMember = DB.conversationMembers.find(m => m.conversation_id === activeId && m.user_id !== currentUser.id);
-                        const other = otherMember ? DB.users.find(u => u.id === otherMember.user_id) : null;
+                        // Fetch members to resolve DM title
+                        const members = await getGroupMembersAction(activeId);
+                        const other = members.find((u: any) => u.id !== currentUser.id);
                         title = other?.name || 'Usuario';
                     }
-                    setConversation({ ...convDef, title });
+                    setConversation({ ...convDef, title: title || 'Chat' } as unknown as Conversation);
+
+                    // Privacy Check (Block)
+                    if (convDef.type === 'dm') {
+                        const members = await getGroupMembersAction(activeId);
+                        const otherMem = members.find((m: any) => m.id !== currentUser.id);
+                        if (otherMem) {
+                            const blocked = await isBlockedAction(currentUser.id, otherMem.id);
+                            const blockedBy = await isBlockedAction(otherMem.id, currentUser.id);
+                            setIsBlocked(blocked || blockedBy);
+                            if (blocked || blockedBy) setBlockerId(blocked ? currentUser.id : otherMem.id);
+                        }
+                    } else {
+                        setIsBlocked(false);
+                    }
                 }
 
                 // Get Messages (First Page)
                 const res = await getMessagesAction(activeId);
                 setMessages(res.data.reverse()); // Initial load is usually newest page
 
-                // Privacy Check (Block)
-                if (convDef && convDef.type === 'dm' && currentUser) {
-                    // Find other participant
-                    const members = DB.conversationMembers.filter(m => m.conversation_id === activeId);
-                    const otherMem = members.find(m => m.user_id !== currentUser.id);
-                    if (otherMem) {
-                        const blocked = await isBlockedAction(currentUser.id, otherMem.user_id);
-                        const blockedBy = await isBlockedAction(otherMem.user_id, currentUser.id);
-                        setIsBlocked(blocked || blockedBy);
-                        if (blocked || blockedBy) setBlockerId(blocked ? currentUser.id : otherMem.user_id);
-                    }
-                } else {
-                    setIsBlocked(false);
-                }
+                // Set cursor
                 oldestCursorRef.current = res.nextCursor;
                 setHasMore(res.hasMore);
 
@@ -230,16 +233,17 @@ export default function ChatWindow() {
         const tempId = `TEMP-${Date.now()}`;
         const newMsg: Message = {
             id: tempId,
-            conversation_id: activeId,
-            sender_id: currentUser.id,
+            conversationId: activeId,
+            senderId: currentUser.id,
             body: input || (attachments.length ? 'Archivo adjunto' : ''),
-            body_type: attachments.length ? ((attachments[0].mime_type || attachments[0].type || '').startsWith('image/') ? 'image' : 'file') : 'text',
-            created_at: new Date().toISOString(),
+            bodyType: attachments.length ? ((attachments[0].mimeType || attachments[0].type || '').startsWith('image/') ? 'image' : 'file') : 'text',
+            createdAt: new Date().toISOString(),
             senderName: currentUser.name,
-            reply_to_message_id: replyingTo?.id,
+            replyToMessageId: replyingTo?.id || null,
             replyTo: replyingTo ? { id: replyingTo.id, senderName: replyingTo.senderName || 'User', body: replyingTo.body } : undefined,
             reactions: [],
-            attachments: [...attachments]
+            attachments: [...attachments],
+            readBy: [currentUser.id]
         };
 
         // Optimistic UI
@@ -250,7 +254,7 @@ export default function ChatWindow() {
         setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
 
         try {
-            const serverMsg = await sendMessageAction(activeId, currentUser.id, newMsg.body, tempId, newMsg.reply_to_message_id, newMsg.attachments);
+            const serverMsg = await sendMessageAction(activeId, currentUser.id, newMsg.body, tempId, newMsg.replyToMessageId || undefined, newMsg.attachments);
             // Replace temp with server
             setMessages(prev => prev.map(m => m.id === tempId ? serverMsg : m));
         } catch (e) {
@@ -264,7 +268,7 @@ export default function ChatWindow() {
         try {
             await deleteMessageAction(msgId, currentUser.id);
             // Local update (Soft Delete style)
-            setMessages(prev => prev.map(m => m.id === msgId ? { ...m, deleted_at: new Date().toISOString(), body: '' } : m));
+            setMessages(prev => prev.map(m => m.id === msgId ? { ...m, deletedAt: new Date().toISOString(), body: '' } : m));
         } catch (e) { console.error(e); }
     };
 
@@ -293,12 +297,12 @@ export default function ChatWindow() {
         setMessages(prev => prev.map(m => {
             if (m.id !== msgId) return m;
             const current = m.reactions || [];
-            const exists = current.find(r => r.user_id === currentUser.id && r.emoji === emoji);
+            const exists = current.find(r => r.userId === currentUser.id && r.emoji === emoji);
             let nextR = [...current];
             if (exists) {
-                nextR = nextR.filter(r => !(r.user_id === currentUser.id && r.emoji === emoji));
+                nextR = nextR.filter(r => !(r.userId === currentUser.id && r.emoji === emoji));
             } else {
-                nextR.push({ message_id: msgId, user_id: currentUser.id, emoji, created_at: new Date().toISOString() });
+                nextR.push({ messageId: msgId, userId: currentUser.id, emoji, createdAt: new Date().toISOString() });
             }
             return { ...m, reactions: nextR };
         }));
@@ -373,7 +377,7 @@ export default function ChatWindow() {
         // We need to fetch members
         try {
             const members = await getGroupMembersAction(conversation.id);
-            const other = members.find(m => m.id !== currentUser.id);
+            const other = members.find((m: any) => m.id !== currentUser.id);
             if (!other) return;
 
             if (isBlocked) {
@@ -543,7 +547,7 @@ export default function ChatWindow() {
                                     >
                                         <div className="flex justify-between items-baseline mb-0.5">
                                             <span className="font-bold text-xs text-gray-700">{res.senderName}</span>
-                                            <span className="text-[10px] text-gray-400">{new Date(res.created_at).toLocaleDateString()}</span>
+                                            <span className="text-[10px] text-gray-400">{new Date(res.createdAt).toLocaleDateString()}</span>
                                         </div>
                                         <div className="text-gray-600 truncate text-xs w-full" dangerouslySetInnerHTML={{
                                             __html: escapeHTML(res.body).replace(new RegExp(`(${escapeHTML(msgSearchQuery)})`, 'gi'), '<span class="bg-yellow-200 text-black rounded px-0.5">$1</span>')
@@ -578,10 +582,10 @@ export default function ChatWindow() {
                 )}
 
                 {messages.map((msg, i) => {
-                    const isMe = msg.sender_id === currentUser?.id;
+                    const isMe = msg.senderId === currentUser?.id;
                     const prevMsg = messages[i - 1];
                     // Grouping Logic
-                    const isSequence = prevMsg && prevMsg.sender_id === msg.sender_id && (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime() < 60000); // 1 min
+                    const isSequence = prevMsg && prevMsg.senderId === msg.senderId && (new Date(msg.createdAt).getTime() - new Date(prevMsg.createdAt).getTime() < 60000); // 1 min
 
                     return (
                         <div key={msg.id} id={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} ${isSequence ? 'mt-1' : 'mt-4'}`}>
@@ -596,7 +600,7 @@ export default function ChatWindow() {
                                     : 'bg-white text-gray-900 rounded-2xl rounded-tl-none'
                                 }
                             `}>
-                                {msg.deleted_at ? (
+                                {msg.deletedAt ? (
                                     <span className="italic text-gray-500 text-sm flex items-center gap-1"><Info size={14} /> Mensaje eliminado</span>
                                 ) : (
                                     <>
@@ -615,7 +619,7 @@ export default function ChatWindow() {
                                             <div className="mb-2 space-y-2">
                                                 {msg.attachments.map(att => (
                                                     <div key={att.id}>
-                                                        {(att.mime_type || att.type || '').startsWith('image/') ? (
+                                                        {(att.mimeType || att.type || '').startsWith('image/') ? (
                                                             <div className="rounded-lg overflow-hidden border border-black/10">
                                                                 <img src={att.url || 'https://via.placeholder.com/300'} alt="Attachment" className="max-w-full max-h-[300px] object-cover" />
                                                             </div>
@@ -625,7 +629,7 @@ export default function ChatWindow() {
                                                                     <File size={24} weight="fill" />
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className="text-sm font-semibold truncate text-gray-800">{att.file_name}</p>
+                                                                    <p className="text-sm font-semibold truncate text-gray-800">{att.fileName}</p>
                                                                     <p className="text-xs text-gray-500">{(att.size / 1024).toFixed(1)} KB</p>
                                                                 </div>
                                                                 <a href={att.url} download target="_blank" className="p-2 hover:bg-black/10 rounded-full text-gray-500 transition-colors">
@@ -645,7 +649,7 @@ export default function ChatWindow() {
                                             <div className="flex flex-wrap gap-1 mt-1.5 -mb-2 z-20 relative">
                                                 {Array.from(new Set(msg.reactions.map(r => r.emoji))).map(emoji => {
                                                     const count = msg.reactions?.filter(r => r.emoji === emoji).length;
-                                                    const iReacted = msg.reactions?.find(r => r.emoji === emoji && r.user_id === currentUser?.id);
+                                                    const iReacted = msg.reactions?.find(r => r.emoji === emoji && r.userId === currentUser?.id);
                                                     return (
                                                         <button
                                                             key={emoji}
@@ -663,7 +667,7 @@ export default function ChatWindow() {
                                         )}
 
                                         {/* Actions Menu Trigger (Hover) */}
-                                        {!msg.deleted_at && (
+                                        {!msg.deletedAt && (
                                             <div className={`absolute -top-2 ${isMe ? '-left-8' : '-right-8'} opacity-0 group-hover/bubble:opacity-100 transition-opacity flex items-center gap-1`}>
                                                 {/* Quick Reactions */}
                                                 <div className="bg-white shadow-sm rounded-full px-1 py-0.5 border border-gray-100 hidden md:flex">
@@ -705,7 +709,7 @@ export default function ChatWindow() {
                                 )}
 
                                 <div className={`text-[10px] mt-1 flex items-center justify-end gap-1 select-none ${isMe ? 'opacity-80' : 'text-gray-400'}`}>
-                                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     {isMe && <Checks weight="bold" size={14} className="text-blue-500" />}
                                 </div>
                             </div>
@@ -739,12 +743,12 @@ export default function ChatWindow() {
                         <div className="max-w-4xl mx-auto mb-2 flex gap-2 overflow-x-auto pb-1">
                             {attachments.map((att, i) => (
                                 <div key={i} className="relative group shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
-                                    {(att.mime_type || att.type || '').startsWith('image/') ? (
+                                    {(att.mimeType || att.type || '').startsWith('image/') ? (
                                         <img src={att.url} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full bg-gray-50 flex flex-col items-center justify-center p-1">
                                             <File size={24} className="text-gray-400 mb-1" />
-                                            <span className="text-[9px] text-gray-500 truncate w-full text-center">{att.file_name}</span>
+                                            <span className="text-[9px] text-gray-500 truncate w-full text-center">{att.fileName}</span>
                                         </div>
                                     )}
                                     <button
