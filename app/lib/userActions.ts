@@ -1,8 +1,8 @@
 'use server';
 
 import { db } from '@/server/db';
-import { users } from '@/shared/schema';
-import { eq } from 'drizzle-orm';
+import { users, auditLogs } from '@/shared/schema';
+import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { hashPassword, generateSecurePassword } from '@/lib/utils/passwordUtils';
 import { generateWelcomeEmail } from '@/lib/email/templates/welcomeEmail';
@@ -199,5 +199,27 @@ export async function sendWelcomeEmailAction(userId: string, temporaryPassword: 
     } catch (error) {
         console.error('Error sending welcome email:', error);
         return { success: false, error: 'Error al enviar email de bienvenida' };
+    }
+}
+
+export async function getUserActivityAction(userId: string) {
+    try {
+        const logs = await db.select()
+            .from(auditLogs)
+            .where(eq(auditLogs.userId, userId))
+            .orderBy(desc(auditLogs.createdAt))
+            .limit(50);
+
+        return {
+            success: true,
+            data: logs.map(log => ({
+                ...log,
+                createdAt: log.createdAt ? new Date(log.createdAt).toISOString() : null,
+                details: log.details as Record<string, any>
+            }))
+        };
+    } catch (error) {
+        console.error('Error fetching user activity:', error);
+        return { success: false, error: 'Error al obtener actividad' };
     }
 }
