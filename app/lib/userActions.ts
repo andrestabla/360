@@ -85,19 +85,15 @@ export async function createUserAction(userData: any, sendInvitation: boolean = 
         revalidatePath('/dashboard/admin/users');
 
         // Return result with email status
-        const result: any = {
+        // Return result with email status - SANITIZED for Client Component
+        // We avoid returning the full user object to prevent Date serialization issues
+        const result = {
             success: true,
-            user: { ...newUser, password: undefined },
-            temporaryPassword: sendInvitation ? undefined : temporaryPassword
+            userId: newUser.id,
+            temporaryPassword: sendInvitation ? undefined : temporaryPassword,
+            emailSent: sendInvitation ? (emailResult?.success || false) : undefined,
+            emailError: (sendInvitation && emailResult && !emailResult.success) ? emailResult.error : undefined
         };
-
-        // Add email status if invitation was requested
-        if (sendInvitation) {
-            result.emailSent = emailResult?.success || false;
-            if (emailResult && !emailResult.success) {
-                result.emailError = emailResult.error;
-            }
-        }
 
         return result;
     } catch (error: any) {
