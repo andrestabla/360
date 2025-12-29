@@ -126,7 +126,13 @@ export default function ConversationList() {
             setIsSearching(true);
             try {
                 const results = await ChatService.searchConversations(currentUser.id, search);
-                setSearchResults(results);
+                const enrichedResults = results.data.map(c => ({
+                    ...c,
+                    participants: c.participants || [],
+                    title: c.title || null,
+                    unreadCount: 0 // Search results typically don't show unread count context here or we can fetch it
+                })) as Conversation[];
+                setSearchResults(enrichedResults);
             } catch (e) {
                 console.error(e);
             } finally {
