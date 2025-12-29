@@ -11,13 +11,26 @@ function serialize<T>(obj: T): any {
 }
 
 export async function getMessagesAction(conversationId: string, cursor?: string, limit: number = 50) {
-    const res = await ChatService.getMessages(conversationId, cursor, limit);
-    return serialize(res);
+    try {
+        const res = await ChatService.getMessages(conversationId, cursor, limit);
+        return serialize(res);
+    } catch (error) {
+        console.error("Error in getMessagesAction:", error);
+        return { data: [], nextCursor: null };
+    }
 }
 
 export async function getConversationAction(conversationId: string) {
-    const res = await ChatService.getConversation(conversationId);
-    return serialize(res);
+    try {
+        const res = await ChatService.getConversation(conversationId);
+        return serialize(res);
+    } catch (error) {
+        console.error("Error in getConversationAction:", error);
+        // Return dummy/empty or null? ChatWindow expects data.
+        // Returning null might cause client issues if not handled.
+        // Assuming ChatService throws if not found.
+        throw error;
+    }
 }
 
 export async function sendMessageAction(

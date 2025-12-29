@@ -19,17 +19,23 @@ function serialize<T>(obj: T): any {
 // --- FOLDERS ---
 
 export async function getFoldersAction(parentId: string | null, unitId?: string) {
-    const conditions = [
-        parentId ? eq(folders.parentId, parentId) : isNull(folders.parentId)
-    ];
+    try {
+        const conditions = [
+            parentId ? eq(folders.parentId, parentId) : isNull(folders.parentId)
+        ];
 
-    if (unitId) conditions.push(eq(folders.unitId, unitId));
+        if (unitId) conditions.push(eq(folders.unitId, unitId));
 
-    const res = await db.select().from(folders)
-        .where(and(...conditions))
-        .orderBy(desc(folders.createdAt));
+        const res = await db.select().from(folders)
+            .where(and(...conditions))
+            .orderBy(desc(folders.createdAt));
 
-    return serialize(res);
+        return serialize(res);
+    } catch (error) {
+        console.error("Error in getFoldersAction:", error);
+        // Return empty array to avoid client crash, or throw valid error
+        return [];
+    }
 }
 
 export async function createFolderAction(data: { name: string; parentId?: string | null; unitId?: string; description?: string }) {
@@ -94,13 +100,18 @@ export async function getDocumentsAction(folderId: string | null, unitId?: strin
 
     if (unitId) conditions.push(eq(documents.unitId, unitId));
 
-    // Default draft filter? Maybe show all for now.
+    try {
+        // Default draft filter? Maybe show all for now.
 
-    const res = await db.select().from(documents)
-        .where(and(...conditions))
-        .orderBy(desc(documents.createdAt));
+        const res = await db.select().from(documents)
+            .where(and(...conditions))
+            .orderBy(desc(documents.createdAt));
 
-    return serialize(res);
+        return serialize(res);
+    } catch (error) {
+        console.error("Error in getDocumentsAction:", error);
+        return [];
+    }
 }
 
 export async function uploadDocumentAction(formData: FormData) {
