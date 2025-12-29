@@ -199,10 +199,12 @@ export default function UsersPage() {
             const result = await createUserAction(formData, sendInvitation);
             if (result.success) {
                 // Check if email was requested but failed
-                if (sendInvitation && result.emailSent === false) {
+                // Cast to any to avoid TS error: Property 'emailSent' does not exist on type...
+                const successResult = result as any;
+                if (sendInvitation && successResult.emailSent === false) {
                     addNotification({
                         title: 'Usuario creado con advertencia',
-                        message: `Usuario creado pero el email falló: ${result.emailError || 'Error desconocido'}`,
+                        message: `Usuario creado pero el email falló: ${successResult.emailError || 'Error desconocido'}`,
                         type: 'warning'
                     });
                 }
@@ -210,7 +212,7 @@ export default function UsersPage() {
                 setCreatedUser({
                     email: formData.email || '',
                     password: result.temporaryPassword,
-                    emailSent: result.emailSent !== false // true if sent or not requested
+                    emailSent: (result as any).emailSent !== false // true if sent or not requested
                 });
                 setIsSuccessModalOpen(true);
                 await loadUsers();
