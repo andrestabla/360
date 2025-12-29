@@ -164,6 +164,22 @@ export default function UsersPage() {
         setLoading(false);
     };
 
+    const handleResendCredentials = async () => {
+        if (!editingId || !formData.password) {
+            addNotification({ title: 'Aviso', message: 'Debes ingresar una contraseña temporal en la pestaña "Seguridad & Acceso" para reenviar credenciales', type: 'warning' });
+            return;
+        }
+
+        setLoading(true);
+        const result = await sendWelcomeEmailAction(editingId, formData.password);
+        if (result.success) {
+            addNotification({ title: 'Éxito', message: 'Credenciales enviadas correctamente', type: 'success' });
+        } else {
+            addNotification({ title: 'Error', message: result.error || 'No se pudieron enviar las credenciales', type: 'error' });
+        }
+        setLoading(false);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
