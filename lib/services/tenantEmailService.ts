@@ -176,6 +176,8 @@ export async function sendEmail(params: {
         ciphers: 'SSLv3',
         rejectUnauthorized: true
       },
+      connectionTimeout: 10000, // 10 seconds to connect
+      socketTimeout: 10000, // 10 seconds for socket inactivity
       logger: true, // Enable logging
       debug: process.env.NODE_ENV !== 'production', // Debug in development
     });
