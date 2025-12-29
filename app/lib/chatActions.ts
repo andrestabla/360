@@ -163,3 +163,55 @@ export async function checkNewMessagesAction(userId: string, since: string) {
     const res = await ChatService.checkNewMessages(userId, since);
     return serialize(res);
 }
+
+export async function getConversationsAction(userId: string) {
+    const session = await auth();
+    if (!session?.user?.id || session.user.id !== userId) return { success: false, data: [] };
+
+    const res = await ChatService.getConversations(userId);
+    return serialize(res);
+}
+
+export async function createDMAction(userId1: string, userId2: string) {
+    const session = await auth();
+    if (!session?.user?.id || session.user.id !== userId1) throw new Error("Unauthorized");
+
+    const res = await ChatService.createDM(userId1, userId2);
+    return serialize(res);
+}
+
+export async function createGroupAction(name: string, creatorId: string, memberIds: string[]) {
+    const session = await auth();
+    if (!session?.user?.id || session.user.id !== creatorId) throw new Error("Unauthorized");
+
+    const res = await ChatService.createGroup(name, creatorId, memberIds);
+    return serialize(res);
+}
+
+export async function searchConversationsAction(userId: string, query: string) {
+    const session = await auth();
+    if (!session?.user?.id || session.user.id !== userId) return [];
+
+    const res = await ChatService.searchConversations(userId, query);
+    return serialize(res);
+}
+
+export async function searchUsersAction(query: string) {
+    // Public/Authenticated action
+    const session = await auth();
+    if (!session?.user?.id) return [];
+
+    const res = await ChatService.searchUsers(query);
+    return serialize(res);
+}
+
+export async function getUnreadCountAction(userId: string) {
+    const session = await auth();
+    if (!session?.user?.id || session.user.id !== userId) return 0;
+
+    const res = await ChatService.getConversations(userId);
+    if (!res.success) return 0;
+
+    const count = res.data.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+    return count;
+}

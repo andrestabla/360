@@ -120,12 +120,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const refreshUnreadCount = useCallback(async () => {
         if (!currentUser) return;
         try {
-            const { ChatService } = await import('@/lib/services/chatService');
-            const convs = await ChatService.getConversations(currentUser.id);
-            if (convs.success) {
-                const count = convs.data.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
-                setUnreadChatCount(count);
-            }
+            const { getUnreadCountAction } = await import('@/app/lib/chatActions');
+            const count = await getUnreadCountAction(currentUser.id);
+            setUnreadChatCount(count);
         } catch (e) {
             console.error('Error fetching unread count', e);
         }

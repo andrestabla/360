@@ -2,7 +2,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { Conversation } from '@/types/chat';
 import { useApp } from '@/context/AppContext';
-import { ChatService } from '@/lib/services/chatService';
+import { getConversationsAction, createDMAction, createGroupAction, searchConversationsAction } from '@/app/lib/chatActions';
 import { MagnifyingGlass, User, Users, CircleNotch, Plus, UsersThree } from '@phosphor-icons/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import NewOneOnOneModal from './NewOneOnOneModal';
@@ -27,8 +27,8 @@ export default function ConversationList() {
         if (!currentUser) return;
         setLoading(true);
         try {
-            const res = await ChatService.getConversations(currentUser.id);
-            const enriched = res.data.map(c => ({
+            const res = await getConversationsAction(currentUser.id);
+            const enriched = res.data.map((c: any) => ({
                 ...c,
                 participants: c.participants || [],
                 title: c.title || null,
@@ -40,19 +40,16 @@ export default function ConversationList() {
         } finally {
             setLoading(false);
         }
-    }, [currentUser, refreshKey]);
+    }, [currentUser, refreshKey, activeId]);
 
     useEffect(() => {
         loadConversations();
 
-        // Polling interaction for "Live" updates on Inbox (e.g. unread counts changing)
-        // In real app -> WebSocket event CONVERSATION_UPDATED
         const interval = setInterval(() => {
-            // specific logic to update unread counts or last messages without full reload visual glitch?
-            // For prototype, simple SWR-like refresh is fine
-            ChatService.getConversations(currentUser!.id).then(res => {
+            if (!currentUser) return;
+            getConversationsAction(currentUser.id).then(res => {
                 setConversations(prev => {
-                    return res.data.map(c => ({
+                    return res.data.map((c: any) => ({
                         ...c,
                         participants: c.participants || [],
                         title: c.title || null,
@@ -63,7 +60,7 @@ export default function ConversationList() {
         }, 5000);
         return () => clearInterval(interval);
 
-    }, [loadConversations, currentUser]);
+    }, [loadConversations, currentUser, activeId]);
 
 
     const handleSelect = (conv: Conversation) => {
@@ -80,7 +77,7 @@ export default function ConversationList() {
         if (!currentUser) return;
         setShowNewChat(false);
         try {
-            const result = await ChatService.createDM(currentUser.id, targetUserId);
+            const result = await createDMAction(currentUser.id, targetUserId);
             const chatId = result.data?.id;
             if (!chatId) throw new Error('Failed to create chat');
 
@@ -99,7 +96,7 @@ export default function ConversationList() {
         if (!currentUser) return;
         setShowNewGroup(false);
         try {
-            const result = await ChatService.createGroup(title, currentUser.id, memberIds);
+            const result = await createGroupAction(title, currentUser.id, memberIds);
             const chatId = result.data?.id;
             if (!chatId) throw new Error('Failed to create group');
 
@@ -125,7 +122,7 @@ export default function ConversationList() {
 
             setIsSearching(true);
             try {
-                const results = await ChatService.searchConversations(currentUser.id, search);
+                const results = await searchConversationsAction(currentUser.id, search);
                 const enrichedResults = results.map((c: any) => ({
                     ...c,
                     participants: c.participants || [],

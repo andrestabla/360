@@ -1,12 +1,35 @@
-import { db } from '../server/db';
-import { users } from '../shared/schema';
-import bcrypt from 'bcryptjs';
-import { eq } from 'drizzle-orm';
+import fs from 'fs';
+import path from 'path';
+
+// 1. Load Environment Variables BEFORE importing anything else
+try {
+  const envPath = path.resolve(__dirname, '../.env');
+  if (fs.existsSync(envPath)) {
+    const envConfig = fs.readFileSync(envPath, 'utf8');
+    envConfig.split('\n').forEach(line => {
+      const match = line.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        process.env[match[1].trim()] = match[2].trim().replace(/^['"]|['"]$/g, '');
+      }
+    });
+    console.log('✅ Loaded .env file');
+  } else {
+    console.warn('⚠️ .env file not found at ' + envPath);
+  }
+} catch (e) {
+  console.warn('⚠️ Could not load .env file');
+}
 
 const SALT_ROUNDS = 12;
 
 async function seedProduction() {
   console.log('Starting production database seed...');
+
+  // 2. Dynamic Imports to ensure env vars are set
+  const { db } = await import('../server/db');
+  const { users } = await import('../shared/schema');
+  const bcrypt = (await import('bcryptjs')).default;
+  const { eq } = await import('drizzle-orm');
 
   try {
     const existingUsers = await db.select().from(users);
@@ -58,3 +81,4 @@ async function seedProduction() {
 seedProduction()
   .then(() => process.exit(0))
   .catch(() => process.exit(1));
+

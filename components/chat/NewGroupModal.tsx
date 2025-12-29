@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { X, MagnifyingGlass, UserPlus, Check, CircleNotch } from '@phosphor-icons/react';
-import { ChatService } from '@/lib/services/chatService';
+import { searchUsersAction } from '@/app/lib/chatActions';
 import { User } from '@/shared/schema';
 import { useApp } from '@/context/AppContext';
 
@@ -34,7 +34,7 @@ export default function NewGroupModal({ isOpen, onClose, onGroupCreate }: Props)
     const search = async (q: string) => {
         setLoading(true);
         try {
-            const users = await ChatService.searchUsers(q);
+            const users = await searchUsersAction(q);
             // Filter out self and already selected
             setResults(users.filter((u: User) => u.id !== currentUser?.id));
         } finally {
