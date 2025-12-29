@@ -7,7 +7,7 @@ import { User } from '@/lib/data';
 interface ImportUsersModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onImport: (users: Partial<User>[]) => void;
+    onImport: (users: Partial<User>[], sendInvitation: boolean) => void;
 }
 
 export default function ImportUsersModal({ isOpen, onClose, onImport }: ImportUsersModalProps) {
@@ -15,6 +15,7 @@ export default function ImportUsersModal({ isOpen, onClose, onImport }: ImportUs
     const [preview, setPreview] = useState<Partial<User>[]>([]);
     const [errors, setErrors] = useState<string[]>([]);
     const [importing, setImporting] = useState(false);
+    const [sendInvitation, setSendInvitation] = useState(false);
 
     if (!isOpen) return null;
 
@@ -77,7 +78,25 @@ export default function ImportUsersModal({ isOpen, onClose, onImport }: ImportUs
             // Handle split with potential quotes (basic)
             // For robust parsing we'd need a real parser, but this regex handles basic cases
             // or just split by delimiter if no quotes
-            const values = lines[i].split(delimiter).map(v => v.trim().replace(/^"|"$/g, ''));
+            // Improved CSV parsing handling quotes
+            const row = lines[i];
+            const values: string[] = [];
+            let inQuotes = false;
+            let currentValue = '';
+
+            for (let c = 0; c < row.length; c++) {
+                const char = row[c];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === delimiter && !inQuotes) {
+                    values.push(currentValue.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+                    currentValue = '';
+                } else {
+                    currentValue += char;
+                }
+            }
+            // Push the last value
+            values.push(currentValue.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
 
             const getName = () => values[headerMap.get('name')!] || '';
             const getEmail = () => values[headerMap.get('email')!] || '';
@@ -142,7 +161,7 @@ export default function ImportUsersModal({ isOpen, onClose, onImport }: ImportUs
 
         // Simulate import delay
         setTimeout(() => {
-            onImport(preview);
+            onImport(preview, sendInvitation);
             setImporting(false);
             handleClose();
         }, 1500);
@@ -152,6 +171,7 @@ export default function ImportUsersModal({ isOpen, onClose, onImport }: ImportUs
         setFile(null);
         setPreview([]);
         setErrors([]);
+        setSendInvitation(false);
         setImporting(false);
         onClose();
     };
@@ -288,16 +308,28 @@ export default function ImportUsersModal({ isOpen, onClose, onImport }: ImportUs
                     {/* Preview */}
                     {preview.length > 0 && errors.length === 0 && (
                         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                            <div className="flex items-start gap-3 mb-4">
-                                <CheckCircle size={24} className="text-green-600 flex-shrink-0" weight="fill" />
-                                <div>
-                                    <p className="font-bold text-green-900">
-                                        Vista Previa: {preview.length} usuarios listos para importar
-                                    </p>
-                                    <p className="text-sm text-green-800 mt-1">
-                                        Revisa los datos antes de confirmar la importación
-                                    </p>
+                            <div className="flex items-start gap-3 mb-4 justify-between">
+                                <div className="flex items-start gap-3">
+                                    <CheckCircle size={24} className="text-green-600 flex-shrink-0" weight="fill" />
+                                    <div>
+                                        <p className="font-bold text-green-900">
+                                            Vista Previa: {preview.length} usuarios listos para importar
+                                        </p>
+                                        <p className="text-sm text-green-800 mt-1">
+                                            Revisa los datos antes de confirmar la importación
+                                        </p>
+                                    </div>
                                 </div>
+
+                                <label className="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-green-200 hover:border-green-300 transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        checked={sendInvitation}
+                                        onChange={e => setSendInvitation(e.target.checked)}
+                                        className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                                    />
+                                    <span className="text-sm font-medium text-slate-700">Enviar correos de bienvenida</span>
+                                </label>
                             </div>
 
                             <div className="max-h-96 overflow-y-auto bg-white rounded-lg border border-green-200">

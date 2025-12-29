@@ -235,13 +235,13 @@ export default function UsersPage() {
         }
     };
 
-    const handleImport = async (importedUsers: Partial<User>[]) => {
+    const handleImport = async (importedUsers: Partial<User>[], shouldSendInvitation: boolean) => {
         setLoading(true);
         let successCount = 0;
         const errors: string[] = [];
 
         for (const user of importedUsers) {
-            const result = await createUserAction(user, sendInvitation);
+            const result = await createUserAction(user, shouldSendInvitation);
             const anyResult = result as any; // Cast to any to avoid TS union type errors
             if (anyResult.success) {
                 successCount++;
