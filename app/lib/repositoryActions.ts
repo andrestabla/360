@@ -34,7 +34,7 @@ export async function getFoldersAction(parentId: string | null, unitId?: string)
 
 export async function createFolderAction(data: { name: string; parentId?: string | null; unitId?: string; description?: string }) {
     const session = await auth();
-    if (!session) throw new Error("Unauthorized");
+    if (!session?.user?.id) throw new Error("Unauthorized");
 
     const [newFolder] = await db.insert(folders).values({
         id: `fod-${Date.now()}`, // Simple ID gen
@@ -52,7 +52,7 @@ export async function createFolderAction(data: { name: string; parentId?: string
 
 export async function updateFolderAction(folderId: string, data: Partial<RepositoryFolder>) {
     const session = await auth();
-    if (!session) throw new Error("Unauthorized");
+    if (!session?.user?.id) throw new Error("Unauthorized");
 
     // Validate ownership/permissions if needed
 
@@ -67,7 +67,7 @@ export async function updateFolderAction(folderId: string, data: Partial<Reposit
 
 export async function deleteFolderAction(folderId: string) {
     const session = await auth();
-    if (!session) throw new Error("Unauthorized");
+    if (!session?.user?.id) throw new Error("Unauthorized");
 
     // Cascade delete is handled by DB constraints usually, but for S3 files inside we might need manual cleanup if strict.
     // For now relying on DB cascade for metadata.
@@ -105,7 +105,7 @@ export async function getDocumentsAction(folderId: string | null, unitId?: strin
 
 export async function uploadDocumentAction(formData: FormData) {
     const session = await auth();
-    if (!session) throw new Error("Unauthorized");
+    if (!session?.user?.id) throw new Error("Unauthorized");
 
     const file = formData.get('file') as File;
     const folderId = formData.get('folderId') as string | null;
@@ -143,7 +143,7 @@ export async function uploadDocumentAction(formData: FormData) {
 
 export async function deleteDocumentAction(docId: string) {
     const session = await auth();
-    if (!session) throw new Error("Unauthorized");
+    if (!session?.user?.id) throw new Error("Unauthorized");
 
     // 1. Get doc to find S3 key/url
     const [doc] = await db.select().from(documents).where(eq(documents.id, docId));
@@ -161,7 +161,7 @@ export async function deleteDocumentAction(docId: string) {
 
 export async function toggleLikeAction(docId: string) {
     const session = await auth();
-    if (!session) throw new Error("Unauthorized");
+    if (!session?.user?.id) throw new Error("Unauthorized");
 
     // Simple toggle logic: In real app we need a `likes` table. 
     // For MVP we just increment/decrement counter blindly or check a session cache.
@@ -177,7 +177,7 @@ export async function toggleLikeAction(docId: string) {
 
 export async function moveItemAction(itemId: string, type: 'folder' | 'doc', newParentId: string | null) {
     const session = await auth();
-    if (!session) throw new Error("Unauthorized");
+    if (!session?.user?.id) throw new Error("Unauthorized");
 
     if (type === 'folder') {
         if (itemId === newParentId) throw new Error("Cannot move folder into itself");

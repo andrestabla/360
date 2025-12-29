@@ -337,16 +337,16 @@ export const ChatService = {
   },
 
   // Group mgmt stubs
-  leaveGroup: async () => ({ success: true, data: true }),
-  muteConversation: async () => ({ success: true, data: true }),
-  getNotificationSettings: async () => ({ level: 'all' }),
-  updateNotificationSettings: async () => true,
+  leaveGroup: async (conversationId: string, userId: string) => ({ success: true, data: true }),
+  muteConversation: async (conversationId: string, userId: string, until: string) => ({ success: true, data: true }),
+  getNotificationSettings: async (conversationId: string, userId: string) => ({ level: 'all' }),
+  updateNotificationSettings: async (conversationId: string, userId: string, level: string) => true,
   getGroupMembers: async (conversationId: string): Promise<User[]> => {
     const conv = await db.query.conversations.findFirst({ where: eq(conversations.id, conversationId) });
     if (!conv) return [];
     const p = conv.participants as string[];
     return db.select().from(users).where(inArray(users.id, p));
   },
-  reportContent: async () => ({ success: true, data: true })
+  reportContent: async (userId: string, report: any) => ({ success: true, data: true })
 };
 

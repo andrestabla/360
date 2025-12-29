@@ -25,7 +25,7 @@ export async function sendMessageAction(
 ) {
     // Verify auth for security
     const session = await auth();
-    if (!session || session.user.id !== senderId) {
+    if (!session?.user?.id || session.user.id !== senderId) {
         throw new Error("Unauthorized");
     }
 
@@ -41,7 +41,7 @@ export async function markAsReadAction(conversationId: string, userId: string) {
 
 export async function editMessageAction(messageId: string, userId: string, newBody: string) {
     const session = await auth();
-    if (!session || session.user.id !== userId) throw new Error("Unauthorized");
+    if (!session?.user?.id || session.user.id !== userId) throw new Error("Unauthorized");
 
     const res = await ChatService.editMessage(messageId, userId, newBody);
     return serialize(res);
@@ -49,7 +49,7 @@ export async function editMessageAction(messageId: string, userId: string, newBo
 
 export async function deleteMessageAction(messageId: string, userId: string) {
     const session = await auth();
-    if (!session || session.user.id !== userId) throw new Error("Unauthorized");
+    if (!session?.user?.id || session.user.id !== userId) throw new Error("Unauthorized");
 
     const res = await ChatService.deleteMessage(messageId, userId);
     return serialize(res);
