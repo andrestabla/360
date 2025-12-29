@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { DB, Unit, User } from '@/lib/data';
 import { TreeStructure, Folder, FolderOpen, Plus, Pencil, Trash, UserCircle, CheckCircle, GitFork, UploadSimple } from '@phosphor-icons/react';
 import ImportUnitsModal from '@/components/ImportUnitsModal';
 import AdminGuide from '@/components/AdminGuide';
 import { unitsGuide } from '@/lib/adminGuides';
+import { getEligibleUsersAction } from '@/app/lib/unitActions';
 
 export default function UnitsPage() {
     const { currentUser, isSuperAdmin, createUnit, updateUnit, deleteUnit, version: dataVersion } = useApp();
@@ -42,17 +43,33 @@ export default function UnitsPage() {
     const rootUnits = useMemo(() => tenantUnits.filter(u => !u.parentId || u.parentId === 'ROOT' || u.depth === 0), [tenantUnits]);
     const getChildren = (parentId: string) => tenantUnits.filter(u => u.parentId === parentId);
 
+    const isAdmin = isSuperAdmin || currentUser?.role?.toLowerCase().includes('admin') || currentUser?.level === 1;
+
     // Fetch users for manager selection
-    useMemo(async () => {
-        if (isSuperAdmin || (currentUser && currentUser.level === 1)) {
-            // In a real app we'd fetch from server
-            setEligibleUsers(DB.users);
+
+    // Fetch users for manager selection
+    // Fetch users for manager selection
+    useEffect(() => {
+        const fetchUsers = async () => {
+            setIsLoadingUsers(true);
+            try {
+                const res = await getEligibleUsersAction();
+                if (res.success && res.data) {
+                    setEligibleUsers(res.data as User[]);
+                }
+            } catch (error) {
+                console.error('Failed to load eligible users', error);
+            } finally {
+                setIsLoadingUsers(false);
+            }
+        };
+
+        if (isAdmin) {
+            fetchUsers();
         }
-    }, [isSuperAdmin, currentUser]);
+    }, [isAdmin]);
 
     if (!currentUser) return <div className="p-8 text-center text-slate-500">Cargando sesión...</div>;
-
-    const isAdmin = isSuperAdmin || currentUser.level === 1 || currentUser.role?.toLowerCase().includes('admin');
 
     if (!isAdmin) {
         return (
