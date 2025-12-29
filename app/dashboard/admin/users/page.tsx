@@ -184,44 +184,55 @@ export default function UsersPage() {
         e.preventDefault();
         setLoading(true);
 
-        if (editingId) {
-            // Edit
-            const result = await updateUserAction(editingId, formData);
-            if (result.success) {
-                addNotification({ title: 'Éxito', message: 'Usuario actualizado correctamente', type: 'success' });
-                await loadUsers();
-                setIsModalOpen(false);
-            } else {
-                addNotification({ title: 'Error', message: result.error || 'No se pudo actualizar el usuario', type: 'error' });
-            }
-        } else {
-            // Create
-            const result = await createUserAction(formData, sendInvitation);
-            const anyResult = result as any; // Cast to any to avoid persistent TS build errors with union types
-
-            if (anyResult.success) {
-                // Check if email was requested but failed
-                if (sendInvitation && anyResult.emailSent === false) {
-                    addNotification({
-                        title: 'Usuario creado con advertencia',
-                        message: `Usuario creado pero el email falló: ${anyResult.emailError || 'Error desconocido'}`,
-                        type: 'warning'
+        try {
+            if (editingId) {
+                // Update
+                const result = await updateUserAction(editingId, formData);
+                if (result.success) {
+                    addNotification({ title: 'Éxito', message: 'Usuario actualizado correctamente', type: 'success' });
+                    setCreatedUser({
+                        email: '', // No mostrar modal de éxito en update
+                        password: '',
+                        emailSent: false
                     });
+                    await loadUsers();
+                    setIsModalOpen(false);
+                } else {
+                    addNotification({ title: 'Error', message: result.error || 'No se pudo actualizar el usuario', type: 'error' });
                 }
-
-                setCreatedUser({
-                    email: formData.email || '',
-                    password: anyResult.temporaryPassword,
-                    emailSent: anyResult.emailSent !== false
-                });
-                setIsSuccessModalOpen(true);
-                await loadUsers();
-                setIsModalOpen(false);
             } else {
-                addNotification({ title: 'Error', message: anyResult.error || 'No se pudo crear el usuario', type: 'error' });
+                // Create
+                const result = await createUserAction(formData, sendInvitation);
+                const anyResult = result as any; // Cast to any to avoid persistent TS build errors with union types
+
+                if (anyResult.success) {
+                    // Check if email was requested but failed
+                    if (sendInvitation && anyResult.emailSent === false) {
+                        addNotification({
+                            title: 'Usuario creado con advertencia',
+                            message: `Usuario creado pero el email falló: ${anyResult.emailError || 'Error desconocido'}`,
+                            type: 'warning'
+                        });
+                    }
+
+                    setCreatedUser({
+                        email: formData.email || '',
+                        password: anyResult.temporaryPassword,
+                        emailSent: anyResult.emailSent !== false
+                    });
+                    setIsSuccessModalOpen(true);
+                    await loadUsers();
+                    setIsModalOpen(false);
+                } else {
+                    addNotification({ title: 'Error', message: anyResult.error || 'No se pudo crear el usuario', type: 'error' });
+                }
             }
+        } catch (error) {
+            console.error('Error in form submission:', error);
+            addNotification({ title: 'Error', message: 'Ocurrió un error inesperado. Inténtalo de nuevo.', type: 'error' });
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const handleImport = async (importedUsers: Partial<User>[]) => {
