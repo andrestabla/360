@@ -11,7 +11,15 @@ import { sendEmail } from '@/lib/services/tenantEmailService';
 export async function getUsersAction() {
     try {
         const result = await db.select().from(users);
-        return { success: true, data: result };
+        // Serialize Dates to strings to prevent React server-client serialization issues
+        const serializedData = result.map(user => ({
+            ...user,
+            createdAt: user.createdAt ? user.createdAt.toISOString() : null,
+            updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null,
+            inviteSentAt: user.inviteSentAt ? user.inviteSentAt.toISOString() : null,
+            inviteExpiresAt: user.inviteExpiresAt ? user.inviteExpiresAt.toISOString() : null,
+        }));
+        return { success: true, data: serializedData };
     } catch (error) {
         console.error('Error fetching users:', error);
         return { success: false, error: 'Error al obtener usuarios' };
@@ -186,7 +194,8 @@ export async function sendWelcomeEmailAction(userId: string, temporaryPassword: 
             })
             .where(eq(users.id, userId));
 
-        return { success: true };
+        revalidatePath('/dashboard/admin/users');
+        return { success: true, error: undefined }; // Explicit strict return shape
     } catch (error) {
         console.error('Error sending welcome email:', error);
         return { success: false, error: 'Error al enviar email de bienvenida' };
