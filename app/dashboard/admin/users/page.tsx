@@ -13,7 +13,7 @@ import {
     PaperPlaneRight,
     Upload
 } from '@phosphor-icons/react';
-import { createUserAction, updateUserAction, deleteUserAction, getUsersAction } from '@/app/lib/userActions';
+import { createUserAction, updateUserAction, deleteUserAction, getUsersAction, sendWelcomeEmailAction } from '@/app/lib/userActions';
 import { generateSecurePassword } from '@/lib/utils/passwordUtils';
 import UserCreatedModal from '@/components/UserCreatedModal';
 import ImportUsersModal from '@/components/ImportUsersModal';
