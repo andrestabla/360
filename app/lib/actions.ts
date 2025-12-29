@@ -281,7 +281,7 @@ export async function updateOrganizationBranding(settings: any) {
     const session = await auth();
     // Simplified role check
     const role = (session?.user as any)?.role;
-    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN') {
+    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN' && role !== 'Admin Global') {
         // return { error: "No tienes permisos" };
     }
 
@@ -341,7 +341,7 @@ export async function getOrganizationSettings() {
 export async function updateSecurityPolicies(policies: any) {
     const session = await auth();
     const role = (session?.user as any)?.role;
-    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN') {
+    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN' && role !== 'Admin Global') {
         // return { error: "No tienes permisos" };
     }
 
@@ -490,7 +490,7 @@ export async function getEmailSettings() {
 export async function updateEmailSettings(settings: any) {
     const session = await auth();
     const role = (session?.user as any)?.role;
-    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN') {
+    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN' && role !== 'Admin Global') {
         return { error: "No tienes permisos" };
     }
 
@@ -602,7 +602,7 @@ export async function testSmtpConnection(settings: any, targetEmail: string) {
 export async function createCheckoutSession(planId: string, interval: 'monthly' | 'yearly') {
     const session = await auth();
     const role = (session?.user as any)?.role;
-    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN') {
+    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN' && role !== 'Admin Global') {
         return { error: "No tienes permisos" };
     }
 
@@ -633,7 +633,7 @@ export async function getBillingPortalUrl() {
 export async function updateStripeConfig(config: any) {
     const session = await auth();
     const role = (session?.user as any)?.role;
-    if (role !== 'SUPER_ADMIN') return { error: "No autorizado" };
+    if (role !== 'SUPER_ADMIN' && role !== 'Admin Global') return { error: "No autorizado" };
 
     try {
         await db.update(organizationSettings).set({ stripeConfig: config }).where(eq(organizationSettings.id, 1));
@@ -647,7 +647,7 @@ export async function updateStripeConfig(config: any) {
 export async function createStripeCheckoutSession(planId: string, interval: 'monthly' | 'yearly') {
     const session = await auth();
     const role = (session?.user as any)?.role;
-    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN') {
+    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'PLATFORM_ADMIN' && role !== 'Admin Global') {
         return { error: "No tienes permisos" };
     }
 
@@ -658,11 +658,11 @@ export async function createStripeCheckoutSession(planId: string, interval: 'mon
         if (stripeConfig?.secretKey) {
             // @ts-ignore
             const stripe = new Stripe(stripeConfig.secretKey);
-            
+
             let priceId = '';
             if (planId === 'PRO') priceId = stripeConfig.priceIdPro;
             else if (planId === 'ENTERPRISE') priceId = stripeConfig.priceIdEnterprise;
-            
+
             if (!priceId) return { error: 'Price ID no configurado para el plan ' + planId };
 
             const checkoutSession = await stripe.checkout.sessions.create({
@@ -691,7 +691,7 @@ export async function createStripeCheckoutSession(planId: string, interval: 'mon
         }).where(eq(organizationSettings.id, 1));
 
         revalidatePath('/');
-        return { success: true }; 
+        return { success: true };
     } catch (e: any) {
         return { error: 'Stripe Error: ' + e.message };
     }
