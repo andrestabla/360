@@ -35,6 +35,8 @@ export default function UsersPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<User | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [search, setSearch] = useState('');
     const [filterUnit, setFilterUnit] = useState<string>('');
@@ -141,18 +143,25 @@ export default function UsersPage() {
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm('¿Estás seguro de eliminar este usuario?')) {
-            setLoading(true);
-            const result = await deleteUserAction(id);
-            if (result.success) {
-                addNotification({ title: 'Éxito', message: 'Usuario eliminado correctamente', type: 'success' });
-                await loadUsers();
-            } else {
-                addNotification({ title: 'Error', message: result.error || 'No se pudo eliminar el usuario', type: 'error' });
-            }
-            setLoading(false);
+    const handleDeleteClick = (user: User) => {
+        setUserToDelete(user);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!userToDelete) return;
+
+        setLoading(true);
+        const result = await deleteUserAction(userToDelete.id);
+        if (result.success) {
+            addNotification({ title: 'Éxito', message: 'Usuario eliminado correctamente', type: 'success' });
+            await loadUsers();
+        } else {
+            addNotification({ title: 'Error', message: result.error || 'No se pudo eliminar el usuario', type: 'error' });
         }
+        setIsDeleteModalOpen(false);
+        setUserToDelete(null);
+        setLoading(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -329,7 +338,7 @@ export default function UsersPage() {
                                         <button onClick={() => handleEdit(user)} className="p-1.5 hover:bg-blue-50 text-blue-600 rounded" title="Editar">
                                             <Pencil size={18} />
                                         </button>
-                                        <button onClick={() => handleDelete(user.id)} className="p-1.5 hover:bg-red-50 text-red-600 rounded" title="Eliminar">
+                                        <button onClick={() => handleDeleteClick(user)} className="p-1.5 hover:bg-red-50 text-red-600 rounded" title="Eliminar">
                                             <Trash size={18} />
                                         </button>
                                     </div>
@@ -508,9 +517,11 @@ export default function UsersPage() {
                                                 <p className="text-sm text-amber-800">Envía un correo electrónico al usuario con instrucciones para restablecer su acceso.</p>
                                                 <button
                                                     type="button"
-                                                    className="mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700"
+                                                    onClick={handleResendCredentials}
+                                                    disabled={loading}
+                                                    className="mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 disabled:opacity-50"
                                                 >
-                                                    Reenviar Credenciales
+                                                    {loading ? 'Enviando...' : 'Reenviar Credenciales'}
                                                 </button>
                                             </div>
                                         </div>
@@ -581,6 +592,38 @@ export default function UsersPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-fadeIn">
+                        <div className="p-6 text-center">
+                            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Trash size={32} weight="bold" />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-800 mb-2">¿Confirmar eliminación?</h3>
+                            <p className="text-slate-500 mb-6">
+                                Estás a punto de eliminar a <span className="font-semibold text-slate-700">{userToDelete?.name}</span>. Esta acción no se puede deshacer.
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setIsDeleteModalOpen(false)}
+                                    className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 font-medium transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    disabled={loading}
+                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-slate-300 font-medium transition-colors"
+                                >
+                                    {loading ? 'Eliminando...' : 'Eliminar'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

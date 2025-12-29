@@ -155,7 +155,10 @@ export async function sendEmail(params: {
 
     const config = configs[0];
 
+    console.log(`[EmailService] Attempting to send email to ${params.to} using ${config.smtpHost}:${config.smtpPort}`);
+
     if (!config.smtpHost || !config.smtpUser || !config.smtpPasswordEncrypted) {
+      console.error('[EmailService] SMTP configuration is incomplete');
       return { success: false, error: 'Configuración SMTP incompleta' };
     }
 
@@ -169,7 +172,9 @@ export async function sendEmail(params: {
       },
     });
 
-    await transporter.sendMail({
+    console.log('[EmailService] Transporter created, sending mail...');
+
+    const info = await transporter.sendMail({
       from: `"${config.fromName || 'Maturity 360'}" <${config.fromEmail}>`,
       replyTo: config.replyToEmail || config.fromEmail || undefined,
       to: params.to,
@@ -177,9 +182,11 @@ export async function sendEmail(params: {
       html: params.html,
     });
 
+    console.log('[EmailService] Email sent successfully:', info.messageId);
+
     return { success: true };
   } catch (error: any) {
-    console.error('Error sending email:', error);
+    console.error('[EmailService] Error sending email:', error);
     return { success: false, error: error.message };
   }
 }

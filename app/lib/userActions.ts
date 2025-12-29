@@ -66,11 +66,17 @@ export async function createUserAction(userData: any, sendInvitation: boolean = 
                     loginUrl,
                 });
 
-                await sendEmail({
+                const emailResult = await sendEmail({
                     to: newUser.email,
                     subject: emailContent.subject,
                     html: emailContent.html,
                 });
+
+                if (!emailResult.success) {
+                    console.error('Email failed to send during user creation:', emailResult.error);
+                    // We don't necessarily want to fail user creation if email fails, 
+                    // but we should at least log it and maybe return a warning.
+                }
             } catch (emailError) {
                 console.error('Error sending welcome email:', emailError);
                 // Don't fail the user creation if email fails
@@ -155,11 +161,15 @@ export async function sendWelcomeEmailAction(userId: string, temporaryPassword: 
             loginUrl,
         });
 
-        await sendEmail({
+        const emailResult = await sendEmail({
             to: user.email || '',
             subject: emailContent.subject,
             html: emailContent.html,
         });
+
+        if (!emailResult.success) {
+            return { success: false, error: `Error enviando email: ${emailResult.error}` };
+        }
 
         // Update invite timestamps
         await db.update(users)
