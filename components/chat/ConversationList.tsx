@@ -126,11 +126,11 @@ export default function ConversationList() {
             setIsSearching(true);
             try {
                 const results = await ChatService.searchConversations(currentUser.id, search);
-                const enrichedResults = results.data.map(c => ({
+                const enrichedResults = results.map((c: any) => ({
                     ...c,
                     participants: c.participants || [],
                     title: c.title || null,
-                    unreadCount: 0 // Search results typically don't show unread count context here or we can fetch it
+                    unreadCount: 0
                 })) as Conversation[];
                 setSearchResults(enrichedResults);
             } catch (e) {
@@ -150,9 +150,9 @@ export default function ConversationList() {
     const displayList = searchResults !== null ? searchResults : conversations;
 
     // Date formatter
-    const formatTime = (iso?: string) => {
-        if (!iso) return '';
-        const date = new Date(iso);
+    const formatTime = (val?: string | Date | null) => {
+        if (!val) return '';
+        const date = new Date(val);
         const now = new Date();
         const diff = now.getTime() - date.getTime();
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
