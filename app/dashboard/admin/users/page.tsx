@@ -231,10 +231,11 @@ export default function UsersPage() {
 
         for (const user of importedUsers) {
             const result = await createUserAction(user, sendInvitation);
-            if (result.success) {
+            const anyResult = result as any; // Cast to any to avoid TS union type errors
+            if (anyResult.success) {
                 successCount++;
             } else {
-                errors.push(`${user.email}: ${result.error}`);
+                errors.push(`${user.email}: ${anyResult.error}`);
             }
         }
 
