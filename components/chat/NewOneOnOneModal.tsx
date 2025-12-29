@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { X, MagnifyingGlass, UserPlus, CircleNotch } from '@phosphor-icons/react';
 import { ChatService } from '@/lib/services/chatService';
-import { User } from '@/lib/data';
+import { User } from '@/shared/schema';
 import { useApp } from '@/context/AppContext';
 
 interface Props {
@@ -91,11 +91,11 @@ export default function NewOneOnOneModal({ isOpen, onClose, onUserSelect }: Prop
                             className="w-full flex items-center gap-3 p-3 hover:bg-blue-50 rounded-xl transition-colors group text-left"
                         >
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600 flex items-center justify-center font-bold text-sm border border-white shadow-sm">
-                                {user.initials}
+                                {user.initials || user.name.substring(0, 2).toUpperCase()}
                             </div>
                             <div className="flex-1">
                                 <h4 className="text-sm font-semibold text-gray-900 group-hover:text-blue-700">{user.name}</h4>
-                                <p className="text-xs text-gray-500">{user.role} • {user.unit}</p>
+                                <p className="text-xs text-gray-500">{user.role || 'Usuario'} • {user.unit || 'Sin unidad'}</p>
                             </div>
                             <UserPlus size={18} className="text-gray-300 group-hover:text-blue-500 transition-colors" />
                         </button>
