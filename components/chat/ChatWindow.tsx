@@ -2,8 +2,26 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Conversation, Message, Attachment } from '@/types/chat';
 import { useApp } from '@/context/AppContext';
-import { ChatService } from '@/lib/services/chatService';
-import { DB } from '@/lib/data'; // Still needed for direct push simulation, but ideally Service handles send too
+import {
+    getMessagesAction,
+    sendMessageAction,
+    markAsReadAction,
+    searchMessagesAction,
+    isBlockedAction,
+    getNotificationSettingsAction,
+    editMessageAction,
+    deleteMessageAction,
+    toggleReactionAction,
+    uploadFileAction,
+    leaveGroupAction,
+    muteConversationAction,
+    updateNotificationSettingsAction,
+    getGroupMembersAction,
+    unblockUserAction,
+    blockUserAction,
+    reportContentAction
+} from '@/app/lib/chatActions';
+import { DB } from '@/lib/data'; // Kept for minimal metadata lookup fallback if needed, ideally moved to actions too
 import { PaperPlaneRight, Paperclip, Smiley, Phone, VideoCamera, Info, Checks, CircleNotch, ArrowDown, DotsThreeVertical, Trash, PencilSimple, X, BellSlash, SignOut, ArrowUUpLeft, Heart, ThumbsUp, SmileyWink, File, Download, MagnifyingGlass } from '@phosphor-icons/react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { sanitizeHTML, escapeHTML } from '@/lib/services/sanitize';
@@ -51,7 +69,7 @@ export default function ChatWindow() {
             }
             setIsSearchingMsgs(true);
             try {
-                const results = await ChatService.searchMessages(msgSearchQuery, activeId);
+                const results = await searchMessagesAction(msgSearchQuery, activeId);
                 setMsgSearchResults(results);
             } catch (e) {
                 console.error(e);
@@ -103,6 +121,7 @@ export default function ChatWindow() {
             try {
                 // Get Metadata directly from Service/DB
                 // We use DB here to get the Title quickly as getConversations returns list
+                // Ideally we should use getConversationAction(activeId)
                 const convDef = DB.conversations.find(c => c.id === activeId);
                 if (convDef) {
                     let title = convDef.title;
@@ -115,7 +134,7 @@ export default function ChatWindow() {
                 }
 
                 // Get Messages (First Page)
-                const res = await ChatService.getMessages(activeId);
+                const res = await getMessagesAction(activeId);
                 setMessages(res.data.reverse()); // Initial load is usually newest page
 
                 // Privacy Check (Block)
@@ -124,8 +143,8 @@ export default function ChatWindow() {
                     const members = DB.conversationMembers.filter(m => m.conversation_id === activeId);
                     const otherMem = members.find(m => m.user_id !== currentUser.id);
                     if (otherMem) {
-                        const blocked = await ChatService.isBlocked(currentUser.id, otherMem.user_id);
-                        const blockedBy = await ChatService.isBlocked(otherMem.user_id, currentUser.id);
+                        const blocked = await isBlockedAction(currentUser.id, otherMem.user_id);
+                        const blockedBy = await isBlockedAction(otherMem.user_id, currentUser.id);
                         setIsBlocked(blocked || blockedBy);
                         if (blocked || blockedBy) setBlockerId(blocked ? currentUser.id : otherMem.user_id);
                     }
@@ -136,11 +155,11 @@ export default function ChatWindow() {
                 setHasMore(res.hasMore);
 
                 // HU M1.3 Mark Read
-                await ChatService.markAsRead(activeId, currentUser.id);
+                await markAsReadAction(activeId, currentUser.id);
                 refreshUnreadCount(); // Update sidebar count immediately
 
                 // HU M7.2 Get Settings
-                const settings = await ChatService.getNotificationSettings(activeId, currentUser.id);
+                const settings = await getNotificationSettingsAction(activeId, currentUser.id);
                 setNotificationSettings(settings);
 
                 // Scroll to bottom
@@ -170,7 +189,7 @@ export default function ChatWindow() {
             const previousHeight = scrollContainerRef.current.scrollHeight;
 
             try {
-                const res = await ChatService.getMessages(activeId, oldestCursorRef.current);
+                const res = await getMessagesAction(activeId, oldestCursorRef.current);
 
                 // Prepend messages
                 setMessages(prev => [...res.data, ...prev]);
@@ -200,7 +219,7 @@ export default function ChatWindow() {
         // If editing
         if (editingMsgId) {
             try {
-                await ChatService.editMessage(editingMsgId, currentUser.id, input);
+                await editMessageAction(editingMsgId, currentUser.id, input);
                 setMessages(prev => prev.map(m => m.id === editingMsgId ? { ...m, body: input } : m));
                 setEditingMsgId(null);
                 setInput('');
@@ -231,7 +250,7 @@ export default function ChatWindow() {
         setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
 
         try {
-            const serverMsg = await ChatService.sendMessage(activeId, currentUser.id, newMsg.body, tempId, newMsg.reply_to_message_id, newMsg.attachments);
+            const serverMsg = await sendMessageAction(activeId, currentUser.id, newMsg.body, tempId, newMsg.reply_to_message_id, newMsg.attachments);
             // Replace temp with server
             setMessages(prev => prev.map(m => m.id === tempId ? serverMsg : m));
         } catch (e) {
@@ -243,7 +262,7 @@ export default function ChatWindow() {
         if (!currentUser) return;
         setMenuOpenId(null);
         try {
-            await ChatService.deleteMessage(msgId, currentUser.id);
+            await deleteMessageAction(msgId, currentUser.id);
             // Local update (Soft Delete style)
             setMessages(prev => prev.map(m => m.id === msgId ? { ...m, deleted_at: new Date().toISOString(), body: '' } : m));
         } catch (e) { console.error(e); }
@@ -285,7 +304,7 @@ export default function ChatWindow() {
         }));
 
         try {
-            await ChatService.toggleReaction(msgId, currentUser.id, emoji);
+            await toggleReactionAction(msgId, currentUser.id, emoji);
         } catch (e) { console.error(e); }
     };
 
@@ -300,7 +319,10 @@ export default function ChatWindow() {
         for (const file of files) {
             try {
                 setUploadProgress(0);
-                const attachment = await ChatService.uploadFile(file, (percent) => setUploadProgress(percent));
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const attachment = await uploadFileAction(formData);
                 setAttachments(prev => [...prev, attachment]);
             } catch (err: any) {
                 console.error(err);
@@ -317,7 +339,7 @@ export default function ChatWindow() {
         if (!activeId || !currentUser) return;
         if (!confirm('¿Estás seguro de que quieres salir del grupo?')) return;
         try {
-            await ChatService.leaveGroup(activeId, currentUser.id);
+            await leaveGroupAction(activeId, currentUser.id);
             // Redirect / Refresh
             router.push('/dashboard/chat');
             // Force reload context/list ideally, but nav change triggers it usually
@@ -328,7 +350,7 @@ export default function ChatWindow() {
         if (!activeId || !currentUser) return;
         const until = hours ? new Date(Date.now() + hours * 3600000).toISOString() : '2099-12-31T23:59:59Z'; // Forever
         try {
-            await ChatService.muteConversation(activeId, currentUser.id, until);
+            await muteConversationAction(activeId, currentUser.id, until);
             setNotificationSettings(prev => ({ ...prev, mutedUntil: until })); // Local update
             setHeaderMenuOpen(false);
             alert(`Chat silenciado ${hours ? `por ${hours}h` : 'para siempre'}`);
@@ -338,7 +360,7 @@ export default function ChatWindow() {
     const handleNotifyLevel = async (level: 'all' | 'mentions' | 'none') => {
         if (!activeId || !currentUser) return;
         try {
-            await ChatService.updateNotificationSettings(activeId, currentUser.id, level);
+            await updateNotificationSettingsAction(activeId, currentUser.id, level);
             setNotificationSettings(prev => ({ ...prev, level }));
             setHeaderMenuOpen(false);
         } catch (e) { console.error(e); }
@@ -350,17 +372,17 @@ export default function ChatWindow() {
         // Ideally Conversation object has `otherUserId` helper or we find it
         // We need to fetch members
         try {
-            const members = await ChatService.getGroupMembers(conversation.id);
+            const members = await getGroupMembersAction(conversation.id);
             const other = members.find(m => m.id !== currentUser.id);
             if (!other) return;
 
             if (isBlocked) {
-                await ChatService.unblockUser(currentUser.id, other.id);
+                await unblockUserAction(currentUser.id, other.id);
                 setIsBlocked(false);
                 alert("Usuario desbloqueado");
             } else {
                 if (confirm("¿Estás seguro de bloquear a este usuario? No recibirás mensajes.")) {
-                    await ChatService.blockUser(currentUser.id, other.id);
+                    await blockUserAction(currentUser.id, other.id);
                     setIsBlocked(true);
                 }
             }
@@ -374,7 +396,7 @@ export default function ChatWindow() {
         if (!reason) return;
 
         try {
-            await ChatService.reportContent(currentUser.id, {
+            await reportContentAction(currentUser.id, {
                 targetId: msg.id,
                 type: 'message',
                 reason: reason,

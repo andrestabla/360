@@ -3,7 +3,8 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
-import { DB, Doc, RepoFolder } from '@/lib/data';
+// import { DB } from '@/lib/data'; // REMOVED MOCK
+import { RepositoryFile, RepositoryFolder, getFoldersAction, getDocumentsAction, createFolderAction, uploadDocumentAction, deleteDocumentAction, deleteFolderAction, updateFolderAction, moveItemAction } from '@/app/lib/repositoryActions';
 import {
     FilePdf, FileDoc, FileXls, FileText, MagnifyingGlass,
     UploadSimple, DownloadSimple, Eye, Trash, ClockCounterClockwise,
@@ -28,70 +29,44 @@ const DOC_TYPES = ['pdf', 'doc', 'xls', 'ppt', 'carpeta'];
 
 // Helper para iconos
 const getFileIcon = (type: string, size: number) => {
-    const t = type.toLowerCase();
+    const t = (type || '').toLowerCase();
     if (t.includes('pdf')) return <FilePdf size={size} weight="duotone" className="text-red-500" />;
     if (t.includes('doc') || t.includes('word')) return <FileDoc size={size} weight="duotone" className="text-blue-500" />;
-    if (t.includes('xls') || t.includes('sheet')) return <FileXls size={size} weight="duotone" className="text-green-500" />;
+    if (t.includes('xls') || t.includes('sheet') || t.includes('csv')) return <FileXls size={size} weight="duotone" className="text-green-500" />;
     if (t.includes('ppt') || t.includes('powerpoint')) return <FilePpt size={size} weight="duotone" className="text-orange-500" />;
+    if (t.includes('image') || t.includes('png') || t.includes('jpg')) return <FileText size={size} weight="duotone" className="text-purple-500" />;
     if (t === 'carpeta') return <Folder size={size} weight="duotone" className="text-yellow-400" />;
     return <FileText size={size} weight="duotone" className="text-slate-400" />;
 };
 
-const getVisibilityBadge = (v: string) => {
-    if (v === 'public') return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-green-200 bg-green-50 text-green-600 flex items-center gap-1"><Globe weight="bold" /> Global</span>;
-    if (v === 'unit') return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-200 bg-blue-50 text-blue-600 flex items-center gap-1"><Buildings weight="bold" /> Unidad</span>;
-    return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-slate-500 flex items-center gap-1"><Lock weight="bold" /> Privado</span>;
-};
-
-
 export default function RepositoryPage() {
-    const {
-        currentUser, uploadDoc, updateDoc, deleteDoc,
-        toggleDocLike, addDocComment, createRepoFolder, updateRepoFolder, deleteRepoFolder, version
-    } = useApp();
+    const { currentUser } = useApp();
     const { t } = useTranslation();
 
     // --- Estado Global ---
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+    const [folders, setFolders] = useState<RepositoryFolder[]>([]);
+    const [docs, setDocs] = useState<RepositoryFile[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
     const [showNewFolderModal, setShowNewFolderModal] = useState(false);
-    const [editingFolder, setEditingFolder] = useState<RepoFolder | null>(null);
+    const [editingFolder, setEditingFolder] = useState<RepositoryFolder | null>(null);
     const [filters, setFilters] = useState<FilterState>({
         search: '', type: null, unit: null, process: null, status: null, onlyFavorites: false
     });
     const [isSidebarMaximized, setIsSidebarMaximized] = useState(false);
 
-    const [selectedDoc, setSelectedDoc] = useState<Doc | null>(null);
+    const [selectedDoc, setSelectedDoc] = useState<RepositoryFile | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-    const [fullScreenDoc, setFullScreenDoc] = useState<Doc | null>(null);
+    const [fullScreenDoc, setFullScreenDoc] = useState<RepositoryFile | null>(null);
     const [showMoveModal, setShowMoveModal] = useState(false);
-    const [docToMove, setDocToMove] = useState<Doc | null>(null);
+    const [docToMove, setDocToMove] = useState<RepositoryFile | null>(null);
 
-    // Task Assignment Logic
-    const [showTaskModal, setShowTaskModal] = useState(false);
-    const [targetDoc, setTargetDoc] = useState<Doc | null>(null);
-    const handleAssign = (doc: Doc) => { setTargetDoc(doc); setShowTaskModal(true); };
-    const handleCreateTask = (data: any) => {
-        const newTask: any = {
-            id: `task-${Date.now()}`,
-            workflowId: 'ADHOC',
-            title: `${data.action}: ${targetDoc?.title}`,
-            status: 'IN_PROGRESS',
-            creatorId: currentUser!.id,
-            assigneeId: data.userId,
-            unit: 'Repository',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            data: { docId: targetDoc?.id, action: data.action, note: data.note },
-            history: [{ status: 'RECEIVED', by: currentUser!.name, date: new Date().toISOString(), comment: 'Tarea creada desde repositorio' }],
-            comments: []
-        };
-        DB.workflowCases.unshift(newTask);
-        setShowTaskModal(false);
-        setTargetDoc(null);
-        alert(`Tarea "${newTask.title}" asignada correctamente.`);
-    };
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadInputRef, setUploadInputRef] = useState<HTMLInputElement | null>(null);
 
     // Helper for dropdown toggling avoiding propagation issues
     const toggleDropdown = (id: string, e: React.MouseEvent) => {
@@ -101,95 +76,60 @@ export default function RepositoryPage() {
 
     // Refs
     const searchInputRef = useRef<HTMLInputElement>(null);
-    // Para simplificar, asumimos unidades globales
-    const tenantUnits = useMemo(() => DB.units, []);
 
-    // --- Atajos ---
+    // --- Fetch Data ---
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === '/' && document.activeElement !== searchInputRef.current) {
-                e.preventDefault();
-                searchInputRef.current?.focus();
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                // Parallel fetch
+                const [f, d] = await Promise.all([
+                    getFoldersAction(currentFolderId, currentUser?.unit), // Filter by unit optionally?
+                    getDocumentsAction(currentFolderId, currentUser?.unit, filters.search)
+                ]);
+                setFolders(f);
+                setDocs(d);
+            } catch (error) {
+                console.error("Failed to load repo data", error);
+            } finally {
+                setLoading(false);
             }
-            if (e.key === 'Escape') setSelectedDoc(null);
         };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedDoc]);
+        loadData();
+    }, [currentFolderId, refreshTrigger, filters.search, currentUser]); // Refresh on folder change or search
 
-    // --- Lógica de Filtrado ---
-    const hasActiveFilters = filters.type || filters.onlyFavorites || filters.search || filters.unit || filters.process;
+    const refresh = () => setRefreshTrigger(prev => prev + 1);
 
-    const currentFolder = useMemo(() => {
-        if (!currentFolderId) return null;
-        return DB.repoFolders.find(f => f.id === currentFolderId) || null;
-    }, [currentFolderId, version]);
+    // --- Breadcrumbs Logic (Simplified) ---
+    // In a real app with deep nesting, we need to fetch the full chain or store it.
+    // For MVP, we can keep a local history stack or just fetch parent info. 
+    // Since we don't return parent info in `getFoldersAction`, breadcrumbs might be tricky without a `getFolderDetails` fetch.
+    // Let's implement a simple "Up" button or track history manually for now.
+    // Enhanced: We track history of {id, name} locally.
+    const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null, name: string }[]>([{ id: null, name: 'Repositorio' }]);
 
-    const filteredFolders = useMemo(() => {
-        // Filtro por tipo
-        if (filters.type && filters.type !== 'carpeta') {
-            return []; // Si filtramos por PDF, no mostramos carpetas
-        }
-
-        // Si hay búsqueda o filtros activos, mostramos todas las carpetas que coincidan
-        if (hasActiveFilters) {
-            let f = DB.repoFolders;
-            if (filters.search) {
-                const q = filters.search.toLowerCase();
-                f = f.filter(fol => fol.name.toLowerCase().includes(q) || (fol.description || '').toLowerCase().includes(q));
-            }
-            if (filters.unit) f = f.filter(fol => fol.unit === filters.unit);
-            if (filters.process) f = f.filter(fol => fol.process === filters.process);
-            return f;
-        }
-
-        // Si no hay filtros, mostramos solo las carpetas del nivel actual
-        return DB.repoFolders.filter(fol => fol.parentId === currentFolderId);
-    }, [currentFolderId, filters, hasActiveFilters, version]);
-
-    const filteredDocs = useMemo(() => {
-        let d = DB.docs; // Todos los docs (Single Tenant)
-
-        if (currentUser && currentUser.level > 1) {
-            d = d.filter(doc => {
-                if (doc.authorId === currentUser.id) return true;
-                if (doc.visibility === 'public') return true;
-                if (doc.visibility === 'unit' && doc.unit === currentUser.unit) return true;
-                return false;
+    const navigateTo = (folder: RepositoryFolder | null) => {
+        if (!folder) {
+            setCurrentFolderId(null);
+            setBreadcrumbs([{ id: null, name: 'Repositorio' }]);
+        } else {
+            setCurrentFolderId(folder.id);
+            // Append if navigating down, Slice if navigating up (needs logic)
+            // For simple drill-down:
+            setBreadcrumbs(prev => {
+                const existingIdx = prev.findIndex(b => b.id === folder.id);
+                if (existingIdx >= 0) return prev.slice(0, existingIdx + 1);
+                return [...prev, { id: folder.id, name: folder.name }];
             });
         }
+    };
 
-        if (hasActiveFilters) {
-            if (filters.search) {
-                const q = filters.search.toLowerCase();
-                d = d.filter(doc => doc.title.toLowerCase().includes(q) || doc.unit.toLowerCase().includes(q));
-            }
-            if (filters.type) {
-                if (filters.type === 'carpeta') return []; // Si filtramos por carpetas, no mostramos docs
-                d = d.filter(doc => doc.type.toLowerCase().includes(filters.type!));
-            }
-            if (filters.unit) d = d.filter(doc => doc.unit === filters.unit);
-            if (filters.process) d = d.filter(doc => doc.process === filters.process);
-            if (filters.onlyFavorites) d = d.filter(doc => doc.likes > 0);
-        } else {
-            // Sin filtros, solo los del folder actual
-            d = d.filter(doc => (doc.folderId || null) === currentFolderId);
-        }
+    const handleBreadcrumbClick = (item: { id: string | null, name: string }) => {
+        setCurrentFolderId(item.id);
+        const idx = breadcrumbs.findIndex(b => b.id === item.id);
+        if (idx >= 0) setBreadcrumbs(breadcrumbs.slice(0, idx + 1));
+    };
 
-        return d;
-    }, [currentUser, filters, currentFolderId, hasActiveFilters, version]);
-
-    // Breadcrumbs
-    const breadcrumbs = useMemo(() => {
-        const chain: RepoFolder[] = [];
-        let current = currentFolder;
-        while (current) {
-            chain.unshift(current);
-            const parentId = current.parentId;
-            current = parentId ? DB.repoFolders.find(f => f.id === parentId) || null : null;
-        }
-        return chain;
-    }, [currentFolder]);
 
     // --- Drag & Drop Handlers ---
     const handleDragOver = (e: React.DragEvent) => {
@@ -197,67 +137,81 @@ export default function RepositoryPage() {
         setIsDragging(true);
     };
     const handleDragLeave = () => setIsDragging(false);
-    const handleDrop = (e: React.DragEvent) => {
+    const handleDrop = async (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
-        // Simular subida
+
         if (e.dataTransfer.files.length > 0) {
             const file = e.dataTransfer.files[0];
-            uploadDoc({
-                title: file.name,
-                unit: currentUser?.unit || 'General', visibility: 'unit',
-                version: '1.0', status: 'pending', type: file.name.split('.').pop() || 'file',
-                size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-                authorId: currentUser?.id || 'unknown',
-                tags: [],
-                history: []
-            });
-            alert(`Archivo "${file.name}" subido (simulación).`);
+            await performUpload(file);
+        }
+    };
+
+    const performUpload = async (file: File) => {
+        setIsUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            if (currentFolderId) formData.append('folderId', currentFolderId);
+            if (currentUser?.unit) formData.append('unitId', currentUser.unit);
+
+            await uploadDocumentAction(formData);
+            refresh();
+            setTimeout(() => alert('Archivo subido correctamente'), 500);
+        } catch (error: any) {
+            alert(`Error al subir: ${error.message}`);
+        } finally {
+            setIsUploading(false);
+            setShowUploadModal(false);
         }
     };
 
     // --- Actions ---
-    const handleDownload = (doc: Doc) => {
-        const toast = document.createElement('div');
-        toast.textContent = `Descargando ${doc.title}...`;
-        toast.className = 'fixed bottom-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-xl shadow-xl z-[100] animate-fadeIn font-medium flex items-center gap-2';
-        toast.innerHTML = `<span class="animate-spin text-white opacity-80">⟳</span> Descargando ${doc.title}...`;
-        document.body.appendChild(toast);
-
-        setTimeout(() => {
-            const a = document.createElement('a');
-            const blob = new Blob([`Contenido Ficticio de ${doc.title}\n\nTipo: ${doc.type}\nID: ${doc.id}\n\nEste archivo es una demostración de Maturity360.`], { type: 'text/plain' });
-            a.href = window.URL.createObjectURL(blob);
-            a.download = `${doc.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${doc.type}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-
-            toast.className = 'fixed bottom-4 right-4 bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-xl z-[100] animate-fadeIn font-medium flex items-center gap-2';
-            toast.innerHTML = `✓ Descarga completada`;
-            setTimeout(() => toast.remove(), 3000);
-        }, 1500);
-    };
-
-    const handleShare = async (doc: Doc) => {
-        const url = `${window.location.origin}/doc/${doc.id}`;
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: doc.title,
-                    text: `Revisa este documento: ${doc.title}`,
-                    url: url
+    const handleCreateFolder = async (name: string, description?: string) => {
+        try {
+            if (editingFolder) {
+                await updateFolderAction(editingFolder.id, { name, description });
+            } else {
+                await createFolderAction({
+                    name,
+                    parentId: currentFolderId,
+                    unitId: currentUser?.unit,
+                    description
                 });
-                return;
-            } catch (err) {
-                // Fallback
             }
+            setShowNewFolderModal(false);
+            setEditingFolder(null);
+            refresh();
+        } catch (e: any) {
+            alert(e.message);
         }
-        navigator.clipboard.writeText(url);
-        alert('Enlace copiado al portapapeles');
     };
 
-    const clearFilters = () => setFilters({ search: '', type: null, unit: null, process: null, status: null, onlyFavorites: false });
+    const handleDeleteDoc = async (id: string) => {
+        if (!confirm('¿Seguro quieres eliminar este documento?')) return;
+        try {
+            await deleteDocumentAction(id);
+            if (selectedDoc?.id === id) setSelectedDoc(null);
+            refresh();
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleDeleteFolder = async (id: string) => {
+        if (!confirm('¿Seguro quieres eliminar esta carpeta?')) return;
+        try {
+            await deleteFolderAction(id);
+            refresh();
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleDownload = (doc: RepositoryFile) => {
+        if (doc.url) window.open(doc.url, '_blank');
+        else alert('URL no disponible');
+    };
 
     return (
         <div
@@ -273,6 +227,15 @@ export default function RepositoryPage() {
                         <UploadSimple size={48} className="mx-auto text-blue-600 mb-4" />
                         <h3 className="text-xl font-bold text-slate-800">{t('repo_upload_title')}</h3>
                         <p className="text-slate-500">{t('repo_empty_desc')}</p>
+                    </div>
+                </div>
+            )}
+
+            {isUploading && (
+                <div className="absolute inset-0 z-[60] bg-black/20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-xl shadow-2xl flex flex-col items-center">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
+                        <p className="font-semibold text-slate-700">Subiendo archivo...</p>
                     </div>
                 </div>
             )}
@@ -300,13 +263,7 @@ export default function RepositoryPage() {
                             <UploadSimple weight="bold" size={18} /> <span>{t('repo_upload_btn')}</span>
                         </button>
                         <button
-                            onClick={() => {
-                                if (currentFolder && (currentFolder.level || 1) >= 5) {
-                                    alert('Máximo nivel de carpetas alcanzado (5)');
-                                    return;
-                                }
-                                setShowNewFolderModal(true);
-                            }}
+                            onClick={() => setShowNewFolderModal(true)}
                             className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all"
                         >
                             <FolderPlus weight="bold" size={18} className="text-blue-500" /> <span>Nueva Carpeta</span>
@@ -315,22 +272,15 @@ export default function RepositoryPage() {
 
                     {/* Breadcrumbs */}
                     <div className="flex items-center gap-2 mb-4 overflow-x-auto no-scrollbar pb-1">
-                        <button
-                            onClick={() => setCurrentFolderId(null)}
-                            className={`flex items-center gap-1.5 text-xs font-bold transition-colors whitespace-nowrap ${!currentFolderId ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            <Folder size={16} weight={!currentFolderId ? 'fill' : 'regular'} />
-                            Repositorio
-                        </button>
-                        {breadcrumbs.map((f, i) => (
-                            <React.Fragment key={f.id}>
-                                <CaretRight size={12} className="text-slate-300 flex-shrink-0" />
+                        {breadcrumbs.map((item, i) => (
+                            <React.Fragment key={item.id || 'root'}>
+                                {i > 0 && <CaretRight size={12} className="text-slate-300 flex-shrink-0" />}
                                 <button
-                                    onClick={() => setCurrentFolderId(f.id)}
+                                    onClick={() => handleBreadcrumbClick(item)}
                                     className={`flex items-center gap-1.5 text-xs font-bold transition-colors whitespace-nowrap ${i === breadcrumbs.length - 1 ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
                                 >
-                                    <Folder size={16} weight={i === breadcrumbs.length - 1 ? 'fill' : 'regular'} style={{ color: f.color }} />
-                                    {f.name}
+                                    <Folder size={16} weight={i === breadcrumbs.length - 1 ? 'fill' : 'regular'} className={i === breadcrumbs.length - 1 ? 'text-blue-500' : 'text-slate-400'} />
+                                    {item.name}
                                 </button>
                             </React.Fragment>
                         ))}
@@ -339,37 +289,43 @@ export default function RepositoryPage() {
 
                 {/* Grid Content */}
                 <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50">
-                    {(filteredFolders.length > 0 || filteredDocs.length > 0) ? (
+                    {loading ? (
+                        <div className="flex items-center justify-center h-64">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400"></div>
+                        </div>
+                    ) : (folders.length > 0 || docs.length > 0) ? (
                         <div className={`grid gap-4 ${selectedDoc ? 'grid-cols-1 xl:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'}`}>
-                            {filteredFolders.map(folder => (
+                            {folders.map(folder => (
                                 <FolderCard
                                     key={folder.id}
                                     folder={folder}
-                                    onOpen={() => setCurrentFolderId(folder.id)}
+                                    onOpen={() => navigateTo(folder)}
                                     onEdit={() => { setEditingFolder(folder); setShowNewFolderModal(true); }}
-                                    onDelete={() => { if (confirm('¿Seguro quieres eliminar esta carpeta?')) deleteRepoFolder(folder.id); }}
-                                    showDetails={hasActiveFilters}
+                                    onDelete={() => handleDeleteFolder(folder.id)}
+                                    showDetails={!!filters.search}
                                 />
                             ))}
-                            {filteredDocs.map(doc => (
+                            {docs.map(doc => (
                                 <GridCard
                                     key={doc.id}
                                     doc={doc}
                                     isSelected={selectedDoc?.id === doc.id}
                                     onClick={() => setSelectedDoc(doc)}
-                                    onToggleLike={() => toggleDocLike(doc.id)}
+                                    onToggleLike={() => { }}
                                     onDownload={() => handleDownload(doc)}
                                     onMenu={(e: React.MouseEvent) => toggleDropdown(doc.id, e)}
                                     isMenuOpen={activeDropdown === doc.id}
                                     onCloseMenu={() => setActiveDropdown(null)}
-                                    onShare={() => handleShare(doc)}
-                                    onAssign={() => handleAssign(doc)}
+                                    onShare={() => { }}
+                                    onAssign={() => { }}
+                                    onDelete={() => handleDeleteDoc(doc.id)}
                                 />
                             ))}
                         </div>
                     ) : (
                         <div className="text-center py-20">
                             <p className="text-slate-500">Carpeta vacía</p>
+                            <p className="text-xs text-slate-400 mt-2">Arrastra archivos aquí o usa el botón "Subir"</p>
                         </div>
                     )}
                 </div>
@@ -382,12 +338,12 @@ export default function RepositoryPage() {
                         doc={selectedDoc}
                         onClose={() => { setSelectedDoc(null); setIsSidebarMaximized(false); }}
                         currentUser={currentUser}
-                        onUpdate={(updates: any) => updateDoc(selectedDoc.id, updates)}
-                        onDelete={() => { deleteDoc(selectedDoc.id); setSelectedDoc(null); }}
-                        onLike={() => toggleDocLike(selectedDoc.id)}
+                        onUpdate={() => { }}
+                        onDelete={() => handleDeleteDoc(selectedDoc.id)}
+                        onLike={() => { }}
                         onDownload={() => handleDownload(selectedDoc)}
-                        onShare={() => handleShare(selectedDoc)}
-                        onAssign={() => handleAssign(selectedDoc)}
+                        onShare={() => { }}
+                        onAssign={() => { }}
                         onExpand={() => setFullScreenDoc(selectedDoc)}
                         onMove={() => { setDocToMove(selectedDoc); setShowMoveModal(true); }}
                         isMaximized={isSidebarMaximized}
@@ -401,22 +357,14 @@ export default function RepositoryPage() {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
                     <div className="bg-white p-6 rounded-xl w-full max-w-md">
                         <h3 className="font-bold text-lg mb-4">Subir Documento</h3>
-                        {/* Mock simple form */}
-                        <p className="text-sm text-slate-500 mb-4">Funcionalidad simulada para la demo.</p>
-                        <button onClick={() => {
-                            uploadDoc({
-                                title: "Documento Nuevo.pdf",
-                                unit: currentUser?.unit || 'General', visibility: 'unit',
-                                version: '1.0', status: 'APPROVED', type: 'pdf',
-                                size: '1.5 MB',
-                                authorId: currentUser?.id || 'unknown',
-                                tags: [],
-                                history: [],
-                                folderId: currentFolderId || undefined
-                            });
-                            setShowUploadModal(false);
-                        }} className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold">Subir Simulado</button>
-                        <button onClick={() => setShowUploadModal(false)} className="w-full mt-2 text-slate-500 text-sm">Cancelar</button>
+                        <input
+                            type="file"
+                            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) performUpload(e.target.files[0]);
+                            }}
+                        />
+                        <button onClick={() => setShowUploadModal(false)} className="w-full mt-4 text-slate-500 text-sm">Cancelar</button>
                     </div>
                 </div>
             )}
@@ -426,24 +374,17 @@ export default function RepositoryPage() {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
                     <div className="bg-white p-6 rounded-xl w-full max-w-md">
                         <h3 className="font-bold text-lg mb-4">{editingFolder ? 'Editar Carpeta' : 'Nueva Carpeta'}</h3>
-                        <button onClick={() => {
-                            if (editingFolder) {
-                                // updateRepoFolder(editingFolder.id, { name: 'Carpeta Editada' });
-                                // Simple mock
-                            } else {
-                                createRepoFolder({
-                                    name: 'Nueva Carpeta',
-                                    parentId: currentFolderId || undefined,
-                                    level: (currentFolder?.level || 0) + 1,
-                                    unit: 'General',
-                                    color: '#3b82f6',
-                                    process: 'General'
-                                });
-                            }
-                            setShowNewFolderModal(false);
-                            setEditingFolder(null);
-                        }} className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold">Guardar</button>
-                        <button onClick={() => { setShowNewFolderModal(false); setEditingFolder(null); }} className="w-full mt-2 text-slate-500 text-sm">Cancelar</button>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            handleCreateFolder(formData.get('name') as string, formData.get('description') as string);
+                        }}>
+                            <input name="name" defaultValue={editingFolder?.name} placeholder="Nombre de la carpeta" className="w-full border p-2 rounded mb-2" required />
+                            <input name="description" defaultValue={editingFolder?.description || ''} placeholder="Descripción (opcional)" className="w-full border p-2 rounded mb-4" />
+
+                            <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold">Guardar</button>
+                            <button type="button" onClick={() => { setShowNewFolderModal(false); setEditingFolder(null); }} className="w-full mt-2 text-slate-500 text-sm">Cancelar</button>
+                        </form>
                     </div>
                 </div>
             )}
@@ -463,17 +404,18 @@ function FolderCard({ folder, onOpen, onEdit, onDelete, showDetails }: any) {
                 <Folder size={32} weight="duotone" style={{ color: folder.color || '#fbbf24' }} />
                 <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-slate-800 text-sm truncate">{folder.name}</h4>
-                    <p className="text-[10px] text-slate-500">Carpeta</p>
+                    <p className="text-[10px] text-slate-500">{folder.description || 'Carpeta'}</p>
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-blue-600">
-                    <DotsThree size={20} weight="bold" />
-                </button>
+                <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                    <button onClick={onEdit} className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-500"><PencilSimple size={14} /></button>
+                    <button onClick={onDelete} className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-red-500"><Trash size={14} /></button>
+                </div>
             </div>
         </div>
     )
 }
 
-function GridCard({ doc, isSelected, onClick, onToggleLike, onDownload, onMenu, isMenuOpen, onCloseMenu, onShare, onAssign }: any) {
+function GridCard({ doc, isSelected, onClick, onToggleLike, onDownload, onMenu, isMenuOpen, onCloseMenu, onShare, onAssign, onDelete }: any) {
     const { t } = useTranslation();
     const baseClasses = "group relative flex flex-col bg-white border rounded-xl transition-all cursor-pointer overflow-visible hover:shadow-md";
     const selectedClasses = isSelected ? "ring-2 ring-blue-500 shadow-md border-transparent" : "border-slate-200 hover:border-blue-300";
@@ -498,7 +440,7 @@ function GridCard({ doc, isSelected, onClick, onToggleLike, onDownload, onMenu, 
                         <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-50 origin-top-right cursor-default" onClick={e => e.stopPropagation()}>
                             <button onClick={(e) => { e.stopPropagation(); onClick(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600"><Eye size={16} /> Ver</button>
                             <button onClick={(e) => { e.stopPropagation(); onDownload(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600"><DownloadSimple size={16} /> Descargar</button>
-                            <button onClick={(e) => { e.stopPropagation(); onCloseMenu?.(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-red-50 text-red-600 flex items-center gap-2"><Trash size={16} /> Eliminar</button>
+                            <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-red-50 text-red-600 flex items-center gap-2"><Trash size={16} /> Eliminar</button>
                         </div>
                     )}
                 </div>
@@ -508,9 +450,9 @@ function GridCard({ doc, isSelected, onClick, onToggleLike, onDownload, onMenu, 
                     <h4 className={`font-bold text-sm leading-tight mb-1 line-clamp-2 ${isSelected ? 'text-blue-700' : 'text-slate-800'}`}>
                         {doc.title}
                     </h4>
-                    <p className="text-xs text-slate-500 flex items-center gap-1 mb-2">
+                    {/* <p className="text-xs text-slate-500 flex items-center gap-1 mb-2">
                         <Buildings size={12} /> {doc.unit}
-                    </p>
+                    </p> */}
                 </div>
             </div>
         </div>
@@ -534,7 +476,7 @@ function DetailPanel({ doc, onClose, currentUser, onUpdate, onDelete, onLike, on
                 <h2 className="text-xl font-bold text-slate-900 mb-2">{doc.title}</h2>
                 <div className="space-y-4 text-sm text-slate-600">
                     <div className="flex justify-between border-b pb-2"><span>Tipo</span> <span className="font-semibold uppercase">{doc.type}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span>Unidad</span> <span className="font-semibold">{doc.unit}</span></div>
+                    {/* <div className="flex justify-between border-b pb-2"><span>Unidad</span> <span className="font-semibold">{doc.unitId}</span></div> */}
                     <div className="flex justify-between border-b pb-2"><span>Tamaño</span> <span className="font-semibold">{doc.size}</span></div>
                     <div className="flex justify-between border-b pb-2"><span>Estado</span> <span className="font-semibold">{doc.status}</span></div>
                 </div>

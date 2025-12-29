@@ -2,6 +2,9 @@ import { pgTable, text, varchar, integer, timestamp, boolean, json, jsonb, seria
 import { relations } from "drizzle-orm";
 import type { AdapterAccountType } from "next-auth/adapters";
 
+// 1. SETTINGS & CONFIGURATION
+// =========================================================================
+
 export const organizationSettings = pgTable("organization_settings", {
   id: integer("id").primaryKey().default(1), // Singleton row
   name: text("name").notNull().default("My Organization"),
@@ -24,7 +27,7 @@ export const organizationSettings = pgTable("organization_settings", {
   subscriptionStatus: varchar("subscription_status", { length: 50 }).default("active"),
   billingPeriod: varchar("billing_period", { length: 20 }).default("monthly"),
 
-  currentPeriodEnd: timestamp("current_period_end"),
+  currentPeriodEnd: timestamp("current_period_end", { mode: 'date' }),
   stripeConfig: json("stripe_config").$type<{
     secretKey?: string;
     webhookSecret?: string;
@@ -32,8 +35,8 @@ export const organizationSettings = pgTable("organization_settings", {
     priceIdEnterprise?: string;
     nextAuthUrl?: string;
   }>(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
 });
 
 export const emailSettings = pgTable("email_settings", {
@@ -48,21 +51,25 @@ export const emailSettings = pgTable("email_settings", {
   fromEmail: varchar("from_email", { length: 255 }),
   replyToEmail: varchar("reply_to_email", { length: 255 }),
   isEnabled: boolean("is_enabled").default(false),
-  lastTestedAt: timestamp("last_tested_at"),
+  lastTestedAt: timestamp("last_tested_at", { mode: 'date' }),
   lastTestResult: boolean("last_test_result"),
   lastTestError: text("last_test_error"),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
 });
+
+// =========================================================================
+// 2. CORE DOMAIN (Users, Units, Auth)
+// =========================================================================
 
 export const users = pgTable("users", {
   id: varchar("id", { length: 255 }).primaryKey(),
   name: text("name").notNull(),
-  email: varchar("email", { length: 255 }),
+  email: varchar("email", { length: 255 }).unique(), // Added unique constraint
   emailVerified: timestamp("email_verified", { mode: "date" }),
   image: text("image"),
   role: varchar("role", { length: 100 }).notNull(),
   level: integer("level").default(1),
-  unit: varchar("unit", { length: 255 }),
+  unit: varchar("unit", { length: 255 }), // Can't strictly reference units(id) yet due to circular dep possibility, keeping weak ref
   initials: varchar("initials", { length: 10 }),
   bio: text("bio"),
   phone: varchar("phone", { length: 50 }),
@@ -74,12 +81,12 @@ export const users = pgTable("users", {
   avatar: text("avatar"),
   password: text("password"),
   mustChangePassword: boolean("must_change_password").default(false),
-  lastPasswordChange: timestamp("last_password_change"),
-  lastLogin: timestamp("last_login"),
-  inviteSentAt: timestamp("invite_sent_at"),
-  inviteExpiresAt: timestamp("invite_expires_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  lastPasswordChange: timestamp("last_password_change", { mode: 'date' }),
+  lastLogin: timestamp("last_login", { mode: 'date' }),
+  inviteSentAt: timestamp("invite_sent_at", { mode: 'date' }),
+  inviteExpiresAt: timestamp("invite_expires_at", { mode: 'date' }),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
   preferences: jsonb("preferences").$type<{
     theme: 'light' | 'dark' | 'system',
     notifications: boolean,
@@ -92,8 +99,10 @@ export const users = pgTable("users", {
 }, (table) => [
   index("idx_users_email").on(table.email),
   index("idx_users_status").on(table.status),
+  index("idx_users_role").on(table.role),
 ]);
 
+// Auth Tables (NextAuth Standard)
 export const accounts = pgTable(
   "account",
   {
@@ -166,31 +175,67 @@ export const units = pgTable("units", {
   name: text("name").notNull(),
   code: varchar("code", { length: 50 }).notNull().unique(),
   path: text("path"),
-  parentId: varchar("parent_id", { length: 255 }),
-  managerId: varchar("manager_id", { length: 255 }),
+  parentId: varchar("parent_id", { length: 255 }), // Self-reference usually tricky in some ORMs, keeping standard but adding index
+  managerId: varchar("manager_id", { length: 255 }).references(() => users.id, { onDelete: "set null" }), // Strict FK
   description: text("description"),
   type: varchar("type", { length: 50 }).default("UNIT"),
   level: integer("level").default(0),
   color: varchar("color", { length: 50 }),
   members: json("members").$type<string[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+}, (table) => [
+  index("idx_units_parent").on(table.parentId),
+  index("idx_units_type").on(table.type),
+]);
+
+// =========================================================================
+// 3. MODULES (Documents, Workflows, Surveys, Chat)
+// =========================================================================
+
+// Folders for Repository
+export const folders = pgTable("folders", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  name: text("name").notNull(),
+  parentId: varchar("parent_id", { length: 255 }), // Self-reference
+  unitId: varchar("unit_id", { length: 255 }).references(() => units.id, { onDelete: 'cascade' }),
+  creatorId: varchar("creator_id", { length: 255 }).references(() => users.id, { onDelete: 'set null' }),
+  color: varchar("color", { length: 50 }).default("#3b82f6"),
+  description: text("description"),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
+}, (table) => [
+  index("idx_folders_parent").on(table.parentId),
+  index("idx_folders_unit").on(table.unitId),
+]);
 
 export const documents = pgTable("documents", {
   id: varchar("id", { length: 255 }).primaryKey(),
   title: text("title").notNull(),
-  content: text("content"),
+  content: text("content"), // Indexable text content or description
+  type: varchar("type", { length: 50 }).default("file"), // pdf, doc, etc
+  size: varchar("size", { length: 50 }),
+  url: text("url"), // Storage URL or Key
   category: varchar("category", { length: 255 }),
-  unitId: varchar("unit_id", { length: 255 }),
-  ownerId: varchar("owner_id", { length: 255 }),
+
+  folderId: varchar("folder_id", { length: 255 }).references(() => folders.id, { onDelete: 'cascade' }),
+  unitId: varchar("unit_id", { length: 255 }).references(() => units.id, { onDelete: 'set null' }),
+  ownerId: varchar("owner_id", { length: 255 }).references(() => users.id, { onDelete: 'cascade' }),
+
   status: varchar("status", { length: 50 }).default("DRAFT"),
-  version: integer("version").default(1),
+  version: varchar("version", { length: 20 }).default("1.0"), // Changed to string for semantic versioning
   tags: json("tags").$type<string[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  likes: integer("likes").default(0),
+  commentsCount: integer("comments_count").default(0),
+
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
 }, (table) => [
   index("idx_documents_status").on(table.status),
+  index("idx_documents_unit").on(table.unitId),
+  index("idx_documents_owner").on(table.ownerId),
+  index("idx_documents_folder").on(table.folderId),
 ]);
+
 
 export const conversations = pgTable("conversations", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -199,25 +244,26 @@ export const conversations = pgTable("conversations", {
   title: text("title"),
   participants: json("participants").$type<string[]>().default([]),
   lastMessage: text("last_message"),
-  lastMessageAt: timestamp("last_message_at"),
-  createdAt: timestamp("created_at").defaultNow(),
+  lastMessageAt: timestamp("last_message_at", { mode: 'date' }),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
 });
 
 export const messages = pgTable("messages", {
   id: varchar("id", { length: 255 }).primaryKey(),
   conversationId: varchar("conversation_id", { length: 255 }).notNull().references(() => conversations.id, { onDelete: "cascade" }),
-  senderId: varchar("sender_id", { length: 255 }).notNull(),
+  senderId: varchar("sender_id", { length: 255 }).notNull().references(() => users.id, { onDelete: "cascade" }), // Strict FK
   body: text("body").notNull(),
   bodyType: varchar("body_type", { length: 50 }).default("text"),
   attachments: json("attachments").$type<Record<string, unknown>[]>().default([]),
   readBy: json("read_by").$type<string[]>().default([]),
   replyToMessageId: varchar("reply_to_message_id", { length: 255 }),
   reactions: json("reactions").$type<Record<string, unknown>[]>().default([]),
-  deletedAt: timestamp("deleted_at"),
-  editedAt: timestamp("edited_at"),
-  createdAt: timestamp("created_at").defaultNow(),
+  deletedAt: timestamp("deleted_at", { mode: 'date' }),
+  editedAt: timestamp("edited_at", { mode: 'date' }),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
 }, (table) => [
   index("idx_messages_conversation").on(table.conversationId),
+  index("idx_messages_sender").on(table.senderId),
   index("idx_messages_conversation_created").on(table.conversationId, table.createdAt),
 ]);
 
@@ -226,10 +272,10 @@ export const workflows = pgTable("workflows", {
   title: text("title").notNull(),
   description: text("description"),
   status: varchar("status", { length: 50 }).default("DRAFT"),
-  ownerId: varchar("owner_id", { length: 255 }),
+  ownerId: varchar("owner_id", { length: 255 }).references(() => users.id, { onDelete: "set null" }),
   steps: json("steps").$type<Record<string, unknown>[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
 });
 
 export const surveys = pgTable("surveys", {
@@ -239,56 +285,57 @@ export const surveys = pgTable("surveys", {
   status: varchar("status", { length: 50 }).default("DRAFT"),
   questions: json("questions").$type<Record<string, unknown>[]>().default([]),
   responses: json("responses").$type<Record<string, unknown>[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
 });
 
 export const auditLogs = pgTable("audit_logs", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id", { length: 255 }),
+  userId: varchar("user_id", { length: 255 }), // Audit logs should persist even if user is deleted, keeping loose ref
   action: varchar("action", { length: 255 }).notNull(),
   resource: varchar("resource", { length: 255 }),
   resourceId: varchar("resource_id", { length: 255 }),
   details: json("details").$type<Record<string, unknown>>(),
   ipAddress: varchar("ip_address", { length: 50 }),
   userAgent: text("user_agent"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
 }, (table) => [
   index("idx_audit_logs_created").on(table.createdAt),
+  index("idx_audit_logs_user").on(table.userId),
 ]);
 
 export const workflowCases = pgTable("workflow_cases", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  workflowId: varchar("workflow_id", { length: 255 }), // Removed constraints for flexibility
+  workflowId: varchar("workflow_id", { length: 255 }).references(() => workflows.id, { onDelete: 'set null' }),
   title: text("title").notNull(),
   status: varchar("status", { length: 50 }).default("PENDING"),
-  creatorId: varchar("creator_id", { length: 255 }),
-  assigneeId: varchar("assignee_id", { length: 255 }),
+  creatorId: varchar("creator_id", { length: 255 }).references(() => users.id, { onDelete: 'set null' }),
+  assigneeId: varchar("assignee_id", { length: 255 }).references(() => users.id, { onDelete: 'set null' }),
   priority: varchar("priority", { length: 20 }).default("MEDIUM"),
-  dueDate: timestamp("due_date"),
+  dueDate: timestamp("due_date", { mode: 'date' }),
   data: json("data").$type<Record<string, unknown>>().default({}),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
 }, (table) => [
   index("idx_workflow_cases_assignee").on(table.assigneeId),
   index("idx_workflow_cases_status").on(table.status),
+  index("idx_workflow_cases_workflow").on(table.workflowId),
 ]);
+
+// 4. PERSONAL PRODUCTIVITY
+// =========================================================================
 
 export const userRecents = pgTable("user_recents", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id", { length: 255 }).notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
   resourceId: varchar("resource_id", { length: 255 }).notNull(),
   resourceType: varchar("resource_type", { length: 50 }).notNull(), // PROJECT, DOC
   title: text("title"),
-  lastVisitedAt: timestamp("last_visited_at").defaultNow(),
+  lastVisitedAt: timestamp("last_visited_at", { mode: 'date' }).defaultNow(),
 }, (table) => [
   index("idx_user_recents_user").on(table.userId),
   index("idx_user_recents_visited").on(table.lastVisitedAt),
 ]);
-
-// =========================================================================
-// 2. TABLAS DE PRODUCTIVIDAD PERSONAL
-// =========================================================================
 
 export const userNotes = pgTable("user_notes", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -304,43 +351,35 @@ export const userNotes = pgTable("user_notes", {
     channel: 'internal' | 'email' | 'both';
     sent: boolean;
   }>(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
 }, (table) => [
   index("idx_user_notes_user").on(table.userId),
   index("idx_user_notes_date").on(table.date),
   index("idx_user_notes_status").on(table.status),
 ]);
 
-// Removed platformAdmins table. Admins will be users with specific role in the main users table.
 
-// Relations can be simplified as we removed tenant nesting.
-// Most tables were related to tenants. Now they stand alone or related to Users/Units.
-
-export const conversationsRelations = relations(conversations, ({ many }) => ({
-  messages: many(messages),
-}));
-
-export const messagesRelations = relations(messages, ({ one }) => ({
-  conversation: one(conversations, {
-    fields: [messages.conversationId],
-    references: [conversations.id],
-  }),
-}));
+// =========================================================================
+// 5. SYSTEM
+// =========================================================================
 
 export const systemEnvironment = pgTable("system_environment", {
   id: integer("id").primaryKey().default(1),
   environment: varchar("environment", { length: 50 }).notNull(),
   fingerprint: varchar("fingerprint", { length: 64 }).notNull(),
   description: text("description"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
 });
 
+// TYPES
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Unit = typeof units.$inferSelect;
 export type InsertUnit = typeof units.$inferInsert;
+export type Folder = typeof folders.$inferSelect;
+export type InsertFolder = typeof folders.$inferInsert;
 export type Document = typeof documents.$inferSelect;
 export type InsertDocument = typeof documents.$inferInsert;
 export type Conversation = typeof conversations.$inferSelect;
