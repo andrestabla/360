@@ -1,16 +1,22 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
-import { DB, User } from '@/lib/data';
+import { User } from '@/lib/data';
 import {
     Users,
     Plus,
     Pencil,
     Trash,
     MagnifyingGlass,
-    UserCircle
+    Sparkle,
+    PaperPlaneRight,
+    Upload
 } from '@phosphor-icons/react';
+import { createUserAction, updateUserAction, deleteUserAction, getUsersAction } from '@/app/lib/userActions';
+import { generateSecurePassword } from '@/lib/utils/passwordUtils';
+import UserCreatedModal from '@/components/UserCreatedModal';
+import ImportUsersModal from '@/components/ImportUsersModal';
 
 const LEVELS = [
     { level: 1, label: 'Nivel 1 (Administrador)' },
@@ -22,34 +28,52 @@ const LEVELS = [
 ];
 
 export default function UsersPage() {
-    const { currentUser, isSuperAdmin } = useApp();
+    const { currentUser, isSuperAdmin, addNotification } = useApp();
     const isAdmin = isSuperAdmin || currentUser?.role?.toLowerCase().includes('admin');
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [search, setSearch] = useState('');
-
-    // Mock Data Management directly here for now as AppContext functions were removed
-    // In a real app this would use API calls
-    const [localUsers, setLocalUsers] = useState<User[]>(DB.users);
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [createdUser, setCreatedUser] = useState<{ email: string; password?: string; emailSent: boolean } | null>(null);
 
     const [formData, setFormData] = useState<Partial<User>>({
         name: '',
         email: '',
+        password: '',
         jobTitle: '',
-        level: 6,
+        level: 3,
         status: 'ACTIVE',
         role: 'Usuario'
     });
+    const [sendInvitation, setSendInvitation] = useState(false);
+
+    const loadUsers = useCallback(async () => {
+        setLoading(true);
+        const result = await getUsersAction();
+        if (result.success && result.data) {
+            setUsers(result.data as User[]);
+        } else {
+            addNotification({ title: 'Error', message: result.error || 'No se pudieron cargar los usuarios', type: 'error' });
+        }
+        setLoading(false);
+    }, [addNotification]);
+
+    useEffect(() => {
+        loadUsers();
+    }, [loadUsers]);
 
     // Filtering
     const filteredUsers = useMemo(() => {
-        return localUsers.filter(u =>
+        return users.filter(u =>
             u.name.toLowerCase().includes(search.toLowerCase()) ||
             (u.email || '').toLowerCase().includes(search.toLowerCase()) ||
             (u.jobTitle || '').toLowerCase().includes(search.toLowerCase())
         );
-    }, [localUsers, search]);
+    }, [users, search]);
 
     if (!isAdmin) {
         return <div className="p-8 text-center text-slate-500">Acceso restringido.</div>;
@@ -60,12 +84,19 @@ export default function UsersPage() {
         setFormData({
             name: '',
             email: '',
+            password: '',
             jobTitle: '',
-            level: 6,
+            level: 3,
             status: 'ACTIVE',
             role: 'Usuario'
         });
+        setSendInvitation(false);
         setIsModalOpen(true);
+    };
+
+    const handleGeneratePassword = () => {
+        const newPassword = generateSecurePassword();
+        setFormData({ ...formData, password: newPassword });
     };
 
     const handleEdit = (user: User) => {
@@ -81,34 +112,85 @@ export default function UsersPage() {
         setIsModalOpen(true);
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (confirm('¿Estás seguro de eliminar este usuario?')) {
-            // Mock delete
-            setLocalUsers(prev => prev.filter(u => u.id !== id));
-            // Also update DB for consistency in session
-            const idx = DB.users.findIndex(u => u.id === id);
-            if (idx !== -1) DB.users.splice(idx, 1);
+            setLoading(true);
+            const result = await deleteUserAction(id);
+            if (result.success) {
+                addNotification({ title: 'Éxito', message: 'Usuario eliminado correctamente', type: 'success' });
+                await loadUsers();
+            } else {
+                addNotification({ title: 'Error', message: result.error || 'No se pudo eliminar el usuario', type: 'error' });
+            }
+            setLoading(false);
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
 
         if (editingId) {
             // Edit
-            setLocalUsers(prev => prev.map(u =>
-                u.id === editingId ? { ...u, ...formData } as User : u
-            ));
+            const result = await updateUserAction(editingId, formData);
+            if (result.success) {
+                addNotification({ title: 'Éxito', message: 'Usuario actualizado correctamente', type: 'success' });
+                await loadUsers();
+                setIsModalOpen(false);
+            } else {
+                addNotification({ title: 'Error', message: result.error || 'No se pudo actualizar el usuario', type: 'error' });
+            }
         } else {
             // Create
-            const newUser: User = {
-                ...formData as User,
-                id: editingId || `u-${Date.now()}`
-            };
-            setLocalUsers(prev => [...prev, newUser]);
-            DB.users.push(newUser);
+            const result = await createUserAction(formData, sendInvitation);
+            if (result.success) {
+                setCreatedUser({
+                    email: formData.email || '',
+                    password: result.temporaryPassword,
+                    emailSent: sendInvitation
+                });
+                setIsSuccessModalOpen(true);
+                await loadUsers();
+                setIsModalOpen(false);
+            } else {
+                addNotification({ title: 'Error', message: result.error || 'No se pudo crear el usuario', type: 'error' });
+            }
         }
-        setIsModalOpen(false);
+        setLoading(false);
+    };
+
+    const handleImport = async (importedUsers: Partial<User>[]) => {
+        setLoading(true);
+        let successCount = 0;
+        const errors: string[] = [];
+
+        for (const user of importedUsers) {
+            const result = await createUserAction(user, sendInvitation);
+            if (result.success) {
+                successCount++;
+            } else {
+                errors.push(`${user.email}: ${result.error}`);
+            }
+        }
+
+        if (successCount > 0) {
+            addNotification({
+                title: 'Importación completada',
+                message: `${successCount} de ${importedUsers.length} usuarios importados`,
+                type: 'success'
+            });
+        }
+        if (errors.length > 0) {
+            console.error('Import errors:', errors);
+            addNotification({
+                title: 'Errores en importación',
+                message: `${errors.length} usuarios no se pudieron importar`,
+                type: 'error'
+            });
+        }
+
+        await loadUsers();
+        setLoading(false);
     };
 
     return (
