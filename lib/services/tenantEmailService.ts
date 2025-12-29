@@ -165,11 +165,19 @@ export async function sendEmail(params: {
     const transporter = nodemailer.createTransport({
       host: config.smtpHost || undefined,
       port: config.smtpPort || undefined,
-      secure: config.smtpSecure || false,
+      secure: config.smtpPort === 465, // true for 465, false for other ports
+      requireTLS: config.smtpPort === 587, // STARTTLS for port 587 (Amazon SES)
       auth: {
         user: config.smtpUser,
         pass: decryptPassword(config.smtpPasswordEncrypted),
       },
+      tls: {
+        // Required for some SMTP servers like Amazon SES
+        ciphers: 'SSLv3',
+        rejectUnauthorized: true
+      },
+      logger: true, // Enable logging
+      debug: process.env.NODE_ENV !== 'production', // Debug in development
     });
 
     console.log('[EmailService] Transporter created, sending mail...');
@@ -265,10 +273,15 @@ export async function testEmailConfig(): Promise<{ success: boolean; error?: str
     const transporter = nodemailer.createTransport({
       host: dbConfig.smtpHost || undefined,
       port: dbConfig.smtpPort || undefined,
-      secure: dbConfig.smtpSecure || false,
+      secure: dbConfig.smtpPort === 465,
+      requireTLS: dbConfig.smtpPort === 587,
       auth: {
         user: dbConfig.smtpUser,
         pass: decryptPassword(dbConfig.smtpPasswordEncrypted),
+      },
+      tls: {
+        ciphers: 'SSLv3',
+        rejectUnauthorized: true
       },
     });
 
