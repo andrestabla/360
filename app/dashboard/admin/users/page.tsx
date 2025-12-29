@@ -55,7 +55,17 @@ export default function UsersPage() {
         setLoading(true);
         const result = await getUsersAction();
         if (result.success && result.data) {
-            setUsers(result.data as User[]);
+            // Convert database types to User type (dates to strings)
+            const convertedUsers: User[] = result.data.map((dbUser: any) => ({
+                ...dbUser,
+                email: dbUser.email || undefined,
+                inviteSentAt: dbUser.inviteSentAt ? dbUser.inviteSentAt.toISOString() : undefined,
+                inviteExpiresAt: dbUser.inviteExpiresAt ? dbUser.inviteExpiresAt.toISOString() : undefined,
+                emailVerified: dbUser.emailVerified ? dbUser.emailVerified.toISOString() : undefined,
+                createdAt: dbUser.createdAt ? dbUser.createdAt.toISOString() : undefined,
+                updatedAt: dbUser.updatedAt ? dbUser.updatedAt.toISOString() : undefined,
+            }));
+            setUsers(convertedUsers);
         } else {
             addNotification({ title: 'Error', message: result.error || 'No se pudieron cargar los usuarios', type: 'error' });
         }
