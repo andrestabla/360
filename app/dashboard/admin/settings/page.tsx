@@ -764,7 +764,7 @@ export default function AdminSettingsPage() {
                                         </button>
                                     </div>
 
-                                    {formData.smtpHost ? (
+                                    {formData.smtpHost && formData.hasEncryptedPassword ? (
                                         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center justify-between mb-6 animate-in fade-in slide-in-from-top-2">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center text-green-600 dark:text-green-400 shadow-sm">
@@ -783,6 +783,18 @@ export default function AdminSettingsPage() {
                                             >
                                                 Abrir Asistente
                                             </button>
+                                        </div>
+                                    ) : formData.smtpHost && !formData.hasEncryptedPassword ? (
+                                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex items-center gap-3 mb-6 animate-in fade-in slide-in-from-top-2">
+                                            <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/40 rounded-full flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-sm">
+                                                <WarningCircle weight="fill" className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-amber-900 dark:text-amber-100">Configuración Incompleta</h4>
+                                                <p className="text-sm text-amber-800 dark:text-amber-300">
+                                                    Falta la contraseña SMTP. Por favor ingrésala nuevamente y guarda los cambios para activar el servicio.
+                                                </p>
+                                            </div>
                                         </div>
                                     ) : null}
 
