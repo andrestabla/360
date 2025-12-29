@@ -11,13 +11,13 @@ import { sendEmail } from '@/lib/services/tenantEmailService';
 export async function getUsersAction() {
     try {
         const result = await db.select().from(users);
-        // Serialize Dates to strings to prevent React server-client serialization issues
+        // Serialize Dates to strings safely - handle both Date objects and strings from DB driver
         const serializedData = result.map(user => ({
             ...user,
-            createdAt: user.createdAt ? user.createdAt.toISOString() : null,
-            updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null,
-            inviteSentAt: user.inviteSentAt ? user.inviteSentAt.toISOString() : null,
-            inviteExpiresAt: user.inviteExpiresAt ? user.inviteExpiresAt.toISOString() : null,
+            createdAt: user.createdAt ? new Date(user.createdAt).toISOString() : null,
+            updatedAt: user.updatedAt ? new Date(user.updatedAt).toISOString() : null,
+            inviteSentAt: user.inviteSentAt ? new Date(user.inviteSentAt).toISOString() : null,
+            inviteExpiresAt: user.inviteExpiresAt ? new Date(user.inviteExpiresAt).toISOString() : null,
         }));
         return { success: true, data: serializedData };
     } catch (error) {
