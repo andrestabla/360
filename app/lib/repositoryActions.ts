@@ -12,7 +12,7 @@ export type RepositoryFile = typeof documents.$inferSelect;
 export type RepositoryFolder = typeof folders.$inferSelect;
 
 // --- Helper: Serialize ---
-function serialize<T>(obj: T): T {
+function serialize<T>(obj: T): any {
     return JSON.parse(JSON.stringify(obj));
 }
 

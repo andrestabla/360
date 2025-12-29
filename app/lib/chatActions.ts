@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from "@/lib/auth";
 
 // Helper to serialize Dates to strings
-function serialize<T>(obj: T): T {
+function serialize<T>(obj: T): any {
     return JSON.parse(JSON.stringify(obj));
 }
 
