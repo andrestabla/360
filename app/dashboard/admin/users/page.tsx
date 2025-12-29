@@ -202,9 +202,20 @@ export default function UsersPage() {
                     </h1>
                     <p className="text-sm text-slate-500 mt-1">Administra los usuarios de la organización.</p>
                 </div>
-                <button onClick={handleCreate} className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors">
-                    <Plus weight="bold" /> Nuevo Usuario
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors"
+                    >
+                        <Upload weight="bold" /> Importar CSV
+                    </button>
+                    <button
+                        onClick={handleCreate}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                    >
+                        <Plus weight="bold" /> Nuevo Usuario
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -320,6 +331,37 @@ export default function UsersPage() {
                                     onChange={e => setFormData({ ...formData, jobTitle: e.target.value })}
                                 />
                             </div>
+
+                            {/* Password field (only for create) */}
+                            {!editingId && (
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-500 mb-1">
+                                        Contraseña Temporal
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="password"
+                                            className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 ring-blue-500/20 outline-none"
+                                            value={formData.password}
+                                            onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                            placeholder="Dejar vacío para generar automáticamente"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleGeneratePassword}
+                                            className="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-1"
+                                            title="Generar contraseña segura"
+                                        >
+                                            <Sparkle size={18} weight="fill" />
+                                            Generar
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-1">
+                                        Si no se especifica, se generará automáticamente
+                                    </p>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-500 mb-1">Nivel</label>
@@ -347,16 +389,56 @@ export default function UsersPage() {
                                 </div>
                             </div>
 
+                            {/* Send invitation checkbox (only for create) */}
+                            {!editingId && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={sendInvitation}
+                                            onChange={e => setSendInvitation(e.target.checked)}
+                                            className="w-4 h-4 text-blue-600 rounded focus:ring-2 ring-blue-500/20"
+                                        />
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <PaperPlaneRight size={16} weight="fill" className="text-blue-600" />
+                                            <span className="font-medium text-blue-900">Enviar email de bienvenida con credenciales</span>
+                                        </div>
+                                    </label>
+                                    <p className="text-xs text-blue-700 ml-6 mt-1">
+                                        El usuario recibirá sus credenciales por correo electrónico
+                                    </p>
+                                </div>
+                            )}
+
                             <div className="pt-4 flex justify-end gap-3">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg text-sm font-medium">Cancelar</button>
-                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
-                                    Guardar
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-sm font-medium">
+                                    {loading ? 'Guardando...' : 'Guardar'}
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
+
+            {/* Import Modal */}
+            <ImportUsersModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                onImport={handleImport}
+            />
+
+            {/* Success Modal */}
+            <UserCreatedModal
+                isOpen={isSuccessModalOpen}
+                onClose={() => setIsSuccessModalOpen(false)}
+                userEmail={createdUser?.email || ''}
+                temporaryPassword={createdUser?.password}
+                emailSent={createdUser?.emailSent || false}
+            />
         </div>
     );
 }
