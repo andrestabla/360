@@ -26,52 +26,83 @@ export default function ImportUsersModal({ isOpen, onClose, onImport }: ImportUs
         setErrors([]);
         setPreview([]);
 
-        // Parse CSV
+        // Parse CSV with auto-detection
         const text = await selectedFile.text();
-        const lines = text.split('\n').filter(line => line.trim());
+        const cleanText = text.replace(/^\uFEFF/, ''); // Remove BOM
+        const lines = cleanText.split(/\r?\n/).filter(line => line.trim());
 
         if (lines.length < 2) {
             setErrors(['El archivo está vacío o no tiene datos']);
             return;
         }
 
+        // Detect delimiter
+        const firstLine = lines[0];
+        const delimiters = [',', ';', '\t'];
+        let delimiter = ',';
+        let maxCount = 0;
+
+        for (const d of delimiters) {
+            const count = firstLine.split(d).length;
+            if (count > maxCount) {
+                maxCount = count;
+                delimiter = d;
+            }
+        }
+
         // Parse header
-        const header = lines[0].split(',').map(h => h.trim());
+        const header = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
+
+        // Normalize header keys to lowercase for flexible matching
+        const normalizedHeader = header.map(h => h.toLowerCase());
+
         const requiredFields = ['name', 'email'];
-        const missingFields = requiredFields.filter(f => !header.includes(f));
+        // Check if we have required fields (flexible check)
+        const missingFields = requiredFields.filter(f => !normalizedHeader.includes(f));
 
         if (missingFields.length > 0) {
-            setErrors([`Faltan campos requeridos: ${missingFields.join(', ')}`]);
+            setErrors([`Faltan campos requeridos: ${missingFields.join(', ')} (Detectado separador: "${delimiter}")`]);
             return;
         }
+
+        // Map header indexes
+        const headerMap = new Map<string, number>();
+        normalizedHeader.forEach((h, i) => headerMap.set(h, i));
 
         // Parse data
         const users: Partial<User>[] = [];
         const validationErrors: string[] = [];
 
         for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(',').map(v => v.trim());
-            const row: Record<string, string> = {};
+            // Handle split with potential quotes (basic)
+            // For robust parsing we'd need a real parser, but this regex handles basic cases
+            // or just split by delimiter if no quotes
+            const values = lines[i].split(delimiter).map(v => v.trim().replace(/^"|"$/g, ''));
 
-            header.forEach((key, index) => {
-                row[key] = values[index] || '';
-            });
+            const getName = () => values[headerMap.get('name')!] || '';
+            const getEmail = () => values[headerMap.get('email')!] || '';
+            const getVal = (key: string) => headerMap.has(key) ? values[headerMap.get(key)!] : '';
+
+            const name = getName();
+            const email = getEmail();
+            const levelStr = getVal('level');
+            const statusStr = getVal('status');
 
             // Validate required fields
-            if (!row.name || !row.email) {
+            if (!name || !email) {
                 validationErrors.push(`Línea ${i + 1}: Faltan campos requeridos (name, email)`);
                 continue;
             }
 
             // Validate email format
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(row.email)) {
-                validationErrors.push(`Línea ${i + 1}: Email inválido "${row.email}"`);
+            if (!emailRegex.test(email)) {
+                validationErrors.push(`Línea ${i + 1}: Email inválido "${email}"`);
                 continue;
             }
 
             // Validate level
-            const level = parseInt(row.level) || 3;
+            const level = parseInt(levelStr) || 3;
             if (level < 1 || level > 6) {
                 validationErrors.push(`Línea ${i + 1}: Nivel inválido. Debe ser entre 1 y 6`);
                 continue;
@@ -79,19 +110,19 @@ export default function ImportUsersModal({ isOpen, onClose, onImport }: ImportUs
 
             const user: Partial<User> = {
                 id: `user_${Date.now()}_${i}`,
-                name: row.name,
-                email: row.email,
-                password: row.password || 'ChangeMe123!',
+                name: name,
+                email: email,
+                password: getVal('password') || 'ChangeMe123!',
                 level: level,
-                role: row.role || 'Usuario',
-                unit: row.unit || '',
-                jobTitle: row.jobTitle || '',
-                phone: row.phone || '',
-                location: row.location || '',
-                status: (row.status === 'ACTIVE' || row.status === 'SUSPENDED' || row.status === 'PENDING_INVITE' || row.status === 'DELETED'
-                    ? row.status
+                role: getVal('role') || 'Usuario',
+                unit: getVal('unit') || '',
+                jobTitle: getVal('jobtitle') || '', // normalized
+                phone: getVal('phone') || '',
+                location: getVal('location') || '',
+                status: (statusStr === 'ACTIVE' || statusStr === 'SUSPENDED' || statusStr === 'PENDING_INVITE' || statusStr === 'DELETED'
+                    ? statusStr
                     : 'ACTIVE') as 'ACTIVE' | 'SUSPENDED' | 'PENDING_INVITE' | 'DELETED',
-                initials: row.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                initials: name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
             };
 
             users.push(user);

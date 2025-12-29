@@ -26,63 +26,90 @@ export default function ImportUnitsModal({ isOpen, onClose, onImport }: ImportUn
         setErrors([]);
         setPreview([]);
 
-        // Parse CSV
+        // Parse CSV with auto-detection
         const text = await selectedFile.text();
-        const lines = text.split('\n').filter(line => line.trim());
+        const cleanText = text.replace(/^\uFEFF/, ''); // Remove BOM
+        const lines = cleanText.split(/\r?\n/).filter(line => line.trim());
 
         if (lines.length < 2) {
             setErrors(['El archivo está vacío o no tiene datos']);
             return;
         }
 
+        // Detect delimiter
+        const firstLine = lines[0];
+        const delimiters = [',', ';', '\t'];
+        let delimiter = ',';
+        let maxCount = 0;
+
+        for (const d of delimiters) {
+            const count = firstLine.split(d).length;
+            if (count > maxCount) {
+                maxCount = count;
+                delimiter = d;
+            }
+        }
+
         // Parse header
-        const header = lines[0].split(',').map(h => h.trim());
+        const header = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
+        const normalizedHeader = header.map(h => h.toLowerCase());
+
         const requiredFields = ['id', 'name', 'type', 'depth'];
-        const missingFields = requiredFields.filter(f => !header.includes(f));
+        const missingFields = requiredFields.filter(f => !normalizedHeader.includes(f));
 
         if (missingFields.length > 0) {
             setErrors([`Faltan campos requeridos: ${missingFields.join(', ')}`]);
             return;
         }
 
+        // Map header indexes
+        const headerMap = new Map<string, number>();
+        normalizedHeader.forEach((h, i) => headerMap.set(h, i));
+
         // Parse data
         const units: Partial<Unit>[] = [];
         const validationErrors: string[] = [];
 
         for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(',').map(v => v.trim());
-            const row: Record<string, string> = {};
+            const values = lines[i].split(delimiter).map(v => v.trim().replace(/^"|"$/g, ''));
 
-            header.forEach((key, index) => {
-                row[key] = values[index] || '';
-            });
+            const getVal = (key: string) => headerMap.has(key) ? values[headerMap.get(key)!] : '';
+
+            const id = getVal('id');
+            const name = getVal('name');
+            const type = getVal('type');
+            const depthStr = getVal('depth');
+            const parentId = getVal('parentid');
+            const responsibleEmail = getVal('responsibleemail');
+            const description = getVal('description');
 
             // Validate required fields
-            if (!row.id || !row.name || !row.type) {
+            if (!id || !name || !type) {
                 validationErrors.push(`Línea ${i + 1}: Faltan campos requeridos (id, name, type)`);
                 continue;
             }
 
             // Validate type
-            if (!['UNIT', 'PROCESS'].includes(row.type)) {
-                validationErrors.push(`Línea ${i + 1}: Tipo inválido "${row.type}". Debe ser UNIT o PROCESS`);
+            const upperType = type.toUpperCase();
+            if (!['UNIT', 'PROCESS'].includes(upperType)) {
+                validationErrors.push(`Línea ${i + 1}: Tipo inválido "${type}". Debe ser UNIT o PROCESS`);
                 continue;
             }
 
             // Validate depth for UNIT
-            if (row.type === 'UNIT' && (!row.depth || !['0', '1', '2'].includes(row.depth))) {
+            if (upperType === 'UNIT' && (!depthStr || !['0', '1', '2'].includes(depthStr))) {
                 validationErrors.push(`Línea ${i + 1}: Depth inválido para UNIT. Debe ser 0, 1 o 2`);
                 continue;
             }
 
             const unit: Partial<Unit> = {
-                id: row.id,
-                name: row.name,
-                type: row.type as 'UNIT' | 'PROCESS',
-                depth: row.type === 'UNIT' ? parseInt(row.depth) : undefined,
-                parentId: row.parentId || undefined,
-                ownerId: row.responsibleEmail || undefined, // En producción, buscar usuario por email
-                description: row.description || undefined
+                id: id,
+                name: name,
+                type: upperType as 'UNIT' | 'PROCESS',
+                depth: upperType === 'UNIT' ? parseInt(depthStr) : undefined,
+                parentId: parentId || undefined,
+                ownerId: responsibleEmail || undefined, // En producción, buscar usuario por email
+                description: description || undefined
             };
 
             units.push(unit);
