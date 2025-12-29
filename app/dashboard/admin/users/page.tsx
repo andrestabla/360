@@ -198,10 +198,19 @@ export default function UsersPage() {
             // Create
             const result = await createUserAction(formData, sendInvitation);
             if (result.success) {
+                // Check if email was requested but failed
+                if (sendInvitation && result.emailSent === false) {
+                    addNotification({
+                        title: 'Usuario creado con advertencia',
+                        message: `Usuario creado pero el email falló: ${result.emailError || 'Error desconocido'}`,
+                        type: 'warning'
+                    });
+                }
+
                 setCreatedUser({
                     email: formData.email || '',
                     password: result.temporaryPassword,
-                    emailSent: sendInvitation
+                    emailSent: result.emailSent !== false // true if sent or not requested
                 });
                 setIsSuccessModalOpen(true);
                 await loadUsers();

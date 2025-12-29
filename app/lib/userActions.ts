@@ -56,6 +56,7 @@ export async function createUserAction(userData: any, sendInvitation: boolean = 
         await db.insert(users).values(newUser);
 
         // Send welcome email if requested
+        let emailResult: { success: boolean; error?: string } | undefined;
         if (sendInvitation) {
             try {
                 const loginUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login`;
@@ -66,7 +67,7 @@ export async function createUserAction(userData: any, sendInvitation: boolean = 
                     loginUrl,
                 });
 
-                const emailResult = await sendEmail({
+                emailResult = await sendEmail({
                     to: newUser.email,
                     subject: emailContent.subject,
                     html: emailContent.html,
@@ -74,21 +75,31 @@ export async function createUserAction(userData: any, sendInvitation: boolean = 
 
                 if (!emailResult.success) {
                     console.error('Email failed to send during user creation:', emailResult.error);
-                    // We don't necessarily want to fail user creation if email fails, 
-                    // but we should at least log it and maybe return a warning.
                 }
             } catch (emailError) {
                 console.error('Error sending welcome email:', emailError);
-                // Don't fail the user creation if email fails
+                emailResult = { success: false, error: String(emailError) };
             }
         }
 
         revalidatePath('/dashboard/admin/users');
-        return {
+
+        // Return result with email status
+        const result: any = {
             success: true,
-            user: { ...newUser, password: undefined }, // Don't send back hashed password
-            temporaryPassword: sendInvitation ? undefined : temporaryPassword // Only return if not emailed
+            user: { ...newUser, password: undefined },
+            temporaryPassword: sendInvitation ? undefined : temporaryPassword
         };
+
+        // Add email status if invitation was requested
+        if (sendInvitation) {
+            result.emailSent = emailResult?.success || false;
+            if (emailResult && !emailResult.success) {
+                result.emailError = emailResult.error;
+            }
+        }
+
+        return result;
     } catch (error: any) {
         console.error('Error creating user:', error);
         return { success: false, error: 'Error al crear usuario' };
