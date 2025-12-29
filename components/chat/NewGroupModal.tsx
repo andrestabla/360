@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { X, MagnifyingGlass, UserPlus, Check, CircleNotch } from '@phosphor-icons/react';
 import { ChatService } from '@/lib/services/chatService';
-import { User } from '@/lib/data';
+import { User } from '@/shared/schema';
 import { useApp } from '@/context/AppContext';
 
 interface Props {
@@ -132,11 +132,11 @@ export default function NewGroupModal({ isOpen, onClose, onGroupCreate }: Props)
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shadow-sm transition-colors
                                     ${isSelected ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-500'}
                                 `}>
-                                    {isSelected ? <Check size={14} weight="bold" /> : user.initials}
+                                    {isSelected ? <Check size={14} weight="bold" /> : (user.initials || user.name.substring(0, 2).toUpperCase())}
                                 </div>
                                 <div className="flex-1">
                                     <h4 className={`text-sm font-semibold ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>{user.name}</h4>
-                                    <p className="text-xs text-gray-500">{user.role}</p>
+                                    <p className="text-xs text-gray-500">{user.role || 'Usuario'}</p>
                                 </div>
                             </button>
                         );
