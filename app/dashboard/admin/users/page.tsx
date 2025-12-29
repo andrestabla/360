@@ -17,6 +17,7 @@ import { createUserAction, updateUserAction, deleteUserAction, getUsersAction } 
 import { generateSecurePassword } from '@/lib/utils/passwordUtils';
 import UserCreatedModal from '@/components/UserCreatedModal';
 import ImportUsersModal from '@/components/ImportUsersModal';
+import { getUnitsAction } from '@/app/lib/unitActions';
 
 const LEVELS = [
     { level: 1, label: 'Nivel 1 (Administrador)' },
@@ -36,6 +37,9 @@ export default function UsersPage() {
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [search, setSearch] = useState('');
+    const [filterUnit, setFilterUnit] = useState<string>('');
+    const [filterLevel, setFilterLevel] = useState<number | ''>('');
+    const [units, setUnits] = useState<any[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
     const [createdUser, setCreatedUser] = useState<{ email: string; password?: string; emailSent: boolean } | null>(null);
@@ -50,6 +54,7 @@ export default function UsersPage() {
         role: 'Usuario'
     });
     const [sendInvitation, setSendInvitation] = useState(false);
+    const [activeTab, setActiveTab] = useState<'details' | 'security' | 'activity'>('details');
 
     const loadUsers = useCallback(async () => {
         setLoading(true);
@@ -72,18 +77,29 @@ export default function UsersPage() {
         setLoading(false);
     }, [addNotification]);
 
+    const loadUnits = useCallback(async () => {
+        const result = await getUnitsAction();
+        if (result.success && result.data) {
+            setUnits(result.data);
+        }
+    }, []);
+
     useEffect(() => {
         loadUsers();
-    }, [loadUsers]);
+        loadUnits();
+    }, [loadUsers, loadUnits]);
 
     // Filtering
     const filteredUsers = useMemo(() => {
-        return users.filter(u =>
-            u.name.toLowerCase().includes(search.toLowerCase()) ||
-            (u.email || '').toLowerCase().includes(search.toLowerCase()) ||
-            (u.jobTitle || '').toLowerCase().includes(search.toLowerCase())
-        );
-    }, [users, search]);
+        return users.filter(u => {
+            const matchesSearch = u.name.toLowerCase().includes(search.toLowerCase()) ||
+                (u.email || '').toLowerCase().includes(search.toLowerCase()) ||
+                (u.jobTitle || '').toLowerCase().includes(search.toLowerCase());
+            const matchesUnit = !filterUnit || u.unit === filterUnit;
+            const matchesLevel = filterLevel === '' || u.level === filterLevel;
+            return matchesSearch && matchesUnit && matchesLevel;
+        });
+    }, [users, search, filterUnit, filterLevel]);
 
     if (!isAdmin) {
         return <div className="p-8 text-center text-slate-500">Acceso restringido.</div>;
@@ -101,6 +117,7 @@ export default function UsersPage() {
             role: 'Usuario'
         });
         setSendInvitation(false);
+        setActiveTab('details');
         setIsModalOpen(true);
     };
 
@@ -117,8 +134,10 @@ export default function UsersPage() {
             jobTitle: user.jobTitle,
             level: user.level,
             status: user.status,
-            role: user.role
+            role: user.role,
+            mustChangePassword: user.mustChangePassword
         });
+        setActiveTab('details');
         setIsModalOpen(true);
     };
 
@@ -229,8 +248,8 @@ export default function UsersPage() {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                {/* Search Bar */}
-                <div className="p-4 border-b border-slate-100">
+                {/* Search Bar & Filters */}
+                <div className="p-4 border-b border-slate-100 space-y-3">
                     <div className="relative max-w-md">
                         <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
@@ -239,6 +258,31 @@ export default function UsersPage() {
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                         />
+                    </div>
+
+                    {/* Filters */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <select
+                            value={filterUnit}
+                            onChange={e => setFilterUnit(e.target.value)}
+                            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 ring-blue-500/10"
+                        >
+                            <option value="">Todas las Unidades</option>
+                            {units.map(unit => (
+                                <option key={unit.id} value={unit.name}>{unit.name}</option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={filterLevel}
+                            onChange={e => setFilterLevel(e.target.value === '' ? '' : Number(e.target.value))}
+                            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 ring-blue-500/10"
+                        >
+                            <option value="">Todos los Niveles</option>
+                            {LEVELS.map(l => (
+                                <option key={l.level} value={l.level}>{l.label}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
 
@@ -306,127 +350,234 @@ export default function UsersPage() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fadeIn">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fadeIn max-h-[90vh] flex flex-col">
                         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                             <h3 className="font-bold text-slate-800">{editingId ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
                             <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">&times;</button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 mb-1">Nombre Completo</label>
-                                <input
-                                    required
-                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-blue-500/20 outline-none"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 mb-1">Email</label>
-                                <input
-                                    type="email"
-                                    required
-                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-blue-500/20 outline-none"
-                                    value={formData.email}
-                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 mb-1">Cargo</label>
-                                <input
-                                    required
-                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-blue-500/20 outline-none"
-                                    value={formData.jobTitle}
-                                    onChange={e => setFormData({ ...formData, jobTitle: e.target.value })}
-                                />
-                            </div>
-
-                            {/* Password field (only for create) */}
-                            {!editingId && (
-                                <div>
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">
-                                        Contraseña Temporal
-                                    </label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="password"
-                                            className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 ring-blue-500/20 outline-none"
-                                            value={formData.password}
-                                            onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                            placeholder="Dejar vacío para generar automáticamente"
-                                        />
+                        {/* Tabs */}
+                        <div className="border-b border-slate-200 bg-white">
+                            <div className="flex px-6">
+                                <button
+                                    onClick={() => setActiveTab('details')}
+                                    className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'details'
+                                        ? 'border-blue-600 text-blue-600'
+                                        : 'border-transparent text-slate-500 hover:text-slate-700'
+                                        }`}
+                                >
+                                    Detalles
+                                </button>
+                                {editingId && (
+                                    <>
                                         <button
-                                            type="button"
-                                            onClick={handleGeneratePassword}
-                                            className="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-1"
-                                            title="Generar contraseña segura"
+                                            onClick={() => setActiveTab('security')}
+                                            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'security'
+                                                ? 'border-blue-600 text-blue-600'
+                                                : 'border-transparent text-slate-500 hover:text-slate-700'
+                                                }`}
                                         >
-                                            <Sparkle size={18} weight="fill" />
-                                            Generar
+                                            Seguridad & Acceso
                                         </button>
-                                    </div>
-                                    <p className="text-xs text-slate-400 mt-1">
-                                        Si no se especifica, se generará automáticamente
-                                    </p>
-                                </div>
-                            )}
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Nivel</label>
-                                    <select
-                                        className="w-full px-3 py-2 border rounded-lg bg-white"
-                                        value={formData.level}
-                                        onChange={e => setFormData({ ...formData, level: Number(e.target.value) })}
-                                    >
-                                        {LEVELS.map(l => (
-                                            <option key={l.level} value={l.level}>{l.label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Estado</label>
-                                    <select
-                                        className="w-full px-3 py-2 border rounded-lg bg-white"
-                                        value={formData.status}
-                                        onChange={e => setFormData({ ...formData, status: e.target.value as any })}
-                                    >
-                                        <option value="ACTIVE">Activo</option>
-                                        <option value="SUSPENDED">Suspendido</option>
-                                        <option value="PENDING_INVITE">Pendiente</option>
-                                    </select>
-                                </div>
+                                        <button
+                                            onClick={() => setActiveTab('activity')}
+                                            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'activity'
+                                                ? 'border-blue-600 text-blue-600'
+                                                : 'border-transparent text-slate-500 hover:text-slate-700'
+                                                }`}
+                                        >
+                                            Actividad
+                                        </button>
+                                    </>
+                                )}
                             </div>
+                        </div>
 
-                            {/* Send invitation checkbox (only for create) */}
-                            {!editingId && (
-                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                    <label className="flex items-center gap-2 cursor-pointer">
+                        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+                            {/* Tab: Details */}
+                            {activeTab === 'details' && (
+                                <div className="p-6 space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Nombre Completo</label>
                                         <input
-                                            type="checkbox"
-                                            checked={sendInvitation}
-                                            onChange={e => setSendInvitation(e.target.checked)}
-                                            className="w-4 h-4 text-blue-600 rounded focus:ring-2 ring-blue-500/20"
+                                            required
+                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-blue-500/20 outline-none"
+                                            value={formData.name}
+                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
                                         />
-                                        <div className="flex items-center gap-2 text-sm">
-                                            <PaperPlaneRight size={16} weight="fill" className="text-blue-600" />
-                                            <span className="font-medium text-blue-900">Enviar email de bienvenida con credenciales</span>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Email</label>
+                                        <input
+                                            type="email"
+                                            required
+                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-blue-500/20 outline-none"
+                                            value={formData.email}
+                                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Cargo</label>
+                                        <input
+                                            required
+                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-blue-500/20 outline-none"
+                                            value={formData.jobTitle}
+                                            onChange={e => setFormData({ ...formData, jobTitle: e.target.value })}
+                                        />
+                                    </div>
+
+                                    {!editingId && (
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Contraseña Temporal</label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="password"
+                                                    className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 ring-blue-500/20 outline-none"
+                                                    value={formData.password}
+                                                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                                    placeholder="Dejar vacío para generar automáticamente"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleGeneratePassword}
+                                                    className="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-1"
+                                                >
+                                                    <Sparkle size={18} weight="fill" />
+                                                    Generar
+                                                </button>
+                                            </div>
+                                            <p className="text-xs text-slate-400 mt-1">Si no se especifica, se generará automáticamente</p>
                                         </div>
-                                    </label>
-                                    <p className="text-xs text-blue-700 ml-6 mt-1">
-                                        El usuario recibirá sus credenciales por correo electrónico
-                                    </p>
+                                    )}
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Nivel</label>
+                                            <select
+                                                className="w-full px-3 py-2 border rounded-lg bg-white"
+                                                value={formData.level}
+                                                onChange={e => setFormData({ ...formData, level: Number(e.target.value) })}
+                                            >
+                                                {LEVELS.map(l => (
+                                                    <option key={l.level} value={l.level}>{l.label}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Estado</label>
+                                            <select
+                                                className="w-full px-3 py-2 border rounded-lg bg-white"
+                                                value={formData.status}
+                                                onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                                            >
+                                                <option value="ACTIVE">Activo</option>
+                                                <option value="SUSPENDED">Suspendido</option>
+                                                <option value="PENDING_INVITE">Pendiente</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {!editingId && (
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={sendInvitation}
+                                                    onChange={e => setSendInvitation(e.target.checked)}
+                                                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 ring-blue-500/20"
+                                                />
+                                                <div className="flex items-center gap-2 text-sm">
+                                                    <PaperPlaneRight size={16} weight="fill" className="text-blue-600" />
+                                                    <span className="font-medium text-blue-900">Enviar email de bienvenida con credenciales</span>
+                                                </div>
+                                            </label>
+                                            <p className="text-xs text-blue-700 ml-6 mt-1">El usuario recibirá sus credenciales por correo electrónico</p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
-                            <div className="pt-4 flex justify-end gap-3">
+                            {/* Tab: Security & Access */}
+                            {activeTab === 'security' && editingId && (
+                                <div className="p-6 space-y-4">
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                        <div className="flex items-start gap-3">
+                                            <div className="text-amber-600">⚠️</div>
+                                            <div>
+                                                <h4 className="font-semibold text-amber-900 mb-1">Comunicación</h4>
+                                                <p className="text-sm text-amber-800">Envía un correo electrónico al usuario con instrucciones para restablecer su acceso.</p>
+                                                <button
+                                                    type="button"
+                                                    className="mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700"
+                                                >
+                                                    Reenviar Credenciales
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <h4 className="font-semibold text-slate-800">Forzar cambio de contraseña</h4>
+                                        <label className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.mustChangePassword || false}
+                                                onChange={e => setFormData({ ...formData, mustChangePassword: e.target.checked })}
+                                                className="w-4 h-4 text-blue-600 rounded"
+                                            />
+                                            <span className="text-sm text-slate-700">El usuario deberá actualizar su clave en el próximo inicio de sesión.</span>
+                                        </label>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <h4 className="font-semibold text-slate-800">Asignación manual de contraseña</h4>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Nueva contraseña (dejar vacío si no desea cambiar)</label>
+                                            <input
+                                                type="password"
+                                                className="w-full px-3 py-2 border rounded-lg"
+                                                placeholder="Nueva contraseña..."
+                                                value={formData.password || ''}
+                                                onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                            />
+                                            <p className="text-xs text-slate-400 mt-1">Escribe un solo texto si deseas sobreescribir la contraseña actual del usuario manualmente.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Tab: Activity */}
+                            {activeTab === 'activity' && editingId && (
+                                <div className="p-6">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                                            <div className="flex-1">
+                                                <div className="font-medium text-sm text-slate-900">LOGIN_SUCCESS</div>
+                                                <div className="text-xs text-slate-500 mt-1">22/12/2025, 8:19:06 p.m.</div>
+                                            </div>
+                                            <div className="text-xs text-slate-400">-</div>
+                                        </div>
+                                        <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                                            <div className="flex-1">
+                                                <div className="font-medium text-sm text-slate-900">LOGIN_SUCCESS</div>
+                                                <div className="text-xs text-slate-500 mt-1">22/12/2025, 8:18:17 p.m.</div>
+                                            </div>
+                                            <div className="text-xs text-slate-400">-</div>
+                                        </div>
+                                        <div className="text-center py-8 text-slate-400 text-sm">
+                                            Mostrando actividad reciente del usuario
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="border-t border-slate-200 p-4 bg-slate-50 flex justify-end gap-3">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg text-sm font-medium">Cancelar</button>
                                 <button
                                     type="submit"
                                     disabled={loading}
                                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-sm font-medium">
-                                    {loading ? 'Guardando...' : 'Guardar'}
+                                    {loading ? 'Guardando...' : 'Guardar Cambios'}
                                 </button>
                             </div>
                         </form>

@@ -123,7 +123,7 @@ export default function Sidebar() {
                                 {isSidebarCollapsed ? 'Adm.' : 'ADMINISTRACIÓN'}
                             </div>
                             <NavItem icon={Gear} label="Panel Admin" path="/dashboard/admin" />
-                            <NavItem icon={UsersThree} label="Usuarios Globales" path="/dashboard/admin/users" />
+                            <NavItem icon={UsersThree} label="Gestión de Usuarios" path="/dashboard/admin/users" />
                             <NavItem icon={TreeStructure} label={isSidebarCollapsed ? "Estr. Org." : "Estructura Organizacional"} path="/dashboard/admin/units" />
                             <NavItem icon={GitPullRequest} label="Configuración" path="/dashboard/admin/settings" />
                         </>
