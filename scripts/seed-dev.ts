@@ -136,7 +136,7 @@ async function seedDocuments() {
       category: 'Procesos',
       status: 'PUBLISHED',
       ownerId: 'user-t1-admin',
-      version: 1,
+      version: '1.0',
       tags: ['procesos', 'operaciones'],
     },
     {
@@ -146,7 +146,7 @@ async function seedDocuments() {
       category: 'Políticas',
       status: 'DRAFT',
       ownerId: 'user-t1-admin',
-      version: 1,
+      version: '1.0',
       tags: ['seguridad', 'políticas'],
     },
   ];
