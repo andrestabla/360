@@ -210,9 +210,15 @@ export default function ConversationList() {
                         `}
                     >
                         {/* Avatar */}
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 border-2 border-white shadow-sm ring-1 ring-black/5
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 border-2 border-white shadow-sm ring-1 ring-black/5 overflow-hidden
                             ${conv.type === 'group' ? 'bg-indigo-100 text-indigo-600' : 'bg-gradient-to-br from-pink-100 to-rose-100 text-rose-600'}`}>
-                            {conv.type === 'group' ? <Users weight="bold" size={20} /> : <span className="text-sm font-bold">{conv.avatar}</span>}
+                            {conv.type === 'group' ? (
+                                <Users weight="bold" size={20} />
+                            ) : conv.avatar && (conv.avatar.startsWith('http') || conv.avatar.startsWith('/')) ? (
+                                <img src={conv.avatar} alt={conv.title || ''} className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-sm font-bold">{conv.avatar || conv.title?.[0] || '?'}</span>
+                            )}
                         </div>
 
                         <div className="flex-1 min-w-0 py-0.5">

@@ -127,10 +127,8 @@ export default function ChatWindow() {
                 if (convDef) {
                     let title = convDef.title;
                     if (convDef.type === 'dm') {
-                        // Fetch members to resolve DM title
-                        const members = await getGroupMembersAction(activeId);
-                        const other = members.find((u: any) => u.id !== currentUser.id);
-                        title = other?.name || 'Usuario';
+                        // Fetch members to check blocking status later
+                        // Title is now resolved by server action, but we keep members pending check
                     }
                     setConversation({ ...convDef, title: title || 'Chat' } as unknown as Conversation);
 
@@ -436,9 +434,13 @@ export default function ChatWindow() {
             {/* Header */}
             <div className="h-16 px-6 border-b border-gray-200 flex items-center justify-between bg-white z-10 shadow-sm">
                 <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm overflow-hidden
                         ${conversation?.type === 'group' ? 'bg-indigo-500' : 'bg-pink-500'}`}>
-                        {conversation?.title?.[0] || '?'}
+                        {conversation?.avatar && (conversation.avatar.startsWith('http') || conversation.avatar.startsWith('/')) ? (
+                            <img src={conversation.avatar} alt={conversation.title || ''} className="w-full h-full object-cover" />
+                        ) : (
+                            conversation?.avatar || conversation?.title?.[0] || '?'
+                        )}
                     </div>
                     <div>
                         <h3 className="font-bold text-gray-900 leading-tight">{conversation?.title}</h3>

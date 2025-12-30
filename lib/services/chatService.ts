@@ -8,6 +8,7 @@ export type ChatConversation = Conversation & {
   lastMessage?: string | null;
   lastMessageAt?: Date | null;
   unreadCount?: number;
+  avatar?: string | null; // Added avatar
 };
 export type ChatMessage = Message & {
   senderName?: string;
@@ -25,32 +26,48 @@ export interface ChatServiceResponse<T> {
 export const ChatService = {
   getConversations: async (userId: string): Promise<ChatServiceResponse<ChatConversation[]>> => {
     try {
-      // Fetch all conversations where user is a participant
-      // Since participants is a JSON array, we strictly should use a JSON operator, 
-      // but for now, we'll fetch all and filter in app or use a more complex query if needed.
-      // Better approach: Use a specific "conversation_members" table if we had one for many-to-many,
-      // but schema uses `participants: json(...)`. 
-      // Drizzle's `arrayContains` might work if it was an array column, but it's JSON.
-      // We will perform a raw SQL check or fetch and filter. 
-      // Given the schema `participants` is `json("participants").$type<string[]>()`.
-
-      // Let's rely on a raw SQL filter for performance or fetching relevant ones.
-      // Simple approach: Fetch all conversations (warning: bad for scaling) or fix schema later to use relation table.
-      // For now, let's filter in memory after fetching mostly recent ones, OR use `sql` operator.
-
       const allConvs = await db.select().from(conversations).orderBy(desc(conversations.lastMessageAt));
+      const userConvs = allConvs.filter(c => (c.participants as string[])?.includes(userId));
 
-      const userConvs = allConvs.filter(c =>
-        (c.participants as string[])?.includes(userId)
-      );
+      // Collect all participant IDs to fetch names
+      const allParticipantIds = new Set<string>();
+      userConvs.forEach(c => {
+        (c.participants as string[])?.forEach(p => allParticipantIds.add(p));
+      });
 
-      // Map to ChatConversation type
-      const mapped: ChatConversation[] = userConvs.map(c => ({
-        ...c,
-        lastMessage: c.lastMessage,
-        lastMessageAt: c.lastMessageAt,
-        unreadCount: 0 // TODO: Implement unread count logic with a separate tracking table or logic
-      }));
+      const usersList = await db.select().from(users).where(inArray(users.id, Array.from(allParticipantIds)));
+      const userMap = new Map(usersList.map(u => [u.id, u]));
+
+      // Map to ChatConversation type with resolved Titles/Avatars
+      const mapped: ChatConversation[] = userConvs.map(c => {
+        let title = c.name || c.title || 'Chat';
+        let avatar = undefined;
+
+        if (c.type === 'dm') {
+          const parts = c.participants as string[];
+          const otherId = parts.find(id => id !== userId) || parts[0]; // Fallback to self if chat with self
+          const otherUser = userMap.get(otherId);
+          if (otherUser) {
+            title = otherUser.name;
+            avatar = otherUser.avatar || otherUser.initials;
+          }
+        } else {
+          // Group logic if needed, e.g. group avatar
+        }
+
+        return {
+          ...c,
+          title,
+          // We use 'avatar' in the UI but it's not in the base Conversation type. 
+          // We cast/extend the type in the map.
+          // The return type is ChatConversation[] which we defined to allow extra props if we add them to the type definition.
+          // But ChatConversation definition at top of file (Line 7) only adds lastMessage... 
+          // I should update ChatConversation type definition at top of file too.
+          lastMessage: c.lastMessage,
+          lastMessageAt: c.lastMessageAt,
+          unreadCount: 0
+        } as ChatConversation & { avatar?: string };
+      });
 
       return { success: true, data: mapped };
     } catch (e: any) {
@@ -59,12 +76,36 @@ export const ChatService = {
     }
   },
 
-  getConversation: async (conversationId: string): Promise<ChatServiceResponse<ChatConversation | null>> => {
+  getConversation: async (conversationId: string, userId?: string): Promise<ChatServiceResponse<ChatConversation | null>> => {
     try {
       const conv = await db.query.conversations.findFirst({
         where: eq(conversations.id, conversationId)
       });
-      return { success: true, data: conv as ChatConversation || null };
+      if (!conv) return { success: true, data: null };
+
+      let title = conv.title || conv.name || 'Chat';
+      let avatar = undefined;
+
+      if (conv.type === 'dm' && userId) {
+        const parts = conv.participants as string[];
+        const otherId = parts.find(id => id !== userId) || parts[0];
+        const otherUser = await db.query.users.findFirst({ where: eq(users.id, otherId) });
+        if (otherUser) {
+          title = otherUser.name;
+          avatar = otherUser.avatar || otherUser.initials;
+        }
+      }
+
+      const extendedConv = {
+        ...conv,
+        title,
+        avatar,
+        lastMessage: conv.lastMessage,
+        lastMessageAt: conv.lastMessageAt,
+        unreadCount: 0
+      } as ChatConversation;
+
+      return { success: true, data: extendedConv };
     } catch (e: any) {
       return { success: false, data: null, error: e.message };
     }

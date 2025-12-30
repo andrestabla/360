@@ -22,7 +22,9 @@ export async function getMessagesAction(conversationId: string, cursor?: string,
 
 export async function getConversationAction(conversationId: string) {
     try {
-        const res = await ChatService.getConversation(conversationId);
+        const session = await auth();
+        const userId = session?.user?.id;
+        const res = await ChatService.getConversation(conversationId, userId);
         return serialize(res);
     } catch (error) {
         console.error("Error in getConversationAction:", error);
