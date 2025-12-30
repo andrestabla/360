@@ -49,35 +49,35 @@ export default function ChangePasswordPage() {
                     <form action={dispatch} className="space-y-4">
                         <div>
                             <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Nueva Contraseña</label>
-                            <div className="relative">
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                    <LockKey size={18} />
-                                </div>
+                            <div className="relative group">
                                 <input
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all outline-none text-slate-800 text-sm"
+                                    className="peer w-full pl-10 placeholder-shown:pl-10 focus:pl-4 not-placeholder-shown:pl-4 py-2.5 rounded-lg border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all outline-none text-slate-800 text-sm"
                                     type="password"
                                     name="newPassword"
                                     placeholder="Mínimo 8 caracteres"
                                     required
                                     minLength={8}
                                 />
+                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none transition-all duration-200 peer-focus:opacity-0 peer-[:not(:placeholder-shown)]:opacity-0">
+                                    <LockKey size={18} />
+                                </div>
                             </div>
                         </div>
 
                         <div>
                             <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Confirmar Contraseña</label>
-                            <div className="relative">
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                    <LockKey size={18} />
-                                </div>
+                            <div className="relative group">
                                 <input
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all outline-none text-slate-800 text-sm"
+                                    className="peer w-full pl-10 placeholder-shown:pl-10 focus:pl-4 not-placeholder-shown:pl-4 py-2.5 rounded-lg border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all outline-none text-slate-800 text-sm"
                                     type="password"
                                     name="confirmPassword"
                                     placeholder="Repite la contraseña"
                                     required
                                     minLength={8}
                                 />
+                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none transition-all duration-200 peer-focus:opacity-0 peer-[:not(:placeholder-shown)]:opacity-0">
+                                    <LockKey size={18} />
+                                </div>
                             </div>
                         </div>
 

@@ -213,14 +213,14 @@ export default function RepositoryPage() {
                 <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-4 shadow-sm">
                     <div className="flex flex-col md:flex-row gap-4 mb-4">
                         <div className="relative flex-1 group">
-                            <MagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20} />
+                            {!filters.search && <MagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors pointer-events-none" size={20} />}
                             <input
                                 ref={searchInputRef}
                                 type="text"
                                 placeholder="Buscar en el repositorio..."
                                 value={filters.search}
                                 onChange={e => setFilters({ ...filters, search: e.target.value })}
-                                className="w-full pl-11 pr-4 py-2.5 bg-slate-100 border-transparent focus:bg-white border focus:border-blue-500 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all text-sm font-medium shadow-inner"
+                                className={`w-full ${filters.search ? 'pl-4' : 'pl-11'} pr-4 py-2.5 bg-slate-100 border-transparent focus:bg-white border focus:border-blue-500 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all text-sm font-medium shadow-inner`}
                             />
                         </div>
                         <button

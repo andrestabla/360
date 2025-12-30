@@ -103,7 +103,7 @@ export function FullScreenPreview({ doc, onClose }: FullScreenPreviewProps) {
             </div>
 
             {/* Content Viewer */}
-            <div className="flex-1 overflow-hidden relative flex items-center justify-center p-4 sm:p-8">
+            <div className="flex-1 overflow-auto relative flex items-center justify-center p-4 sm:p-8">
                 {loading ? (
                     <div className="flex flex-col items-center gap-3 text-white/50">
                         <Spinner size={32} className="animate-spin" />
