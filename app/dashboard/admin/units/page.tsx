@@ -33,11 +33,15 @@ export default function UnitsPage() {
         setIsLoading(true);
 
         // Sort units by depth to ensure parents are created before children
-        // Processing order: Depth 0 (Roots) -> Depth 1 -> Depth 2
+        // Processing order: Depth 0 (Roots) -> Depth 1 -> Depth 2 -> Processes (leaves)
         const sortedUnits = [...importedUnits].sort((a, b) => {
-            const depthA = a.depth ?? 0;
-            const depthB = b.depth ?? 0;
-            return depthA - depthB;
+            // Units have specific depth. Processes (undefined depth) should come last (e.g. depth 100)
+            const getSortWeight = (item: Partial<Unit>) => {
+                if (item.type === 'PROCESS') return 100; // Processes always last
+                return item.depth ?? 0; // Units respect their depth
+            };
+
+            return getSortWeight(a) - getSortWeight(b);
         });
 
         // Sequential import
