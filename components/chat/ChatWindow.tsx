@@ -204,7 +204,7 @@ export default function ChatWindow() {
         // Safety timeout to ensure spinner doesn't get stuck
         const timer = setTimeout(() => {
             if (loading) setLoading(false);
-        }, 8000);
+        }, 3000);
 
         fetchInit().finally(() => clearTimeout(timer));
     }, [activeId, currentUser]);
@@ -565,8 +565,8 @@ export default function ChatWindow() {
                     >
                         <MagnifyingGlass size={20} weight="bold" />
                     </button>
-                    <button className="p-2 hover:bg-blue-50 rounded-full transition-colors"><Phone size={20} weight="fill" /></button>
-                    <button className="p-2 hover:bg-blue-50 rounded-full transition-colors"><VideoCamera size={20} weight="fill" /></button>
+                    {/* <button className="p-2 hover:bg-blue-50 rounded-full transition-colors"><Phone size={20} weight="fill" /></button>
+                    <button className="p-2 hover:bg-blue-50 rounded-full transition-colors"><VideoCamera size={20} weight="fill" /></button> */}
                     <div className="w-px h-6 bg-gray-200 mx-1"></div>
 
                     <button
