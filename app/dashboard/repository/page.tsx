@@ -7,15 +7,9 @@ import { useTranslation } from '@/lib/i18n';
 import { getUnitsAction } from '@/app/lib/unitActions';
 import { Unit } from '@/shared/schema';
 import { RepositoryFile, RepositoryFolder, getFoldersAction, getDocumentsAction, createFolderAction, uploadDocumentAction, deleteDocumentAction, deleteFolderAction, updateFolderAction, moveItemAction } from '@/app/lib/repositoryActions';
-import {
-    FilePdf, FileDoc, FileXls, FileText, MagnifyingGlass,
-    UploadSimple, DownloadSimple, Eye, Trash, ClockCounterClockwise,
-    Lock, ShareNetwork, Globe, Buildings, DotsThree,
-    X, Heart, ChatCircle, UserCircle, CaretRight, ShieldCheck,
-    Funnel, Check, ArrowsDownUp, Paperclip, Clock, GridFour, ListDashes, ListChecks, User, ArrowsOutSimple, ArrowsInSimple,
-    Link as LinkIcon, YoutubeLogo, Folder, FolderPlus, CaretLeft, Palette, Info, PencilSimple, CloudArrowUp,
-    FilePpt, Code
-} from '@phosphor-icons/react';
+import { UploadSimple, Folder, FilePdf, FileDoc, FileXls, Image, Link as LinkIcon, Code, DotsThree, Trash, DownloadSimple, Eye, CloudArrowUp, CaretRight, FolderPlus, Check, MagnifyingGlass, Funnel, X, ListBullets, SquaresFour, PencilSimple, ClipboardText, FilePpt, FileText } from '@phosphor-icons/react';
+import { AssignTaskModal } from '@/components/repository/AssignTaskModal';
+import { EditMetadataModal } from '@/components/repository/EditMetadataModal';
 
 // Tipos para Filtros Avanzados
 type FilterState = {
@@ -36,7 +30,7 @@ const getFileIcon = (type: string, size: number) => {
     if (t.includes('doc') || t.includes('word')) return <FileDoc size={size} weight="duotone" className="text-blue-500" />;
     if (t.includes('xls') || t.includes('sheet') || t.includes('csv')) return <FileXls size={size} weight="duotone" className="text-green-500" />;
     if (t.includes('ppt') || t.includes('powerpoint')) return <FilePpt size={size} weight="duotone" className="text-orange-500" />;
-    if (t.includes('image') || t.includes('png') || t.includes('jpg')) return <FileText size={size} weight="duotone" className="text-purple-500" />;
+    if (t.includes('image') || t.includes('png') || t.includes('jpg')) return <Image size={size} weight="duotone" className="text-purple-500" />;
     if (t === 'carpeta') return <Folder size={size} weight="duotone" className="text-yellow-400" />;
     if (t === 'link') return <LinkIcon size={size} weight="duotone" className="text-blue-400" />;
     if (t === 'embed') return <Code size={size} weight="duotone" className="text-slate-600" />;
@@ -56,10 +50,20 @@ export default function RepositoryPage() {
 
     const [showNewFolderModal, setShowNewFolderModal] = useState(false);
     const [editingFolder, setEditingFolder] = useState<RepositoryFolder | null>(null);
+
+    // New Actions State
+    const [showAssignTaskModal, setShowAssignTaskModal] = useState(false);
+    const [showEditMetadataModal, setShowEditMetadataModal] = useState(false);
+    const [selectedDocForAction, setSelectedDocForAction] = useState<RepositoryFile | null>(null);
+
     const [filters, setFilters] = useState<FilterState>({
         search: '', type: null, unit: null, process: null, status: null, onlyFavorites: false
     });
     const [isSidebarMaximized, setIsSidebarMaximized] = useState(false);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+
+
 
     const [selectedDoc, setSelectedDoc] = useState<RepositoryFile | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -140,6 +144,8 @@ export default function RepositoryPage() {
             });
         }
     };
+
+    const handleFolderClick = navigateTo;
 
     const handleBreadcrumbClick = (item: { id: string | null, name: string }) => {
         setCurrentFolderId(item.id);
@@ -311,34 +317,69 @@ export default function RepositoryPage() {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400"></div>
                         </div>
                     ) : (folders.length > 0 || docs.length > 0) ? (
-                        <div className={`grid gap-4 ${selectedDoc ? 'grid-cols-1 xl:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'}`}>
-                            {folders.map(folder => (
-                                <FolderCard
-                                    key={folder.id}
-                                    folder={folder}
-                                    onOpen={() => navigateTo(folder)}
-                                    onEdit={() => { setEditingFolder(folder); setShowNewFolderModal(true); }}
-                                    onDelete={() => handleDeleteFolder(folder.id)}
-                                    showDetails={!!filters.search}
-                                />
-                            ))}
-                            {docs.map(doc => (
-                                <GridCard
-                                    key={doc.id}
-                                    doc={doc}
-                                    isSelected={selectedDoc?.id === doc.id}
-                                    onClick={() => setSelectedDoc(doc)}
-                                    onToggleLike={() => { }}
-                                    onDownload={() => handleDownload(doc)}
-                                    onMenu={(e: React.MouseEvent) => toggleDropdown(doc.id, e)}
-                                    isMenuOpen={activeDropdown === doc.id}
-                                    onCloseMenu={() => setActiveDropdown(null)}
-                                    onShare={() => { }}
-                                    onAssign={() => { }}
-                                    onDelete={() => handleDeleteDoc(doc.id)}
-                                />
-                            ))}
-                        </div>
+                        viewMode === 'grid' ? (
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {folders.map(folder => (
+                                    <FolderCard
+                                        key={folder.id}
+                                        folder={folder}
+                                        onOpen={() => handleFolderClick(folder)}
+                                        onEdit={(e: any) => { e.stopPropagation(); setEditingFolder(folder); setShowNewFolderModal(true); }}
+                                        onDelete={(e: any) => { e.stopPropagation(); handleDeleteFolder(folder.id); }}
+                                    />
+                                ))}
+                                {docs.map(doc => (
+                                    <GridCard
+                                        key={doc.id}
+                                        doc={doc}
+                                        isSelected={selectedDoc?.id === doc.id}
+                                        onClick={() => setSelectedDoc(doc)}
+                                        onMenu={(e: any) => toggleDropdown(doc.id, e)}
+                                        isMenuOpen={activeDropdown === doc.id}
+                                        onCloseMenu={() => setActiveDropdown(null)}
+
+                                        onDownload={() => handleDownload(doc)}
+                                        // onShare={() => handleShare(doc)}
+                                        onShare={() => alert('Compartir: Próximamente')}
+
+                                        onAssign={() => { setSelectedDocForAction(doc); setShowAssignTaskModal(true); setActiveDropdown(null); }}
+                                        onEdit={() => { setSelectedDocForAction(doc); setShowEditMetadataModal(true); setActiveDropdown(null); }}
+
+                                        onDelete={() => handleDeleteDoc(doc.id)}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className={`grid gap-4 ${selectedDoc ? 'grid-cols-1 xl:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'}`}>
+                                {folders.map(folder => (
+                                    <FolderCard
+                                        key={folder.id}
+                                        folder={folder}
+                                        onOpen={() => navigateTo(folder)}
+                                        onEdit={() => { setEditingFolder(folder); setShowNewFolderModal(true); }}
+                                        onDelete={() => handleDeleteFolder(folder.id)}
+                                        showDetails={!!filters.search}
+                                    />
+                                ))}
+                                {docs.map(doc => (
+                                    <GridCard
+                                        key={doc.id}
+                                        doc={doc}
+                                        isSelected={selectedDoc?.id === doc.id}
+                                        onClick={() => setSelectedDoc(doc)}
+                                        onToggleLike={() => { }}
+                                        onDownload={() => handleDownload(doc)}
+                                        onMenu={(e: React.MouseEvent) => toggleDropdown(doc.id, e)}
+                                        isMenuOpen={activeDropdown === doc.id}
+                                        onCloseMenu={() => setActiveDropdown(null)}
+                                        onShare={() => { }}
+                                        onAssign={() => { setSelectedDocForAction(doc); setShowAssignTaskModal(true); setActiveDropdown(null); }}
+                                        onEdit={() => { setSelectedDocForAction(doc); setShowEditMetadataModal(true); setActiveDropdown(null); }}
+                                        onDelete={() => handleDeleteDoc(doc.id)}
+                                    />
+                                ))}
+                            </div>
+                        )
                     ) : (
                         <div className="text-center py-20">
                             <p className="text-slate-500">Carpeta vacía</p>
@@ -587,6 +628,25 @@ export default function RepositoryPage() {
                 </div>
             )}
 
+            {/* New Modals */}
+            {selectedDocForAction && (
+                <AssignTaskModal
+                    isOpen={showAssignTaskModal}
+                    onClose={() => setShowAssignTaskModal(false)}
+                    documentId={selectedDocForAction.id}
+                    documentTitle={selectedDocForAction.title}
+                />
+            )}
+            {selectedDocForAction && (
+                <EditMetadataModal
+                    isOpen={showEditMetadataModal}
+                    onClose={() => setShowEditMetadataModal(false)}
+                    document={selectedDocForAction}
+                    units={units}
+                    onSuccess={refresh}
+                />
+            )}
+
         </div>
     );
 }
@@ -613,7 +673,7 @@ function FolderCard({ folder, onOpen, onEdit, onDelete, showDetails }: any) {
     )
 }
 
-function GridCard({ doc, isSelected, onClick, onToggleLike, onDownload, onMenu, isMenuOpen, onCloseMenu, onShare, onAssign, onDelete }: any) {
+function GridCard({ doc, isSelected, onClick, onToggleLike, onDownload, onMenu, isMenuOpen, onCloseMenu, onShare, onAssign, onEdit, onDelete }: any) {
     const { t } = useTranslation();
     const baseClasses = "group relative flex flex-col bg-white border rounded-xl transition-all cursor-pointer overflow-visible hover:shadow-md";
     const selectedClasses = isSelected ? "ring-2 ring-blue-500 shadow-md border-transparent" : "border-slate-200 hover:border-blue-300";
@@ -638,6 +698,11 @@ function GridCard({ doc, isSelected, onClick, onToggleLike, onDownload, onMenu, 
                         <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-50 origin-top-right cursor-default" onClick={e => e.stopPropagation()}>
                             <button onClick={(e) => { e.stopPropagation(); onClick(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600"><Eye size={16} /> Ver</button>
                             <button onClick={(e) => { e.stopPropagation(); onDownload(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600"><DownloadSimple size={16} /> Descargar</button>
+                            <button onClick={(e) => { e.stopPropagation(); onShare(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600"><LinkIcon size={16} /> Compartir</button>
+                            <hr className="border-slate-100 my-1" />
+                            <button onClick={(e) => { e.stopPropagation(); onAssign(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-blue-600"><ClipboardText size={16} /> Asignar Tarea</button>
+                            <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600"><PencilSimple size={16} /> Editar Metadatos</button>
+                            <hr className="border-slate-100 my-1" />
                             <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-red-50 text-red-600 flex items-center gap-2"><Trash size={16} /> Eliminar</button>
                         </div>
                     )}

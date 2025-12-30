@@ -270,3 +270,27 @@ export async function moveItemAction(itemId: string, type: 'folder' | 'doc', new
     return { success: true };
 }
 
+export async function updateDocumentMetadataAction(docId: string, data: {
+    title?: string;
+    unitId?: string;
+    process?: string;
+    expiresAt?: Date | null;
+    tags?: string[];
+    description?: string;
+}) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    await db.update(documents).set({
+        title: data.title,
+        unitId: data.unitId,
+        process: data.process,
+        expiresAt: data.expiresAt,
+        tags: data.tags,
+        content: data.description // Updating description
+    }).where(eq(documents.id, docId));
+
+    revalidatePath('/dashboard/repository');
+    return { success: true };
+}
+

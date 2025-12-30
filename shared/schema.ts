@@ -377,6 +377,27 @@ export const systemEnvironment = pgTable("system_environment", {
   updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
 });
 
+export const tasks = pgTable("tasks", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  type: varchar("type", { length: 50 }).notNull(), // REVIEW, APPROVE, VERSION, CREATE
+  documentId: varchar("document_id", { length: 255 }).references(() => documents.id, { onDelete: 'cascade' }),
+  assigneeId: varchar("assignee_id", { length: 255 }).references(() => users.id, { onDelete: 'set null' }),
+  creatorId: varchar("creator_id", { length: 255 }).references(() => users.id, { onDelete: 'set null' }),
+  status: varchar("status", { length: 50 }).default("PENDING"), // PENDING, COMPLETED, REJECTED
+  priority: varchar("priority", { length: 20 }).default("MEDIUM"),
+  dueDate: timestamp("due_date", { mode: 'date' }),
+  instructions: text("instructions"),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
+}, (table) => [
+  index("idx_tasks_document").on(table.documentId),
+  index("idx_tasks_assignee").on(table.assigneeId),
+  index("idx_tasks_status").on(table.status),
+]);
+
+export type Task = typeof tasks.$inferSelect;
+export type InsertTask = typeof tasks.$inferInsert;
+
 // TYPES
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
