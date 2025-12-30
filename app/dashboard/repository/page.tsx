@@ -9,7 +9,8 @@ import { Unit } from '@/shared/schema';
 import { RepositoryFile, RepositoryFolder, getFoldersAction, getDocumentsAction, createFolderAction, uploadDocumentAction, deleteDocumentAction, deleteFolderAction, updateFolderAction, moveItemAction } from '@/app/lib/repositoryActions';
 import { UploadSimple, Folder, FilePdf, FileDoc, FileXls, Image, Link as LinkIcon, Code, DotsThree, Trash, DownloadSimple, Eye, CloudArrowUp, CaretRight, FolderPlus, Check, MagnifyingGlass, Funnel, X, ListBullets, SquaresFour, PencilSimple, ClipboardText, FilePpt, FileText } from '@phosphor-icons/react';
 import { AssignTaskModal } from '@/components/repository/AssignTaskModal';
-import { EditMetadataModal } from '@/components/repository/EditMetadataModal';
+// import { EditMetadataModal } from '@/components/repository/EditMetadataModal'; // Replaced by Sidebar
+import { RepositorySidebar } from '@/components/repository/RepositorySidebar';
 
 // Tipos para Filtros Avanzados
 type FilterState = {
@@ -53,7 +54,7 @@ export default function RepositoryPage() {
 
     // New Actions State
     const [showAssignTaskModal, setShowAssignTaskModal] = useState(false);
-    const [showEditMetadataModal, setShowEditMetadataModal] = useState(false);
+
     const [selectedDocForAction, setSelectedDocForAction] = useState<RepositoryFile | null>(null);
 
     const [filters, setFilters] = useState<FilterState>({
@@ -343,7 +344,7 @@ export default function RepositoryPage() {
                                         onShare={() => alert('Compartir: Próximamente')}
 
                                         onAssign={() => { setSelectedDocForAction(doc); setShowAssignTaskModal(true); setActiveDropdown(null); }}
-                                        onEdit={() => { setSelectedDocForAction(doc); setShowEditMetadataModal(true); setActiveDropdown(null); }}
+                                        onEdit={() => { setSelectedDoc(doc); setActiveDropdown(null); }}
 
                                         onDelete={() => handleDeleteDoc(doc.id)}
                                     />
@@ -374,7 +375,7 @@ export default function RepositoryPage() {
                                         onCloseMenu={() => setActiveDropdown(null)}
                                         onShare={() => { }}
                                         onAssign={() => { setSelectedDocForAction(doc); setShowAssignTaskModal(true); setActiveDropdown(null); }}
-                                        onEdit={() => { setSelectedDocForAction(doc); setShowEditMetadataModal(true); setActiveDropdown(null); }}
+                                        onEdit={() => { setSelectedDoc(doc); setActiveDropdown(null); }}
                                         onDelete={() => handleDeleteDoc(doc.id)}
                                     />
                                 ))}
@@ -392,20 +393,12 @@ export default function RepositoryPage() {
             {/* --- PANEL DERECHO (Drawer) --- */}
             {selectedDoc && (
                 <div className={`${isSidebarMaximized ? 'w-[750px]' : 'w-[400px]'} flex-shrink-0 bg-white border-l border-slate-200 h-full overflow-hidden flex flex-col shadow-2xl z-20 transition-all duration-300 animate-slideLeft`}>
-                    <DetailPanel
+                    <RepositorySidebar
                         doc={selectedDoc}
+                        units={units}
                         onClose={() => { setSelectedDoc(null); setIsSidebarMaximized(false); }}
-                        currentUser={currentUser}
-                        onUpdate={() => { }}
-                        onDelete={() => handleDeleteDoc(selectedDoc.id)}
-                        onLike={() => { }}
-                        onDownload={() => handleDownload(selectedDoc)}
-                        onShare={() => { }}
-                        onAssign={() => { }}
-                        onExpand={() => setFullScreenDoc(selectedDoc)}
-                        onMove={() => { setDocToMove(selectedDoc); setShowMoveModal(true); }}
-                        isMaximized={isSidebarMaximized}
-                        onToggleMaximize={() => setIsSidebarMaximized(!isSidebarMaximized)}
+                        onDownload={handleDownload}
+                        onUpdate={refresh}
                     />
                 </div>
             )}
@@ -637,15 +630,7 @@ export default function RepositoryPage() {
                     documentTitle={selectedDocForAction.title}
                 />
             )}
-            {selectedDocForAction && (
-                <EditMetadataModal
-                    isOpen={showEditMetadataModal}
-                    onClose={() => setShowEditMetadataModal(false)}
-                    document={selectedDocForAction}
-                    units={units}
-                    onSuccess={refresh}
-                />
-            )}
+
 
         </div>
     );
@@ -722,31 +707,31 @@ function GridCard({ doc, isSelected, onClick, onToggleLike, onDownload, onMenu, 
     )
 }
 
-function DetailPanel({ doc, onClose, currentUser, onUpdate, onDelete, onLike, onDownload, onShare, onAssign, onExpand, onMove, isMaximized, onToggleMaximize }: any) {
-    // Simplified Detail Panel
-    return (
-        <div className="flex flex-col h-full bg-white">
-            <div className="p-5 border-b border-slate-100 bg-white relative z-10 shadow-sm flex justify-between items-center">
-                <button onClick={onClose} className="text-slate-400 hover:bg-slate-100 p-1.5 rounded-full"><X size={20} weight="bold" /></button>
-                <div className="flex gap-2">
-                    <button onClick={onDownload} className="p-2 rounded-full border border-slate-200 text-slate-400 hover:text-blue-600"><DownloadSimple size={20} weight="bold" /></button>
-                </div>
-            </div>
-            <div className="p-6">
-                <div className="flex items-center justify-center p-8 bg-slate-50 rounded-xl mb-6">
-                    {getFileIcon(doc.type, 64)}
-                </div>
-                <h2 className="text-xl font-bold text-slate-900 mb-2">{doc.title}</h2>
-                <div className="space-y-4 text-sm text-slate-600">
-                    <div className="flex justify-between border-b pb-2"><span>Tipo</span> <span className="font-semibold uppercase">{doc.type}</span></div>
-                    {/* <div className="flex justify-between border-b pb-2"><span>Unidad</span> <span className="font-semibold">{doc.unitId}</span></div> */}
-                    <div className="flex justify-between border-b pb-2"><span>Tamaño</span> <span className="font-semibold">{doc.size}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span>Estado</span> <span className="font-semibold">{doc.status}</span></div>
-                </div>
-                <button onClick={onDownload} className="w-full mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/20">
-                    Descargar Documento
-                </button>
-            </div>
-        </div>
-    )
-}
+// function DetailPanel({ doc, onClose, currentUser, onUpdate, onDelete, onLike, onDownload, onShare, onAssign, onExpand, onMove, isMaximized, onToggleMaximize }: any) {
+//     // Simplified Detail Panel
+//     return (
+//         <div className="flex flex-col h-full bg-white">
+//             <div className="p-5 border-b border-slate-100 bg-white relative z-10 shadow-sm flex justify-between items-center">
+//                 <button onClick={onClose} className="text-slate-400 hover:bg-slate-100 p-1.5 rounded-full"><X size={20} weight="bold" /></button>
+//                 <div className="flex gap-2">
+//                     <button onClick={onDownload} className="p-2 rounded-full border border-slate-200 text-slate-400 hover:text-blue-600"><DownloadSimple size={20} weight="bold" /></button>
+//                 </div>
+//             </div>
+//             <div className="p-6">
+//                 <div className="flex items-center justify-center p-8 bg-slate-50 rounded-xl mb-6">
+//                     {getFileIcon(doc.type, 64)}
+//                 </div>
+//                 <h2 className="text-xl font-bold text-slate-900 mb-2">{doc.title}</h2>
+//                 <div className="space-y-4 text-sm text-slate-600">
+//                     <div className="flex justify-between border-b pb-2"><span>Tipo</span> <span className="font-semibold uppercase">{doc.type}</span></div>
+//                     {/* <div className="flex justify-between border-b pb-2"><span>Unidad</span> <span className="font-semibold">{doc.unitId}</span></div> */}
+//                     <div className="flex justify-between border-b pb-2"><span>Tamaño</span> <span className="font-semibold">{doc.size}</span></div>
+//                     <div className="flex justify-between border-b pb-2"><span>Estado</span> <span className="font-semibold">{doc.status}</span></div>
+//                 </div>
+//                 <button onClick={onDownload} className="w-full mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/20">
+//                     Descargar Documento
+//                 </button>
+//             </div>
+//         </div>
+//     )
+// }
