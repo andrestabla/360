@@ -104,6 +104,7 @@ export default function ImportUnitsModal({ isOpen, onClose, onImport }: ImportUn
 
             const unit: Partial<Unit> = {
                 id: id,
+                code: id, // Important: Use ID as Code for path generation
                 name: name,
                 type: upperType as 'UNIT' | 'PROCESS',
                 depth: upperType === 'UNIT' ? parseInt(depthStr) : undefined,
