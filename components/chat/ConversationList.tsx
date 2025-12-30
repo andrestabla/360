@@ -49,10 +49,18 @@ export default function ConversationList() {
         // Initial load
         loadConversations(true);
 
+        // Safety timeout for spinner
+        const safetyTimer = setTimeout(() => {
+            setLoading(false);
+        }, 4000);
+
         const interval = setInterval(() => {
             loadConversations(false);
         }, 5000);
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            clearTimeout(safetyTimer);
+        };
 
     }, [currentUser]); // Removed loadConversations/activeId from dependency to stop re-running on select
     // But wait, if activeId changes, we DO want to re-render to zero-out the count. 

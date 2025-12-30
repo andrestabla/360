@@ -25,6 +25,16 @@ export interface ChatServiceResponse<T> {
   error?: string;
 }
 
+// Helper to normalize avatar URLs
+function normalizeAvatar(url?: string | null): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith('http') || url.startsWith('https')) return url;
+  // If it's a relative path used by storage service (e.g. "avatars/xyz")
+  // Prepend the storage proxy path
+  if (!url.startsWith('/')) return `/api/storage/${url}`;
+  return url;
+}
+
 export const ChatService = {
   getConversations: async (userId: string): Promise<ChatServiceResponse<ChatConversation[]>> => {
     try {
@@ -72,6 +82,16 @@ export const ChatService = {
         }
       }
 
+      // Helper to normalize avatar URLs
+      function normalizeAvatar(url?: string | null): string | undefined {
+        if (!url) return undefined;
+        if (url.startsWith('http') || url.startsWith('https')) return url;
+        // If it's a relative path used by storage service (e.g. "avatars/xyz")
+        // Prepend the storage proxy path
+        if (!url.startsWith('/')) return `/api/storage/${url}`;
+        return url;
+      }
+
       // Map to ChatConversation type with resolved Titles/Avatars
       const mapped: ChatConversation[] = userConvs.map(c => {
         let title = c.name || c.title || 'Chat';
@@ -79,12 +99,15 @@ export const ChatService = {
 
         if (c.type === 'dm') {
           const parts = c.participants as string[];
-          const otherId = parts.find(id => id !== userId) || parts[0]; // Fallback to self if chat with self
+          const otherId = parts.find(id => id !== userId) || parts[0];
           const otherUser = userMap.get(otherId);
           if (otherUser) {
             title = otherUser.name;
-            avatar = otherUser.avatar || otherUser.initials;
+            avatar = normalizeAvatar(otherUser.avatar) || otherUser.initials;
           }
+        } else {
+          const groupConv = c as any;
+          avatar = normalizeAvatar(groupConv.avatar);
         }
 
         return {
@@ -92,7 +115,8 @@ export const ChatService = {
           title,
           lastMessage: c.lastMessage,
           lastMessageAt: c.lastMessageAt,
-          unreadCount: unreadMap.get(c.id) || 0
+          unreadCount: unreadMap.get(c.id) || 0,
+          avatar
         } as ChatConversation & { avatar?: string };
       });
 
@@ -123,7 +147,7 @@ export const ChatService = {
             const otherUser = await db.query.users.findFirst({ where: eq(users.id, otherId) });
             if (otherUser) {
               title = otherUser.name;
-              avatar = otherUser.avatar || otherUser.initials;
+              avatar = normalizeAvatar(otherUser.avatar) || otherUser.initials;
             }
 
             // Check blocking status
@@ -136,6 +160,9 @@ export const ChatService = {
             }
           }
         }
+      } else if (conv.type === 'group') {
+        const groupConv = conv as any;
+        avatar = normalizeAvatar(groupConv.avatar);
       }
 
       const extendedConv = {
