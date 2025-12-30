@@ -1,5 +1,5 @@
 import { db } from "../server/db";
-import { organizationSettings, platformSettingsTable } from "../shared/schema";
+import { organizationSettings } from "../shared/schema";
 
 async function main() {
     console.log("🔍 Checking Settings...");

@@ -1,5 +1,5 @@
 import { db } from "../server/db";
-import { users, conversations, messages, messageReadReceipts } from "../shared/schema";
+import { users, conversations, messages } from "../shared/schema";
 import { eq, desc } from "drizzle-orm";
 
 async function main() {
