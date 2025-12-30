@@ -295,8 +295,10 @@ export async function getDocumentDownloadUrlAction(docId: string) {
     const [doc] = await db.select().from(documents).where(eq(documents.id, docId));
     if (!doc || !doc.url) return { success: false, error: 'Document not found' };
 
-    // If it's a link type or external URL, return it as is
-    if (doc.type === 'link' || doc.url.startsWith('http')) {
+    // If it's a link type or external URL (that is NOT our internal storage), return it as is
+    const isInternal = doc.url && (doc.url.includes('/api/storage/') || doc.url.includes('/repository/'));
+
+    if (doc.type === 'link' || doc.type === 'embed' || (doc.url.startsWith('http') && !isInternal)) {
         return { success: true, url: doc.url };
     }
 
