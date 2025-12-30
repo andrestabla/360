@@ -31,10 +31,21 @@ export default function UnitsPage() {
 
     const handleImport = async (importedUnits: Partial<Unit>[]) => {
         setIsLoading(true);
-        // Sequential import to ensure parent dependencies are met
-        for (const unit of importedUnits) {
-            await createUnit(unit);
+
+        // Sort units by depth to ensure parents are created before children
+        // Processing order: Depth 0 (Roots) -> Depth 1 -> Depth 2
+        const sortedUnits = [...importedUnits].sort((a, b) => {
+            const depthA = a.depth ?? 0;
+            const depthB = b.depth ?? 0;
+            return depthA - depthB;
+        });
+
+        // Sequential import
+        let errorCount = 0;
+        for (const unit of sortedUnits) {
+            const res = await createUnit(unit);
         }
+
         await loadUnitsLocal();
         setIsLoading(false);
     };
