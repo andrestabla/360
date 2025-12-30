@@ -38,7 +38,7 @@ export async function getFoldersAction(parentId: string | null, unitId?: string)
     }
 }
 
-export async function createFolderAction(data: { name: string; parentId?: string | null; unitId?: string; description?: string }) {
+export async function createFolderAction(data: { name: string; parentId?: string | null; unitId?: string; description?: string; process?: string; color?: string }) {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -49,7 +49,8 @@ export async function createFolderAction(data: { name: string; parentId?: string
         unitId: data.unitId,
         creatorId: session.user.id,
         description: data.description,
-        color: '#fbbf24' // Default folder yellow
+        process: data.process,
+        color: data.color || '#fbbf24' // Default folder yellow
     }).returning();
 
     revalidatePath('/dashboard/repository');
@@ -118,31 +119,67 @@ export async function uploadDocumentAction(formData: FormData) {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
 
-    const file = formData.get('file') as File;
+    const linkType = formData.get('linkType') as string || 'file'; // 'file', 'link', 'embed'
     const folderId = formData.get('folderId') as string | null;
     const unitId = formData.get('unitId') as string | null;
+    const process = formData.get('process') as string | null;
+    const expiresAtStr = formData.get('expiresAt') as string | null;
+    const description = formData.get('description') as string | null; // Stored in content? No, schema needs desc. Documents usage: content text. We can use content for description OR embed code.
+    // Let's use `content` for Description usually, or EmbedCode.
+    // If type=embed, content=code. If type=file/link, content=description.
 
-    if (!file) throw new Error("No file provided");
+    const title = formData.get('title') as string;
+    const keywordsStr = formData.get('keywords') as string; // Comma separated
+    const tags = keywordsStr ? keywordsStr.split(',').map(s => s.trim()) : [];
 
-    // 1. Upload to Storage (R2/S3)
-    const storage = getStorageService();
-    const uploadRes = await storage.upload(file, 'repository');
+    let url: string | null = null;
+    let size = '0 KB';
+    let finalType = 'file';
+    let content: string | null = description; // Default to description
 
-    if (!uploadRes.success || !uploadRes.url) {
-        throw new Error(uploadRes.error || "Upload failed");
+    if (linkType === 'file') {
+        const file = formData.get('file') as File;
+        if (!file) throw new Error("No file provided");
+
+        // Upload
+        const storage = getStorageService();
+        const uploadRes = await storage.upload(file, 'repository');
+        if (!uploadRes.success || !uploadRes.url) {
+            throw new Error(uploadRes.error || "Upload failed");
+        }
+        url = uploadRes.url;
+        size = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+        finalType = file.name.split('.').pop() || 'file';
+        // If not title provided, use filename
+        // But typical usage is Title provided.
+    } else if (linkType === 'link') {
+        url = formData.get('url') as string;
+        finalType = 'link';
+        if (!url) throw new Error("URL Required");
+    } else if (linkType === 'embed') {
+        const embedCode = formData.get('embedCode') as string;
+        if (!embedCode) throw new Error("Embed Code Required");
+        content = embedCode; // Override description with code for render
+        finalType = 'embed';
     }
+
+    const expiresAt = expiresAtStr ? new Date(expiresAtStr) : null;
 
     // 2. Create DB Record
     const [newDoc] = await db.insert(documents).values({
         id: `doc-${Date.now()}`,
-        title: file.name,
-        type: file.name.split('.').pop() || 'file',
-        size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+        title: title || (linkType === 'file' ? (formData.get('file') as File).name : 'Untitled'),
+        type: finalType,
+        size: size,
         status: 'ACTIVE',
         version: '1.0',
-        url: uploadRes.url,
+        url: url,
+        content: content, // Description or EmbedCode
         folderId: folderId || null,
         unitId: unitId,
+        process: process,
+        expiresAt: expiresAt,
+        tags: tags,
         ownerId: session.user.id,
         likes: 0,
         commentsCount: 0

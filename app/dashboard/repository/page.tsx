@@ -4,6 +4,8 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
 // import { DB } from '@/lib/data'; // REMOVED MOCK
+import { getUnitsAction } from '@/app/lib/unitActions';
+import { Unit } from '@/shared/schema';
 import { RepositoryFile, RepositoryFolder, getFoldersAction, getDocumentsAction, createFolderAction, uploadDocumentAction, deleteDocumentAction, deleteFolderAction, updateFolderAction, moveItemAction } from '@/app/lib/repositoryActions';
 import {
     FilePdf, FileDoc, FileXls, FileText, MagnifyingGlass,
@@ -12,7 +14,7 @@ import {
     X, Heart, ChatCircle, UserCircle, CaretRight, ShieldCheck,
     Funnel, Check, ArrowsDownUp, Paperclip, Clock, GridFour, ListDashes, ListChecks, User, ArrowsOutSimple, ArrowsInSimple,
     Link as LinkIcon, YoutubeLogo, Folder, FolderPlus, CaretLeft, Palette, Info, PencilSimple, CloudArrowUp,
-    FilePpt
+    FilePpt, Code
 } from '@phosphor-icons/react';
 
 // Tipos para Filtros Avanzados
@@ -36,6 +38,8 @@ const getFileIcon = (type: string, size: number) => {
     if (t.includes('ppt') || t.includes('powerpoint')) return <FilePpt size={size} weight="duotone" className="text-orange-500" />;
     if (t.includes('image') || t.includes('png') || t.includes('jpg')) return <FileText size={size} weight="duotone" className="text-purple-500" />;
     if (t === 'carpeta') return <Folder size={size} weight="duotone" className="text-yellow-400" />;
+    if (t === 'link') return <LinkIcon size={size} weight="duotone" className="text-blue-400" />;
+    if (t === 'embed') return <Code size={size} weight="duotone" className="text-slate-600" />;
     return <FileText size={size} weight="duotone" className="text-slate-400" />;
 };
 
@@ -66,7 +70,12 @@ export default function RepositoryPage() {
     const [docToMove, setDocToMove] = useState<RepositoryFile | null>(null);
 
     const [isUploading, setIsUploading] = useState(false);
-    const [uploadInputRef, setUploadInputRef] = useState<HTMLInputElement | null>(null);
+
+    // Units Data
+    const [units, setUnits] = useState<Unit[]>([]);
+
+    // Upload Form State
+    const [uploadTab, setUploadTab] = useState<'file' | 'link' | 'embed'>('file');
 
     // Helper for dropdown toggling avoiding propagation issues
     const toggleDropdown = (id: string, e: React.MouseEvent) => {
@@ -79,12 +88,20 @@ export default function RepositoryPage() {
 
     // --- Fetch Data ---
     useEffect(() => {
+        const loadUnits = async () => {
+            const res = await getUnitsAction();
+            if (res.success && res.data) setUnits(res.data);
+        };
+        loadUnits();
+    }, []);
+
+    useEffect(() => {
         const loadData = async () => {
             setLoading(true);
             try {
                 // Parallel fetch
                 const [f, d] = await Promise.all([
-                    getFoldersAction(currentFolderId, currentUser?.unit), // Filter by unit optionally?
+                    getFoldersAction(currentFolderId, currentUser?.unit),
                     getDocumentsAction(currentFolderId, currentUser?.unit, filters.search)
                 ]);
                 setFolders(f);
@@ -354,36 +371,217 @@ export default function RepositoryPage() {
 
             {/* Upload Modal */}
             {showUploadModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded-xl w-full max-w-md">
-                        <h3 className="font-bold text-lg mb-4">Subir Documento</h3>
-                        <input
-                            type="file"
-                            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                            onChange={(e) => {
-                                if (e.target.files && e.target.files[0]) performUpload(e.target.files[0]);
-                            }}
-                        />
-                        <button onClick={() => setShowUploadModal(false)} className="w-full mt-4 text-slate-500 text-sm">Cancelar</button>
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center animate-in fade-in">
+                    <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+                        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-xl">
+                            <h3 className="font-bold text-lg text-gray-800">Subir Archivo</h3>
+                            <button onClick={() => setShowUploadModal(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex border-b border-gray-100 px-6 pt-2">
+                            <button onClick={() => setUploadTab('link')} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${uploadTab === 'link' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                                <LinkIcon className="inline mr-2" size={16} /> Enlace
+                            </button>
+                            <button onClick={() => setUploadTab('file')} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${uploadTab === 'file' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                                <UploadSimple className="inline mr-2" size={16} /> Archivo
+                            </button>
+                            <button onClick={() => setUploadTab('embed')} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${uploadTab === 'embed' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                                <Code className="inline mr-2" size={16} /> Incrustado
+                            </button>
+                        </div>
+
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            formData.append('linkType', uploadTab);
+                            if (currentFolderId) formData.append('folderId', currentFolderId);
+
+                            // Handle Unit logic: if subarea selected, use it, else use area, else null
+                            // Done via native select
+
+                            setIsUploading(true);
+                            uploadDocumentAction(formData)
+                                .then(() => { refresh(); setShowUploadModal(false); })
+                                .catch(err => alert(err.message))
+                                .finally(() => setIsUploading(false));
+                        }} className="p-6 space-y-5">
+
+                            {/* Dynamic Input based on Tab */}
+                            {uploadTab === 'link' && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">URL del Recurso</label>
+                                    <input name="url" type="url" placeholder="https://ejemplo.com/documento" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none" required />
+                                </div>
+                            )}
+
+                            {uploadTab === 'file' && (
+                                <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
+                                    <CloudArrowUp size={48} className="text-gray-300 mb-2" />
+                                    <p className="text-sm font-medium text-gray-600">Haz clic o arrastra un archivo</p>
+                                    <p className="text-xs text-gray-400 mt-1">PDF, Office, Imágenes (Max 10MB)</p>
+                                    <input name="file" type="file" className="absolute inset-0 opacity-0 cursor-pointer" required onChange={(e) => {
+                                        // Optional: Show selected filename
+                                    }} />
+                                </div>
+                            )}
+
+                            {uploadTab === 'embed' && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Código Embed (Iframe)</label>
+                                    <textarea name="embedCode" rows={4} placeholder="<iframe src='...'></iframe>" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none font-mono" required />
+                                    <p className="text-[10px] text-gray-400 mt-1">Pega el código HTML del iframe o la URL directa del recurso embebible.</p>
+                                </div>
+                            )}
+
+                            {/* Metadata Fields */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nombre del Documento</label>
+                                <input name="title" placeholder="Título descriptivo..." className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none" required />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Unidad / Subárea</label>
+                                    <select name="unitId" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none bg-white">
+                                        <option value="">Seleccionar...</option>
+                                        {units.map(u => (
+                                            <option key={u.id} value={u.id}>
+                                                {u.path || u.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Proceso</label>
+                                    <input name="process" placeholder="Ej: Auditoría" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none" />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Accesibilidad</label>
+                                    <select className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none bg-white">
+                                        <option>Solo Unidad</option>
+                                        <option>Público</option>
+                                        <option>Privado</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Palabras Clave</label>
+                                    <input name="keywords" placeholder="Ej: Auditoría, 2024" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Fecha de Expiración</label>
+                                <input name="expiresAt" type="date" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none" />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Descripción</label>
+                                <textarea name="description" rows={2} placeholder="Notas adicionales..." className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none" />
+                            </div>
+
+                            <div className="flex gap-3 justify-end pt-2">
+                                <button type="button" onClick={() => setShowUploadModal(false)} className="px-5 py-2.5 text-gray-500 font-bold text-sm hover:bg-gray-100 rounded-lg transition-colors">Cancelar</button>
+                                <button type="submit" disabled={isUploading} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-lg shadow-lg shadow-blue-600/20 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2">
+                                    {isUploading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                                    {isUploading ? 'Subiendo...' : 'Subir'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
 
             {/* Folder Modal */}
             {showNewFolderModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded-xl w-full max-w-md">
-                        <h3 className="font-bold text-lg mb-4">{editingFolder ? 'Editar Carpeta' : 'Nueva Carpeta'}</h3>
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center animate-in fade-in">
+                    <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-bold text-lg text-gray-800">{editingFolder ? 'Editar Carpeta' : 'Nueva Carpeta'}</h3>
+                            <button onClick={() => setShowNewFolderModal(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+                        </div>
+
                         <form onSubmit={(e) => {
                             e.preventDefault();
                             const formData = new FormData(e.currentTarget);
-                            handleCreateFolder(formData.get('name') as string, formData.get('description') as string);
-                        }}>
-                            <input name="name" defaultValue={editingFolder?.name} placeholder="Nombre de la carpeta" className="w-full border p-2 rounded mb-2" required />
-                            <input name="description" defaultValue={editingFolder?.description || ''} placeholder="Descripción (opcional)" className="w-full border p-2 rounded mb-4" />
+                            const unitId = formData.get('subarea') as string || formData.get('area') as string || currentUser?.unit;
+                            // Inject unitId into payload call
+                            // Need to handle manual call since createFolderAction expects object
+                            const payload = {
+                                name: formData.get('name') as string,
+                                description: formData.get('description') as string,
+                                unitId: unitId,
+                                process: formData.get('process') as string,
+                                color: formData.get('color') as string
+                            };
 
-                            <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold">Guardar</button>
-                            <button type="button" onClick={() => { setShowNewFolderModal(false); setEditingFolder(null); }} className="w-full mt-2 text-slate-500 text-sm">Cancelar</button>
+                            if (editingFolder) {
+                                // update
+                                updateFolderAction(editingFolder.id, payload).then(() => { refresh(); setShowNewFolderModal(false); });
+                            } else {
+                                // create
+                                createFolderAction({ ...payload, parentId: currentFolderId }).then(() => { refresh(); setShowNewFolderModal(false); });
+                            }
+
+                        }} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nombre de la Carpeta</label>
+                                <input name="name" defaultValue={editingFolder?.name} placeholder="Ej: Documentación Técnica" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none" required />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Descripción (Opcional)</label>
+                                <textarea name="description" defaultValue={editingFolder?.description || ''} placeholder="Breve descripción del contenido..." rows={2} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none" />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Área</label>
+                                    <select name="area" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none bg-white">
+                                        <option value="">Seleccionar Área</option>
+                                        {units.filter(u => !u.parentId).map(u => (
+                                            <option key={u.id} value={u.id}>{u.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Subárea</label>
+                                    <select name="subarea" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none bg-white">
+                                        <option value="">Seleccionar Subárea</option>
+                                        {units.filter(u => !!u.parentId).map(u => (
+                                            <option key={u.id} value={u.id}>{u.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Proceso Asociado</label>
+                                <input name="process" defaultValue={editingFolder?.process || ''} placeholder="Ej: Auditoría Anual" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none" />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Color de Carpeta</label>
+                                <div className="flex gap-2">
+                                    {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#64748b'].map(c => (
+                                        <label key={c} className="cursor-pointer relative">
+                                            <input type="radio" name="color" value={c} defaultChecked={(editingFolder?.color || '#3b82f6') === c} className="peer sr-only" />
+                                            <div className="w-8 h-8 rounded-full transition-all peer-checked:scale-110 peer-checked:ring-2 ring-offset-2 peer-checked:ring-gray-400" style={{ backgroundColor: c }}></div>
+                                            <Check size={14} className="text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" weight="bold" />
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 justify-end pt-4">
+                                <button type="button" onClick={() => { setShowNewFolderModal(false); setEditingFolder(null); }} className="px-5 py-2.5 text-gray-500 font-bold text-sm hover:bg-gray-100 rounded-lg transition-colors">Cancelar</button>
+                                <button type="submit" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-lg shadow-lg shadow-blue-600/20 transition-all active:scale-95">
+                                    {editingFolder ? 'Guardar Cambios' : 'Crear Carpeta'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

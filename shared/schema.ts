@@ -200,6 +200,7 @@ export const folders = pgTable("folders", {
   unitId: varchar("unit_id", { length: 255 }).references(() => units.id, { onDelete: 'cascade' }),
   creatorId: varchar("creator_id", { length: 255 }).references(() => users.id, { onDelete: 'set null' }),
   color: varchar("color", { length: 50 }).default("#3b82f6"),
+  process: varchar("process", { length: 255 }), // Added for organizational process linkage
   description: text("description"),
   createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
   updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
@@ -220,6 +221,9 @@ export const documents = pgTable("documents", {
   folderId: varchar("folder_id", { length: 255 }).references(() => folders.id, { onDelete: 'cascade' }),
   unitId: varchar("unit_id", { length: 255 }).references(() => units.id, { onDelete: 'set null' }),
   ownerId: varchar("owner_id", { length: 255 }).references(() => users.id, { onDelete: 'cascade' }),
+
+  process: varchar("process", { length: 255 }), // Added
+  expiresAt: timestamp("expires_at", { mode: 'date' }), // Added
 
   status: varchar("status", { length: 50 }).default("DRAFT"),
   version: varchar("version", { length: 20 }).default("1.0"), // Changed to string for semantic versioning
