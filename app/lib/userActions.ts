@@ -223,3 +223,40 @@ export async function getUserActivityAction(userId: string) {
         return { success: false, error: 'Error al obtener actividad' };
     }
 }
+
+export async function getAuditLogsAction() {
+    try {
+        const logs = await db.select({
+            id: auditLogs.id,
+            createdAt: auditLogs.createdAt,
+            action: auditLogs.action,
+            actorId: auditLogs.userId,
+            actorName: users.name, // Join to get name
+            resource: auditLogs.resource,
+            resourceId: auditLogs.resourceId,
+            details: auditLogs.details,
+            ipAddress: auditLogs.ipAddress
+        })
+            .from(auditLogs)
+            .leftJoin(users, eq(auditLogs.userId, users.id))
+            .orderBy(desc(auditLogs.createdAt))
+            .limit(200);
+
+        return {
+            success: true,
+            data: logs.map(log => ({
+                id: log.id,
+                created_at: log.createdAt ? new Date(log.createdAt).toISOString() : new Date().toISOString(),
+                event_type: log.action,
+                actor_id: log.actorId,
+                actor_name: log.actorName || 'Sistema / Desconocido',
+                target_user_id: log.resource === 'USER' ? log.resourceId : null,
+                ip: log.ipAddress || '-',
+                metadata: log.details as Record<string, any>
+            }))
+        };
+    } catch (error) {
+        console.error('Error fetching audit logs:', error);
+        return { success: false, error: 'Error al obtener registros de auditoría' };
+    }
+}

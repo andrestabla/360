@@ -1,41 +1,71 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { DB, PlatformAuditEvent } from '@/lib/data';
+import { DB } from '@/lib/data'; // Kept for other references if needed, but not for logs
 import { ShieldCheck, MagnifyingGlass, DownloadSimple, ArrowClockwise, CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { getAuditLogsAction } from '@/app/lib/userActions';
 
 const ITEMS_PER_PAGE = 20;
 
 export default function AuditPage() {
-    const { isSuperAdmin } = useApp();
+    const { isSuperAdmin, currentUser } = useApp();
     const [search, setSearch] = useState('');
     const [filterEventType, setFilterEventType] = useState('ALL');
     const [filterDateFrom, setFilterDateFrom] = useState('');
     const [filterDateTo, setFilterDateTo] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [logs, setLogs] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Fetch Logs
+    useEffect(() => {
+        const fetchLogs = async () => {
+            setIsLoading(true);
+            const res = await getAuditLogsAction();
+            if (res.success && res.data) {
+                setLogs(res.data);
+            }
+            setIsLoading(false);
+        };
+
+        if (isSuperAdmin || currentUser?.role === 'Admin Global') {
+            fetchLogs();
+        }
+    }, [isSuperAdmin, currentUser, refreshKey]);
 
     // Ensure access control
-    if (!isSuperAdmin) {
-        return <div className="p-8 text-center text-red-500">Acceso Denegado. Solo Super Admins.</div>;
+    const hasAccess = isSuperAdmin || currentUser?.role === 'Admin Global';
+
+    if (!currentUser) return <div className="p-8 text-center text-slate-500">Cargando...</div>;
+
+    if (!hasAccess) {
+        return (
+            <div className="p-8 text-center bg-red-50 text-red-600 rounded-xl m-8 border border-red-100">
+                <ShieldCheck size={48} className="mx-auto mb-4 opacity-50" />
+                <h3 className="font-bold text-lg mb-2">Acceso Denegado</h3>
+                <p className="text-sm">Solo los Super Admins o Administradores Globales pueden ver la auditoría.</p>
+                <div className="mt-4 text-xs bg-white p-2 rounded border border-red-200 inline-block text-left">
+                    <p><strong>Tu Rol:</strong> {currentUser.role}</p>
+                    <p><strong>Requerido:</strong> Admin Global / Super Admin</p>
+                </div>
+            </div>
+        );
     }
 
     // Get unique event types for filter
-    const eventTypes = useMemo(() => {
-        const types = new Set(DB.platformAudit.map(log => log.event_type));
-        return Array.from(types).sort();
-    }, [refreshKey]);
+    const eventTypes = Array.from(new Set(logs.map(log => log.event_type))).sort();
 
     // Filter Logs
     const filteredLogs = useMemo(() => {
-        return DB.platformAudit.filter(log => {
+        return logs.filter(log => {
             // Text Search
             const searchLower = search.toLowerCase();
             const matchesSearch =
-                log.event_type.toLowerCase().includes(searchLower) ||
-                log.actor_name.toLowerCase().includes(searchLower) ||
-                (log.target_user_id && log.target_user_id.toLowerCase().includes(searchLower));
+                (log.event_type?.toLowerCase() || '').includes(searchLower) ||
+                (log.actor_name?.toLowerCase() || '').includes(searchLower) ||
+                (log.target_user_id?.toLowerCase() || '').includes(searchLower);
 
             // Type Filter
             const matchesType = filterEventType === 'ALL' || log.event_type === filterEventType;
@@ -53,8 +83,8 @@ export default function AuditPage() {
             }
 
             return matchesSearch && matchesType && matchesDate;
-        }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    }, [search, filterEventType, filterDateFrom, filterDateTo, refreshKey]);
+        }); // Sorted by DB already DESC
+    }, [logs, search, filterEventType, filterDateFrom, filterDateTo]);
 
     // Pagination
     const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
@@ -90,18 +120,6 @@ export default function AuditPage() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-
-        // Audit the Export Action itself!
-        DB.platformAudit.unshift({
-            id: `audit-${Date.now()}`,
-            event_type: 'AUDIT_EXPORT',
-            actor_id: 'superadmin', // Assuming current user is always superadmin here
-            actor_name: 'Super Admin',
-            metadata: { count: filteredLogs.length, filters: { search, filterEventType } },
-            ip: '127.0.0.1',
-            created_at: new Date().toISOString()
-        });
-        setRefreshKey(prev => prev + 1);
     };
 
     return (
@@ -115,7 +133,7 @@ export default function AuditPage() {
                 </div>
                 <div className="flex gap-2">
                     <button onClick={() => setRefreshKey(prev => prev + 1)} className="btn btn-secondary" title="Actualizar">
-                        <ArrowClockwise />
+                        <ArrowClockwise className={isLoading ? "animate-spin" : ""} />
                     </button>
                     <button onClick={handleExport} className="btn btn-primary flex items-center gap-2">
                         <DownloadSimple weight="bold" /> Exportar CSV
@@ -176,89 +194,97 @@ export default function AuditPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold text-xs">
-                            <tr>
-                                <th className="px-6 py-4 whitespace-nowrap">Fecha / Hora</th>
-                                <th className="px-6 py-4 whitespace-nowrap">Evento</th>
-                                <th className="px-6 py-4 whitespace-nowrap">Actor</th>
-                                <th className="px-6 py-4 whitespace-nowrap">Contexto</th>
-                                <th className="px-6 py-4 min-w-[300px]">Detalle (Metadata)</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {currentLogs.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-400 italic">
-                                        No se encontraron eventos de auditoría con los filtros actuales.
-                                    </td>
-                                </tr>
-                            ) : (
-                                currentLogs.map(log => (
-                                    <tr key={log.id} className="hover:bg-slate-50 transition-colors group">
-                                        <td className="px-6 py-4 whitespace-nowrap text-slate-500 text-xs">
-                                            {new Date(log.created_at).toLocaleString()}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="font-mono text-xs font-medium bg-slate-100 px-2 py-1 rounded text-slate-700 border border-slate-200">
-                                                {log.event_type}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex flex-col">
-                                                <span className="font-medium text-slate-900">{log.actor_name}</span>
-                                                <span className="text-[10px] text-slate-400 font-mono">{log.actor_id}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex flex-col gap-1">
-                                                {log.target_user_id && (
-                                                    <span className="text-xs text-slate-500 flex items-center gap-1">
-                                                        👤 {DB.users.find(u => u.id === log.target_user_id)?.name || log.target_user_id}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-xs text-slate-600 break-all font-mono bg-slate-50/50">
-                                            <div className="max-h-20 overflow-y-auto custom-scrollbar">
-                                                {JSON.stringify(log.metadata, null, 2)}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                    <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
-                        <div className="text-xs text-slate-500">
-                            Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredLogs.length)} de {filteredLogs.length} eventos
-                        </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={currentPage === 1}
-                                className="p-2 border border-slate-200 rounded bg-white disabled:opacity-50 hover:bg-slate-100"
-                            >
-                                <CaretLeft />
-                            </button>
-                            <span className="flex items-center px-4 text-xs font-medium text-slate-600">
-                                Página {currentPage} de {totalPages}
-                            </span>
-                            <button
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                disabled={currentPage === totalPages}
-                                className="p-2 border border-slate-200 rounded bg-white disabled:opacity-50 hover:bg-slate-100"
-                            >
-                                <CaretRight />
-                            </button>
-                        </div>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[400px]">
+                {isLoading && logs.length === 0 ? (
+                    <div className="flex h-64 items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
                     </div>
+                ) : (
+                    <>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold text-xs">
+                                    <tr>
+                                        <th className="px-6 py-4 whitespace-nowrap">Fecha / Hora</th>
+                                        <th className="px-6 py-4 whitespace-nowrap">Evento</th>
+                                        <th className="px-6 py-4 whitespace-nowrap">Actor</th>
+                                        <th className="px-6 py-4 whitespace-nowrap">Contexto</th>
+                                        <th className="px-6 py-4 min-w-[300px]">Detalle (Metadata)</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {currentLogs.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-8 text-center text-slate-400 italic">
+                                                No se encontraron eventos de auditoría {logs.length === 0 ? '(Base de datos vacía)' : 'con los filtros actuales'}.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        currentLogs.map(log => (
+                                            <tr key={log.id} className="hover:bg-slate-50 transition-colors group">
+                                                <td className="px-6 py-4 whitespace-nowrap text-slate-500 text-xs">
+                                                    {new Date(log.created_at).toLocaleString()}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className="font-mono text-xs font-medium bg-slate-100 px-2 py-1 rounded text-slate-700 border border-slate-200">
+                                                        {log.event_type}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium text-slate-900">{log.actor_name}</span>
+                                                        <span className="text-[10px] text-slate-400 font-mono">{log.actor_id}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex flex-col gap-1">
+                                                        {log.target_user_id && (
+                                                            <span className="text-xs text-slate-500 flex items-center gap-1">
+                                                                👤 {log.target_user_id}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-xs text-slate-600 break-all font-mono bg-slate-50/50">
+                                                    <div className="max-h-20 overflow-y-auto custom-scrollbar">
+                                                        {JSON.stringify(log.metadata, null, 2)}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+                                <div className="text-xs text-slate-500">
+                                    Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredLogs.length)} de {filteredLogs.length} eventos
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="p-2 border border-slate-200 rounded bg-white disabled:opacity-50 hover:bg-slate-100"
+                                    >
+                                        <CaretLeft />
+                                    </button>
+                                    <span className="flex items-center px-4 text-xs font-medium text-slate-600">
+                                        Página {currentPage} de {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="p-2 border border-slate-200 rounded bg-white disabled:opacity-50 hover:bg-slate-100"
+                                    >
+                                        <CaretRight />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>
