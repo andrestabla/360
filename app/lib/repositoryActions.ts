@@ -122,15 +122,26 @@ export async function uploadDocumentAction(formData: FormData) {
     const linkType = formData.get('linkType') as string || 'file'; // 'file', 'link', 'embed'
     const folderId = formData.get('folderId') as string | null;
     const unitId = formData.get('unitId') as string | null;
-    const process = formData.get('process') as string | null;
+
+    // Sanitize process: empty string -> null
+    const rawProcess = formData.get('process') as string;
+    const process = rawProcess && rawProcess.trim() !== '' ? rawProcess.trim() : null;
+
     const expiresAtStr = formData.get('expiresAt') as string | null;
-    const description = formData.get('description') as string | null; // Stored in content? No, schema needs desc. Documents usage: content text. We can use content for description OR embed code.
-    // Let's use `content` for Description usually, or EmbedCode.
-    // If type=embed, content=code. If type=file/link, content=description.
+    const description = formData.get('description') as string | null;
+
+    // Defensive Date Parsing
+    let expiresAt: Date | null = null;
+    if (expiresAtStr && expiresAtStr.trim() !== '') {
+        const d = new Date(expiresAtStr);
+        if (!isNaN(d.getTime())) {
+            expiresAt = d;
+        }
+    }
 
     const title = formData.get('title') as string;
     const keywordsStr = formData.get('keywords') as string; // Comma separated
-    const tags = keywordsStr ? keywordsStr.split(',').map(s => s.trim()) : [];
+    const tags = keywordsStr ? keywordsStr.split(',').map(s => s.trim()).filter(Boolean) : [];
 
     let url: string | null = null;
     let size = '0 KB';
@@ -139,7 +150,7 @@ export async function uploadDocumentAction(formData: FormData) {
 
     if (linkType === 'file') {
         const file = formData.get('file') as File;
-        if (!file) throw new Error("No file provided");
+        if (!file || file.size === 0) throw new Error("No file provided");
 
         // Upload
         const storage = getStorageService();
@@ -162,8 +173,6 @@ export async function uploadDocumentAction(formData: FormData) {
         content = embedCode; // Override description with code for render
         finalType = 'embed';
     }
-
-    const expiresAt = expiresAtStr ? new Date(expiresAtStr) : null;
 
     // 2. Create DB Record
     const [newDoc] = await db.insert(documents).values({
@@ -237,4 +246,4 @@ export async function moveItemAction(itemId: string, type: 'folder' | 'doc', new
     revalidatePath('/dashboard/repository');
     return { success: true };
 }
- 
+
