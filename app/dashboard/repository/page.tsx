@@ -123,9 +123,24 @@ export default function RepositoryPage() {
         if (idx >= 0) setBreadcrumbs(breadcrumbs.slice(0, idx + 1));
     };
 
-    const handleDownload = (doc: RepositoryFile) => {
-        if (doc.url) window.open(doc.url, '_blank');
-        else alert('URL no disponible');
+    const handleDownload = async (doc: RepositoryFile) => {
+        if (!doc.url) {
+            alert('URL no disponible');
+            return;
+        }
+        try {
+            const { getDocumentDownloadUrlAction } = await import('@/app/lib/repositoryActions');
+            const res = await getDocumentDownloadUrlAction(doc.id);
+            if (res.success && res.url) {
+                window.open(res.url, '_blank');
+            } else {
+                // Fallback
+                window.open(doc.url, '_blank');
+            }
+        } catch (e) {
+            console.error(e);
+            window.open(doc.url, '_blank');
+        }
     };
 
     const handleDeleteDoc = async (id: string) => {

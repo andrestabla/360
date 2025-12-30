@@ -287,3 +287,24 @@ export async function updateDocumentMetadataAction(docId: string, data: {
     revalidatePath('/dashboard/repository');
     return { success: true };
 }
+
+export async function getDocumentDownloadUrlAction(docId: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const [doc] = await db.select().from(documents).where(eq(documents.id, docId));
+    if (!doc || !doc.url) return { success: false, error: 'Document not found' };
+
+    // If it's a link type or external URL, return it as is
+    if (doc.type === 'link' || doc.url.startsWith('http')) {
+        return { success: true, url: doc.url };
+    }
+
+    // It's a file path potentially proxied
+    // Extract key from /api/storage/key
+    const match = doc.url.match(/\/api\/storage\/(.+)/);
+    const key = match ? match[1] : doc.url;
+    
+    const storageService = getStorageService();
+    return await storageService.download(key);
+}
