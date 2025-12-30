@@ -399,6 +399,12 @@ export default function RepositoryPage() {
                         onClose={() => { setSelectedDoc(null); setIsSidebarMaximized(false); }}
                         onDownload={handleDownload}
                         onUpdate={refresh}
+                        onAssign={(doc) => { setSelectedDocForAction(doc); setShowAssignTaskModal(true); }}
+                        onToggleLike={(doc) => { /* TODO: Implement Like Action */ alert('Favorito: ' + doc.title) }}
+                        onShare={() => alert('Compartir: Próximamente')}
+                        onDelete={(doc) => handleDeleteDoc(doc.id)}
+                        onMove={(doc) => { setDocToMove(doc); setShowMoveModal(true); }}
+                        onExpand={(doc) => setFullScreenDoc(doc)}
                     />
                 </div>
             )}

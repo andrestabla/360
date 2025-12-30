@@ -395,8 +395,22 @@ export const tasks = pgTable("tasks", {
   index("idx_tasks_status").on(table.status),
 ]);
 
+export const comments = pgTable("comments", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  documentId: varchar("document_id", { length: 255 }).references(() => documents.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id", { length: 255 }).references(() => users.id, { onDelete: 'cascade' }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
+}, (table) => [
+  index("idx_comments_document").on(table.documentId),
+  index("idx_comments_user").on(table.userId),
+]);
+
 export type Task = typeof tasks.$inferSelect;
 export type InsertTask = typeof tasks.$inferInsert;
+export type Comment = typeof comments.$inferSelect;
+export type InsertComment = typeof comments.$inferInsert;
 
 // TYPES
 export type User = typeof users.$inferSelect;
