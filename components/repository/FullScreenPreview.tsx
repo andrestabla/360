@@ -127,7 +127,7 @@ export function FullScreenPreview({ doc, onClose }: FullScreenPreviewProps) {
                     />
                 ) : isEmbed && doc.content ? (
                     <div
-                        className="w-full h-full bg-white rounded-lg overflow-hidden shadow-2xl"
+                        className="w-full h-full bg-white rounded-lg overflow-hidden shadow-2xl [&_iframe]:w-full [&_iframe]:h-full [&_iframe]:border-0"
                         dangerouslySetInnerHTML={{ __html: doc.content }}
                     />
                 ) : isOffice ? (
