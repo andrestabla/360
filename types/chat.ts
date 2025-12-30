@@ -18,6 +18,8 @@ export type Conversation = Omit<SchemaConversation, 'participants' | 'title' | '
     avatar?: string;
     unreadCount?: number;
     lastMessageAt?: string | Date | null; // Handle serialization
+    isBlocked?: boolean;
+    blockerId?: string | null;
 };
 
 export type Message = Omit<SchemaMessage, 'createdAt' | 'editedAt' | 'deletedAt' | 'attachments' | 'reactions'> & {

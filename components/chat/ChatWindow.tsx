@@ -125,26 +125,11 @@ export default function ChatWindow() {
                 let convDef = convRes.data;
 
                 if (convDef) {
-                    let title = convDef.title;
-                    if (convDef.type === 'dm') {
-                        // Fetch members to check blocking status later
-                        // Title is now resolved by server action, but we keep members pending check
-                    }
-                    setConversation({ ...convDef, title: title || 'Chat' } as unknown as Conversation);
+                    const isB = convDef.isBlocked || false;
+                    setIsBlocked(isB);
+                    if (isB) setBlockerId(convDef.blockerId || null);
 
-                    // Privacy Check (Block)
-                    if (convDef.type === 'dm') {
-                        const members = await getGroupMembersAction(activeId);
-                        const otherMem = members.find((m: any) => m.id !== currentUser.id);
-                        if (otherMem) {
-                            const blocked = await isBlockedAction(currentUser.id, otherMem.id);
-                            const blockedBy = await isBlockedAction(otherMem.id, currentUser.id);
-                            setIsBlocked(blocked || blockedBy);
-                            if (blocked || blockedBy) setBlockerId(blocked ? currentUser.id : otherMem.id);
-                        }
-                    } else {
-                        setIsBlocked(false);
-                    }
+                    setConversation(convDef as unknown as Conversation);
                 }
 
                 // Get Messages (First Page)

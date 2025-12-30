@@ -9,6 +9,8 @@ export type ChatConversation = Conversation & {
   lastMessageAt?: Date | null;
   unreadCount?: number;
   avatar?: string | null; // Added avatar
+  isBlocked?: boolean;
+  blockerId?: string | null;
 };
 export type ChatMessage = Message & {
   senderName?: string;
@@ -34,6 +36,11 @@ export const ChatService = {
       userConvs.forEach(c => {
         (c.participants as string[])?.forEach(p => allParticipantIds.add(p));
       });
+
+      if (allParticipantIds.size === 0) {
+        // No participants found (e.g. no conversations), return mapped empty
+        return { success: true, data: [] };
+      }
 
       const usersList = await db.select().from(users).where(inArray(users.id, Array.from(allParticipantIds)));
       const userMap = new Map(usersList.map(u => [u.id, u]));
@@ -85,14 +92,29 @@ export const ChatService = {
 
       let title = conv.title || conv.name || 'Chat';
       let avatar = undefined;
+      let isBlocked = false;
+      let blockerId = null;
 
       if (conv.type === 'dm' && userId) {
-        const parts = conv.participants as string[];
-        const otherId = parts.find(id => id !== userId) || parts[0];
-        const otherUser = await db.query.users.findFirst({ where: eq(users.id, otherId) });
-        if (otherUser) {
-          title = otherUser.name;
-          avatar = otherUser.avatar || otherUser.initials;
+        const parts = (conv.participants as string[]) || [];
+        if (parts.length > 0) {
+          const otherId = parts.find(id => id !== userId) || parts[0];
+          if (otherId) {
+            const otherUser = await db.query.users.findFirst({ where: eq(users.id, otherId) });
+            if (otherUser) {
+              title = otherUser.name;
+              avatar = otherUser.avatar || otherUser.initials;
+            }
+
+            // Check blocking status
+            const blocked = await ChatService.isBlocked(userId, otherId);
+            const blockedBy = await ChatService.isBlocked(otherId, userId);
+
+            if (blocked || blockedBy) {
+              isBlocked = true;
+              blockerId = blocked ? userId : otherId;
+            }
+          }
         }
       }
 
@@ -100,6 +122,8 @@ export const ChatService = {
         ...conv,
         title,
         avatar,
+        isBlocked,
+        blockerId,
         lastMessage: conv.lastMessage,
         lastMessageAt: conv.lastMessageAt,
         unreadCount: 0
