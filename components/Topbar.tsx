@@ -49,9 +49,11 @@ export default function Topbar() {
                 {isSuperAdmin && <span className="badge bg-super hidden sm:inline-flex">SUPER ADMIN</span>}
                 {!isSuperAdmin && currentUser?.level === 1 && <span className="badge bg-warning hidden sm:inline-flex">ADMIN</span>}
 
-                <button className="btn btn-ghost p-2" onClick={() => router.push('/dashboard/chat')}>
+                <button className="btn btn-ghost p-2 relative" onClick={() => router.push('/dashboard/chat')}>
                     <ChatCircleDots size={20} />
-                    <span className="nav-badge" style={{ top: 8, right: 6, width: 8, height: 8, padding: 0, display: 'block' }}></span>
+                    {useApp().unreadChatCount > 0 && (
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-1 ring-white"></span>
+                    )}
                 </button>
 
                 <button className="btn btn-ghost p-2 hidden sm:flex" onClick={toggleDark}>

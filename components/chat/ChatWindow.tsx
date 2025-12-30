@@ -478,10 +478,22 @@ export default function ChatWindow() {
                 <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm overflow-hidden
                         ${conversation?.type === 'group' ? 'bg-indigo-500' : 'bg-pink-500'}`}>
-                        {conversation?.avatar && (conversation.avatar.startsWith('http') || conversation.avatar.startsWith('/')) ? (
-                            <img src={conversation.avatar} alt={conversation.title || ''} className="w-full h-full object-cover" />
+                        {conversation?.avatar ? (
+                            <img
+                                src={conversation.avatar}
+                                alt={conversation.title || ''}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                    const target = e.currentTarget;
+                                    if (target.src.includes('/avatars/') && !target.src.includes('/api/storage/')) {
+                                        target.src = '/api/storage' + target.src.substring(target.src.indexOf('/avatars/'));
+                                    } else {
+                                        target.style.display = 'none';
+                                    }
+                                }}
+                            />
                         ) : (
-                            conversation?.avatar || conversation?.title?.[0] || '?'
+                            conversation?.title?.[0] || '?'
                         )}
                     </div>
                     <div>

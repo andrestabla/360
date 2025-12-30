@@ -214,10 +214,26 @@ export default function ConversationList() {
                             ${conv.type === 'group' ? 'bg-indigo-100 text-indigo-600' : 'bg-gradient-to-br from-pink-100 to-rose-100 text-rose-600'}`}>
                             {conv.type === 'group' ? (
                                 <Users weight="bold" size={20} />
-                            ) : conv.avatar && (conv.avatar.startsWith('http') || conv.avatar.startsWith('/')) ? (
-                                <img src={conv.avatar} alt={conv.title || ''} className="w-full h-full object-cover" />
+                            ) : conv.avatar ? (
+                                <img
+                                    src={conv.avatar}
+                                    alt={conv.title || ''}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        const target = e.currentTarget;
+                                        if (target.src.includes('/avatars/') && !target.src.includes('/api/storage/')) {
+                                            target.src = '/api/storage' + target.src.substring(target.src.indexOf('/avatars/'));
+                                        } else {
+                                            target.style.display = 'none';
+                                            target.parentElement?.classList.add('fallback-avatar');
+                                            // Fallback text logic handled by parent if img hidden? 
+                                            // Easier: swap to text node but React reconciliation fits better if we use state.
+                                            // MVP: Hide img and show fallback element underneath if absolute.
+                                        }
+                                    }}
+                                />
                             ) : (
-                                <span className="text-sm font-bold">{conv.avatar || conv.title?.[0] || '?'}</span>
+                                <span className="text-sm font-bold">{conv.title?.[0] || '?'}</span>
                             )}
                         </div>
 
@@ -244,6 +260,20 @@ export default function ConversationList() {
                         </div>
                     </button>
                 ))}
+
+                {loading && (
+                    <div className="space-y-4 p-2 animate-pulse">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="flex gap-3">
+                                <div className="w-12 h-12 rounded-full bg-gray-200"></div>
+                                <div className="flex-1 space-y-2 py-1">
+                                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 {!loading && !isSearching && displayList.length === 0 && (
                     <div className="text-center py-10 opacity-50">

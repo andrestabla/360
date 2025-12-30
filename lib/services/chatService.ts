@@ -45,6 +45,33 @@ export const ChatService = {
       const usersList = await db.select().from(users).where(inArray(users.id, Array.from(allParticipantIds)));
       const userMap = new Map(usersList.map(u => [u.id, u]));
 
+      // Calculate Unread Counts (Optimize with single query later, currently per-loop or batched)
+      // Batch query for unread counts
+      // SELECT conversation_id, COUNT(*) FROM messages 
+      // WHERE conversation_id IN (...) AND NOT (read_by::jsonb ? userId) GROUP BY conversation_id
+
+      const convIds = userConvs.map(c => c.id);
+      let unreadMap = new Map<string, number>();
+
+      if (convIds.length > 0) {
+        try {
+          const unreadCounts = await db.execute(sql`
+                  SELECT conversation_id, COUNT(*)::int as count
+                  FROM messages
+                  WHERE conversation_id IN ${convIds}
+                  AND NOT (read_by::jsonb @> ${JSON.stringify([userId])}::jsonb)
+                  GROUP BY conversation_id
+              `);
+
+          unreadCounts.rows.forEach((row: any) => {
+            unreadMap.set(row.conversation_id, row.count);
+          });
+        } catch (err) {
+          console.error("Error fetching unread counts:", err);
+          // Fallback to 0 if JSONB query fails (e.g. if column type mismatch in driver)
+        }
+      }
+
       // Map to ChatConversation type with resolved Titles/Avatars
       const mapped: ChatConversation[] = userConvs.map(c => {
         let title = c.name || c.title || 'Chat';
@@ -58,21 +85,14 @@ export const ChatService = {
             title = otherUser.name;
             avatar = otherUser.avatar || otherUser.initials;
           }
-        } else {
-          // Group logic if needed, e.g. group avatar
         }
 
         return {
           ...c,
           title,
-          // We use 'avatar' in the UI but it's not in the base Conversation type. 
-          // We cast/extend the type in the map.
-          // The return type is ChatConversation[] which we defined to allow extra props if we add them to the type definition.
-          // But ChatConversation definition at top of file (Line 7) only adds lastMessage... 
-          // I should update ChatConversation type definition at top of file too.
           lastMessage: c.lastMessage,
           lastMessageAt: c.lastMessageAt,
-          unreadCount: 0
+          unreadCount: unreadMap.get(c.id) || 0
         } as ChatConversation & { avatar?: string };
       });
 
