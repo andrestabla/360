@@ -104,16 +104,6 @@ export function FullScreenPreview({ doc, onClose }: FullScreenPreviewProps) {
 
             {/* Content Viewer */}
             <div className="flex-1 overflow-hidden relative flex items-center justify-center p-4 sm:p-8">
-                {/* Debug Info (Temporary) */}
-                <div className="absolute top-4 left-4 bg-black/80 text-white text-[10px] p-2 rounded max-w-sm overflow-auto z-50 pointer-events-none opacity-50 hover:opacity-100">
-                    <p>ID: {doc.id}</p>
-                    <p>Type: {doc.type}</p>
-                    <p>Orig URL: {doc.url}</p>
-                    <p>Signed URL: {signedUrl || 'null'}</p>
-                    <p>Final URL: {finalUrl}</p>
-                    <p>Loading: {loading ? 'YES' : 'NO'}</p>
-                </div>
-
                 {loading ? (
                     <div className="flex flex-col items-center gap-3 text-white/50">
                         <Spinner size={32} className="animate-spin" />
