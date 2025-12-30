@@ -178,13 +178,16 @@ export default function ChatWindow() {
 
                 // 2. Fetch Messages
                 const msgRes = await getMessagesAction(activeId);
-                if (!msgRes.success) {
-                    throw new Error(msgRes.error || "Failed to load messages");
-                }
 
-                setMessages(msgRes.data.reverse());
-                oldestCursorRef.current = msgRes.nextCursor;
-                setHasMore(msgRes.hasMore);
+                // Strict check to prevent "undefined is not iterable"
+                if (msgRes?.success && Array.isArray(msgRes.data)) {
+                    setMessages(msgRes.data.reverse());
+                    oldestCursorRef.current = msgRes.nextCursor;
+                    setHasMore(msgRes.hasMore);
+                } else {
+                    console.warn("Messages failed to load or invalid format:", msgRes);
+                    setMessages([]); // Fallback to empty
+                }
 
                 // 3. Mark Read & Settings (Non-blocking)
                 markAsReadAction(activeId, currentUser.id).then(() => refreshUnreadCount()).catch(console.warn);
@@ -195,7 +198,7 @@ export default function ChatWindow() {
 
             } catch (e: any) {
                 console.error("Chat Init Error:", e);
-                setError("Error cargando el chat. Por favor reintenta.");
+                // setError("Error cargando el chat. Por favor reintenta.");
             } finally {
                 setLoading(false);
             }
