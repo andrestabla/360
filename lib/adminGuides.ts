@@ -162,3 +162,73 @@ export const auditGuide: AdminGuide = {
   ]
 };
 
+export const communicationsGuide: AdminGuide = {
+  title: 'Comunicaciones',
+  description: 'Gestione las publicaciones y anuncios de su organización.',
+  steps: [
+    {
+      title: 'Crear Publicación',
+      description: 'Use el botón "Nueva Publicación" para redactar mensajes visibles para todos o grupos específicos.',
+      type: 'info'
+    },
+    {
+      title: 'Multimedia',
+      description: 'Puede adjuntar imágenes, videos o documentos importantes a sus anuncios.',
+      type: 'tip'
+    },
+    {
+      title: 'Audiencia',
+      description: 'Seleccione cuidadosamente quién puede ver la publicación (Todos o roles específicos).',
+      type: 'warning'
+    }
+  ],
+  tips: [
+    'Las publicaciones importantes pueden fijarse al inicio.',
+    'Use emojis para hacer los anuncios más amigables.'
+  ]
+};
+
+export const storageDashboardGuide: AdminGuide = {
+  title: 'Panel de Almacenamiento',
+  description: 'Monitoree el uso de recursos y archivos.',
+  steps: [
+    {
+      title: 'Visión General',
+      description: 'Vea el espacio total utilizado y disponible de su plan.',
+      type: 'info'
+    },
+    {
+      title: 'Archivos Grandes',
+      description: 'Identifique rápidamente qué archivos ocupan más espacio.',
+      type: 'tip'
+    }
+  ],
+  tips: [
+    'Considere limpiar archivos antiguos periódicamente.',
+    'La papelera ocupa espacio hasta que se vacía definitivamente.'
+  ]
+};
+
+export const technicalSettingsGuide: AdminGuide = {
+  title: 'Configuración Técnica',
+  description: 'Opciones avanzadas de integración.',
+  steps: [
+    {
+      title: 'Webhooks',
+      description: 'Configure notificaciones automáticas a sistemas externos.',
+      type: 'info'
+    }
+  ]
+};
+
+export const storageGuide: AdminGuide = {
+  title: 'Proveedores de Almacenamiento',
+  description: 'Conecte servicios externos como S3 o Google Drive.',
+  steps: [
+    {
+      title: 'Credenciales',
+      description: 'Ingrese las llaves de acceso de su proveedor de nube.',
+      type: 'warning'
+    }
+  ]
+};
