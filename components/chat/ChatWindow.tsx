@@ -472,12 +472,14 @@ export default function ChatWindow() {
                 {/* Header (Duplicate or Componentize logic needed, but for now inline to keep file count low) */}
                 <div className="h-16 px-6 border-b border-gray-200 flex items-center justify-between bg-white z-10 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm overflow-hidden
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm overflow-hidden relative
                             ${conversation?.type === 'group' ? 'bg-indigo-500' : 'bg-pink-500'}`}>
                             {conversation?.avatar ? (
                                 <img src={conversation.avatar} alt={conversation.title || ''} className="w-full h-full object-cover"
                                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                            ) : (conversation?.title?.[0] || '?')}
+                            ) : (
+                                <span>{conversation?.title?.[0]?.toUpperCase() || '?'}</span>
+                            )}
                         </div>
                         <div>
                             <h3 className="font-bold text-gray-900 leading-tight">{conversation?.title}</h3>
@@ -530,24 +532,17 @@ export default function ChatWindow() {
             {/* Header */}
             <div className="h-16 px-6 border-b border-gray-200 flex items-center justify-between bg-white z-10 shadow-sm">
                 <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm overflow-hidden
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm overflow-hidden relative
                         ${conversation?.type === 'group' ? 'bg-indigo-500' : 'bg-pink-500'}`}>
                         {conversation?.avatar ? (
                             <img
                                 src={conversation.avatar}
                                 alt={conversation.title || ''}
                                 className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    const target = e.currentTarget;
-                                    if (target.src.includes('/avatars/') && !target.src.includes('/api/storage/')) {
-                                        target.src = '/api/storage' + target.src.substring(target.src.indexOf('/avatars/'));
-                                    } else {
-                                        target.style.display = 'none';
-                                    }
-                                }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                             />
                         ) : (
-                            conversation?.title?.[0] || '?'
+                            <span>{conversation?.title?.[0]?.toUpperCase() || '?'}</span>
                         )}
                     </div>
                     <div>
