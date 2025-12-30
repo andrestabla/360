@@ -23,44 +23,46 @@ export default function ConversationList() {
     const searchParams = useSearchParams();
     const activeId = searchParams.get('chatId');
 
-    const loadConversations = useCallback(async () => {
+    const loadConversations = useCallback(async (isInitial = false) => {
         if (!currentUser) return;
-        setLoading(true);
+        if (isInitial) setLoading(true);
         try {
             const res = await getConversationsAction(currentUser.id);
-            const enriched = res.data.map((c: any) => ({
-                ...c,
-                participants: c.participants || [],
-                title: c.title || null,
-                unreadCount: c.id === activeId ? 0 : c.unreadCount
-            })) as Conversation[];
-            setConversations(enriched);
+            if (res.success && res.data) {
+                const enriched = res.data.map((c: any) => ({
+                    ...c,
+                    participants: c.participants || [],
+                    title: c.title || null,
+                    // If active, force unread to 0 locally. Server action will catch up eventually.
+                    unreadCount: c.id === activeId ? 0 : c.unreadCount
+                })) as Conversation[];
+                setConversations(enriched);
+            }
         } catch (e) {
             console.error(e);
         } finally {
-            setLoading(false);
+            if (isInitial) setLoading(false);
         }
-    }, [currentUser, refreshKey, activeId]);
+    }, [currentUser, activeId]); // ActiveId still needed for correct mapping, but we won't trigger if not needed.
 
     useEffect(() => {
-        loadConversations();
+        // Initial load
+        loadConversations(true);
 
         const interval = setInterval(() => {
-            if (!currentUser) return;
-            getConversationsAction(currentUser.id).then(res => {
-                setConversations(prev => {
-                    return res.data.map((c: any) => ({
-                        ...c,
-                        participants: c.participants || [],
-                        title: c.title || null,
-                        unreadCount: c.id === activeId ? 0 : c.unreadCount
-                    })) as Conversation[];
-                });
-            });
+            loadConversations(false);
         }, 5000);
         return () => clearInterval(interval);
 
-    }, [loadConversations, currentUser, activeId]);
+    }, [currentUser]); // Removed loadConversations/activeId from dependency to stop re-running on select
+    // But wait, if activeId changes, we DO want to re-render to zero-out the count. 
+    // We can do that purely in render or local state update without fetching.
+
+    useEffect(() => {
+        // When activeId changes, locally update unread count without fetching
+        setConversations(prev => prev.map(c => c.id === activeId ? { ...c, unreadCount: 0 } : c));
+        refreshUnreadCount();
+    }, [activeId]);
 
 
     const handleSelect = (conv: Conversation) => {
@@ -68,9 +70,8 @@ export default function ConversationList() {
         params.set('chatId', conv.id);
         router.push(`/dashboard/chat?${params.toString()}`);
 
-        // The ChatWindow will handle the actual API call
-        setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, unreadCount: 0 } : c));
-        refreshUnreadCount();
+        // Optimistic update handled by the useEffect[activeId] above automatically 
+        // or we can do it here for immediate feedback, but useEffect is safer for back/forward nav.
     };
 
     const handleCreateDM = async (targetUserId: string) => {
