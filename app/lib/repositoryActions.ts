@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/server/db';
-import { documents, folders } from '@/shared/schema';
+import { documents, folders, units } from '@/shared/schema';
 import { eq, and, like, desc, isNull, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
@@ -152,9 +152,32 @@ export async function uploadDocumentAction(formData: FormData) {
         const file = formData.get('file') as File;
         if (!file || file.size === 0) throw new Error("No file provided");
 
+        // --- R2 Structure Logic ---
+        let storagePath = 'repository/General';
+        if (unitId) {
+            try {
+                // Import units/eq dynamically or ensure imported at top
+                // Assuming imports exist or will be added.
+                // Wait, need to check imports. repositoryActions has db/documents/folders. Need units.
+                const userUnit = await db.select({ name: units.name }).from(units).where(eq(units.id, unitId)).limit(1);
+                if (userUnit && userUnit.length > 0) {
+                    // Sanitize Unit Name for Path
+                    const safeUnitName = userUnit[0].name.replace(/[^a-zA-Z0-9-_]/g, '_');
+                    storagePath = `repository/${safeUnitName}`;
+                }
+            } catch (e) {
+                console.error("Error fetching unit for path:", e);
+                // Fallback to General
+            }
+        }
+
         // Upload
         const storage = getStorageService();
-        const uploadRes = await storage.upload(file, 'repository');
+        // storage.upload(file, path) -> if path provided, it prepends.
+        // check storageService: key = path ? `${path}/${fileId}` : fileId;
+        // So passing 'repository/UnitName' works perfectly.
+
+        const uploadRes = await storage.upload(file, storagePath);
         if (!uploadRes.success || !uploadRes.url) {
             throw new Error(uploadRes.error || "Upload failed");
         }
