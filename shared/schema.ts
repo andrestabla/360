@@ -407,10 +407,19 @@ export const comments = pgTable("comments", {
   index("idx_comments_user").on(table.userId),
 ]);
 
+export const favorite_documents = pgTable("favorite_documents", {
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  documentId: varchar("document_id", { length: 255 }).notNull().references(() => documents.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+}, (table) => [
+  primaryKey({ columns: [table.userId, table.documentId] }),
+]);
+
 export type Task = typeof tasks.$inferSelect;
 export type InsertTask = typeof tasks.$inferInsert;
 export type Comment = typeof comments.$inferSelect;
 export type InsertComment = typeof comments.$inferInsert;
+export type FavoriteDocument = typeof favorite_documents.$inferSelect;
 
 // TYPES
 export type User = typeof users.$inferSelect;

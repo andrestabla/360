@@ -38,22 +38,36 @@ interface RepositorySidebarProps {
 export function RepositorySidebar({ doc, units, onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand }: RepositorySidebarProps) {
     const [activeTab, setActiveTab] = useState<'view' | 'edit' | 'comments'>('view');
     const [showMoreMenu, setShowMoreMenu] = useState(false);
+    const [isFavorite, setIsFavorite] = useState(false);
+
+    // Initial favorite state - ideally passed as prop or fetched.
+    // For now, if likes > 0 we'll assume it's liked for UI demonstration if not per-user data available yet.
+    // Actually, onToggleLike will handle the real logic.
+    useEffect(() => {
+        // Here we could fetch if user favorites this doc
+    }, [doc.id]);
+
+    const handleToggleFavorite = () => {
+        setIsFavorite(!isFavorite);
+        onToggleLike(doc);
+    };
 
     return (
         <div className="flex flex-col h-full bg-white font-sans">
             {/* Top Toolbar */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
                 <div className="flex items-center gap-1">
-                    <button onClick={() => onToggleLike(doc)} title={doc.likes ? "Quitar favorito" : "Marcar favorito"} className={`p-2 rounded-full hover:bg-slate-100 transition-colors ${doc.likes ? 'text-yellow-400' : 'text-slate-400'}`}>
-                        <Star size={20} weight={doc.likes ? "fill" : "regular"} />
+                    <button
+                        onClick={handleToggleFavorite}
+                        title={isFavorite ? "Quitar favorito" : "Marcar favorito"}
+                        className={`p-2 rounded-full hover:bg-slate-100 transition-colors ${isFavorite ? 'text-yellow-400' : 'text-slate-400'}`}
+                    >
+                        <Star size={20} weight={isFavorite ? "fill" : "regular"} />
                     </button>
-                    <button onClick={() => onShare(doc)} title="Compartir" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-blue-500 transition-colors">
+                    <button onClick={() => onShare(doc)} title="Compartir enlace" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-blue-500 transition-colors">
                         <ShareNetwork size={20} />
                     </button>
-                    {/* <button onClick={() => onAssign(doc)} title="Asignar Tarea" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-blue-500 transition-colors">
-                        <ClipboardText size={20} />
-                    </button> */}
-                    <button onClick={() => onExpand(doc)} title="Pantalla Completa" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                    <button onClick={() => onExpand(doc)} title="Ver en pantalla completa" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
                         <Eye size={20} />
                     </button>
                     <div className="relative">
