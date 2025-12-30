@@ -2,6 +2,9 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
+import { toast } from 'react-hot-toast';
+import AdminGuide from '@/components/AdminGuide';
+import { usersGuide } from '@/lib/adminGuides';
 import { User } from '@/lib/data';
 import {
     Users,
@@ -730,6 +733,8 @@ export default function UsersPage() {
                 temporaryPassword={createdUser?.password}
                 emailSent={createdUser?.emailSent || false}
             />
+            {/* Admin Guide */}
+            <AdminGuide {...usersGuide} />
         </div>
     );
 }

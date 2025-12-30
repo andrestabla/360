@@ -11,17 +11,36 @@ import {
     Briefcase
 } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
+import AdminGuide from '@/components/AdminGuide';
+import { adminDashboardGuide } from '@/lib/adminGuides';
+import { getAdminStatsAction } from '@/app/lib/userActions';
+import { useEffect } from 'react';
 
 export default function AdminDashboardPage() {
     const { currentUser, isSuperAdmin, platformSettings, updatePlatformSettings } = useApp();
     const router = useRouter();
 
     // Quick Stats (Mocked for now)
-    const stats = [
-        { label: 'Usuarios Activos', value: '12', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-        { label: 'Proyectos', value: '5', icon: Briefcase, color: 'text-purple-600', bg: 'bg-purple-50' },
-        { label: 'Seguridad', value: '98%', icon: ShieldCheck, color: 'text-green-600', bg: 'bg-green-50' },
-    ];
+    // Real Stats State
+    const [stats, setStats] = useState([
+        { label: 'Usuarios', value: '-', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { label: 'Unidades', value: '-', icon: Briefcase, color: 'text-purple-600', bg: 'bg-purple-50' },
+        { label: 'Auditoría', value: '-', icon: ShieldCheck, color: 'text-green-600', bg: 'bg-green-50' },
+    ]);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            const res = await getAdminStatsAction();
+            if (res.success && res.data) {
+                setStats([
+                    { label: 'Usuarios', value: String(res.data.users), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+                    { label: 'Unidades', value: String(res.data.units), icon: Briefcase, color: 'text-purple-600', bg: 'bg-purple-50' },
+                    { label: 'Auditoría', value: String(res.data.audits), icon: ShieldCheck, color: 'text-green-600', bg: 'bg-green-50' },
+                ]);
+            }
+        };
+        fetchStats();
+    }, []);
 
     const isAdmin = isSuperAdmin || currentUser?.role?.toLowerCase().includes('admin');
 
@@ -74,6 +93,9 @@ export default function AdminDashboardPage() {
                     onClick={() => router.push('/dashboard/admin/audit')}
                 />
             </div>
+
+            {/* Admin Guide */}
+            <AdminGuide {...adminDashboardGuide} />
         </div>
     );
 }

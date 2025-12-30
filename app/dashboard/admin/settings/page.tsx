@@ -26,6 +26,8 @@ import { updateOrganizationBranding, getEmailSettings, updateEmailSettings, test
 import BillingPortalModal from '@/components/billing/BillingPortalModal';
 import StorageConfigPanel from "@/components/storage/StorageConfigPanel";
 import LoginForm from "@/app/login/LoginForm";
+import AdminGuide from "@/components/AdminGuide";
+import { settingsGuide } from "@/lib/adminGuides";
 
 export default function AdminSettingsPage() {
     const { isSuperAdmin, currentUser, updatePlatformSettings, platformSettings } = useApp();
@@ -1211,6 +1213,9 @@ export default function AdminSettingsPage() {
                 onClose={() => setShowBillingModal(false)}
                 currentEmail={formData.smtpUser || ''}
             />
+
+            {/* Admin Guide */}
+            <AdminGuide {...settingsGuide} />
         </div >
     );
 }

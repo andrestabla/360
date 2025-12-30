@@ -1,123 +1,164 @@
+export interface GuideStep {
+  title: string;
+  description: string;
+  type?: 'info' | 'warning' | 'tip';
+}
+
 export interface AdminGuide {
   title: string;
   description: string;
-  steps: string[];
+  steps: GuideStep[];
   tips?: string[];
 }
 
-export const adminGeneralGuide: AdminGuide = {
-  title: 'Configuracion General',
-  description: 'Configure la apariencia y marca de su organizacion en la plataforma.',
+export const adminDashboardGuide: AdminGuide = {
+  title: 'Panel de Administración',
+  description: 'Vista general y métricas clave de la organización.',
   steps: [
-    'Suba el logo de su organizacion',
-    'Configure los colores primario y de acento',
-    'Personalice el titulo de la aplicacion',
-    'Configure el idioma y zona horaria predeterminados'
+    {
+      title: 'Métricas Rápidas',
+      description: 'Revise los indicadores principales como usuarios activos y estado de seguridad en la parte superior.',
+      type: 'info'
+    },
+    {
+      title: 'Accesos Directos',
+      description: 'Utilice las tarjetas de acción rápida para navegar a las funciones más comunes como gestión de usuarios o configuración.',
+      type: 'tip'
+    }
   ],
   tips: [
-    'Use colores que representen la identidad de su marca',
-    'El logo se mostrara en el menu lateral y pantalla de inicio'
+    'Este panel es el punto de partida para cualquier tarea administrativa.',
+    'Las métricas se actualizan en tiempo real o periódicamente.'
   ]
 };
 
 export const usersGuide: AdminGuide = {
-  title: 'Gestion de Usuarios',
-  description: 'Administre los usuarios de su organizacion, sus roles y permisos.',
+  title: 'Gestión de Usuarios',
+  description: 'Administre los usuarios, roles y accesos a la plataforma.',
   steps: [
-    'Haga clic en "Nuevo Usuario" para agregar un usuario',
-    'Complete el formulario con los datos del usuario',
-    'Seleccione el rol y nivel de acceso apropiado',
-    'El usuario recibira una invitacion por correo electronico'
+    {
+      title: 'Crear Usuario',
+      description: 'Haga clic en "+ Nuevo Usuario", complete el nombre, email y seleccione el rol adecuado. Se enviará una invitación automática.',
+      type: 'info'
+    },
+    {
+      title: 'Importación Masiva',
+      description: 'Use el botón "Importar CSV" para cargar múltiples usuarios a la vez. Asegúrese de seguir el formato de la plantilla.',
+      type: 'tip'
+    },
+    {
+      title: 'Gestión de Estado',
+      description: 'Puede activar o desactivar usuarios desde el menú de acciones (tres puntos) en cada fila.',
+      type: 'warning'
+    },
+    {
+      title: 'Historial',
+      description: 'Acceda a la pestaña "Actividad" o "Auditoría" para ver las acciones realizadas por cada usuario.',
+      type: 'info'
+    }
   ],
   tips: [
-    'Puede importar usuarios masivamente usando un archivo CSV',
-    'Los usuarios inactivos pueden ser suspendidos sin eliminarlos'
+    'Use la búsqueda y filtros para encontrar usuarios rápidamente.',
+    'Al reenviar credenciales, se generará una nueva contraseña temporal.'
   ]
 };
 
 export const unitsGuide: AdminGuide = {
   title: 'Estructura Organizacional',
-  description: 'Define la estructura jerarquica de su organizacion.',
+  description: 'Defina la jerarquía de departamentos, áreas y procesos.',
   steps: [
-    'Cree unidades principales primero (departamentos, areas)',
-    'Agregue subunidades segun sea necesario',
-    'Asigne responsables a cada unidad',
-    'Configure los permisos por nivel'
+    {
+      title: 'Crear Unidades',
+      description: 'Añada unidades organizativas (Departamentos, Áreas) definiendo su nombre, código y unidad padre.',
+      type: 'info'
+    },
+    {
+      title: 'Definir Procesos',
+      description: 'Dentro de cada unidad, puede crear "Procesos" específicos que representen flujos de trabajo.',
+      type: 'tip'
+    },
+    {
+      title: 'Importación Jerárquica',
+      description: 'Al importar vía CSV, asegúrese de incluir códigos únicos. El sistema ordenará automáticamente padres e hijos.',
+      type: 'warning'
+    }
   ],
   tips: [
-    'Una estructura bien definida facilita la gestion de permisos',
-    'Las unidades pueden representar departamentos, equipos o procesos'
+    'Una estructura clara facilita la asignación de permisos y reportes.',
+    'Use el código de la unidad para referencias rápidas (ej. DIR-FIN).'
   ]
 };
 
 export const rolesGuide: AdminGuide = {
   title: 'Roles y Permisos',
-  description: 'Configure los permisos para cada nivel de usuario.',
+  description: 'Configure qué pueden hacer los usuarios según su nivel jerárquico.',
   steps: [
-    'Seleccione el nivel que desea configurar',
-    'Active o desactive los permisos correspondientes',
-    'Los cambios se aplicaran inmediatamente a los usuarios de ese nivel'
+    {
+      title: 'Matriz de Permisos',
+      description: 'La tabla muestra los permisos (filas) y niveles (columnas). Marque las casillas para otorgar acceso.',
+      type: 'info'
+    },
+    {
+      title: 'Niveles Jerárquicos',
+      description: 'Los permisos se asignan por Nivel (1-6), no por usuario individual, para mantener la consistencia.',
+      type: 'warning'
+    }
   ],
   tips: [
-    'El nivel 1 (Admin) tiene todos los permisos por defecto',
-    'Sea conservador al asignar permisos de eliminacion'
+    'El Nivel 1 (Admin Tenant) tiene acceso total y no se puede restringir.',
+    'Los cambios en permisos se aplican inmediatamente a todos los usuarios del nivel.'
   ]
 };
 
-export const storageGuide: AdminGuide = {
-  title: 'Configuracion de Almacenamiento',
-  description: 'Configure el proveedor de almacenamiento para sus documentos.',
+export const settingsGuide: AdminGuide = {
+  title: 'Configuración Global',
+  description: 'Personalice la marca, correo y seguridad del entorno.',
   steps: [
-    'Seleccione el proveedor de almacenamiento',
-    'Ingrese las credenciales de configuracion',
-    'Pruebe la conexion antes de guardar',
-    'Active el proveedor cuando este listo'
+    {
+      title: 'Marca (Branding)',
+      description: 'Suba el logo de su empresa y defina los colores corporativos para personalizar la interfaz.',
+      type: 'info'
+    },
+    {
+      title: 'Correo (SMTP)',
+      description: 'Configure las credenciales SMTP para que la plataforma pueda enviar invitaciones y notificaciones.',
+      type: 'warning'
+    },
+    {
+      title: 'Seguridad',
+      description: 'Defina políticas de contraseña y sesiones para proteger el acceso.',
+      type: 'info'
+    }
   ],
   tips: [
-    'Google Drive y OneDrive requieren configuracion OAuth',
-    'S3 es recomendado para grandes volumenes de archivos'
+    'Siempre use el botón "Probar Conexión" al configurar el correo.',
+    'Los cambios de marca son visibles para todos los usuarios de la organización.'
   ]
 };
 
-export const storageDashboardGuide: AdminGuide = {
-  title: 'Panel de Almacenamiento',
-  description: 'Monitoree el uso de almacenamiento de su organizacion.',
+export const auditGuide: AdminGuide = {
+  title: 'Auditoría del Sistema',
+  description: 'Registro inmutable de todas las acciones críticas.',
   steps: [
-    'Revise el uso total y disponible',
-    'Identifique los archivos mas grandes',
-    'Configure alertas de uso si es necesario'
+    {
+      title: 'Monitoreo',
+      description: 'Revise la tabla cronológica para ver quién hizo qué y cuándo.',
+      type: 'info'
+    },
+    {
+      title: 'Filtros Avanzados',
+      description: 'Filtre por tipo de evento, fecha o usuario para una investigación específica.',
+      type: 'tip'
+    },
+    {
+      title: 'Exportación',
+      description: 'Descargue los registros en formato CSV para análisis externo o cumplimiento normativo.',
+      type: 'info'
+    }
   ],
   tips: [
-    'Realice limpiezas periodicas de archivos obsoletos',
-    'Considere archivar documentos antiguos'
+    'Los registros de auditoría no se pueden eliminar ni modificar.',
+    'Use el detalle (Metadata) para ver el contexto completo de un evento.'
   ]
 };
 
-export const communicationsGuide: AdminGuide = {
-  title: 'Comunicaciones',
-  description: 'Gestione las publicaciones y anuncios de su organizacion.',
-  steps: [
-    'Cree una nueva publicacion haciendo clic en "Nueva Publicacion"',
-    'Seleccione la audiencia objetivo',
-    'Agregue contenido multimedia si es necesario',
-    'Publique o guarde como borrador'
-  ],
-  tips: [
-    'Las publicaciones importantes pueden destacarse',
-    'Programe publicaciones para fechas futuras'
-  ]
-};
-
-export const technicalSettingsGuide: AdminGuide = {
-  title: 'Configuracion Tecnica',
-  description: 'Configure integraciones y parametros tecnicos de la plataforma.',
-  steps: [
-    'Configure las integraciones SSO si aplica',
-    'Establezca las politicas de seguridad',
-    'Configure los webhooks necesarios'
-  ],
-  tips: [
-    'SSO simplifica el inicio de sesion para sus usuarios',
-    'Las integraciones mejoran la productividad'
-  ]
-};

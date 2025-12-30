@@ -5,6 +5,8 @@ import { useApp } from '@/context/AppContext';
 import { DB } from '@/lib/data'; // Kept for other references if needed, but not for logs
 import { ShieldCheck, MagnifyingGlass, DownloadSimple, ArrowClockwise, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { getAuditLogsAction } from '@/app/lib/userActions';
+import AdminGuide from "@/components/AdminGuide";
+import { auditGuide } from "@/lib/adminGuides";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -287,6 +289,9 @@ export default function AuditPage() {
                     </>
                 )}
             </div>
+
+            {/* Admin Guide */}
+            <AdminGuide {...auditGuide} />
         </div>
     );
 }

@@ -1,8 +1,8 @@
 'use server';
 
 import { db } from '@/server/db';
-import { users, auditLogs } from '@/shared/schema';
-import { eq, desc } from 'drizzle-orm';
+import { users, auditLogs, units } from '@/shared/schema';
+import { eq, desc, count } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { hashPassword, generateSecurePassword } from '@/lib/utils/passwordUtils';
 import { generateWelcomeEmail } from '@/lib/email/templates/welcomeEmail';
@@ -258,5 +258,26 @@ export async function getAuditLogsAction() {
     } catch (error) {
         console.error('Error fetching audit logs:', error);
         return { success: false, error: 'Error al obtener registros de auditoría' };
+    }
+}
+
+export async function getAdminStatsAction() {
+    try {
+        const usersCount = await db.select({ count: count() }).from(users);
+        const unitsCount = await db.select({ count: count() }).from(units);
+        const auditCount = await db.select({ count: count() }).from(auditLogs);
+
+        return {
+            success: true,
+            data: {
+                users: usersCount[0]?.count || 0,
+                units: unitsCount[0]?.count || 0,
+                audits: auditCount[0]?.count || 0,
+                securityScore: 'N/A'
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching admin stats:', error);
+        return { success: false, error: 'Error al calcular estadísticas' };
     }
 }
