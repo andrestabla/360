@@ -201,7 +201,12 @@ export default function ChatWindow() {
             }
         };
 
-        fetchInit();
+        // Safety timeout to ensure spinner doesn't get stuck
+        const timer = setTimeout(() => {
+            if (loading) setLoading(false);
+        }, 8000);
+
+        fetchInit().finally(() => clearTimeout(timer));
     }, [activeId, currentUser]);
 
     // Infinite Scroll Handler
@@ -457,6 +462,55 @@ export default function ChatWindow() {
         return (
             <div className="h-full flex items-center justify-center bg-white">
                 <CircleNotch size={32} className="animate-spin text-blue-500" />
+            </div>
+        );
+    }
+
+    if (!loading && messages.length === 0 && !error) {
+        return (
+            <div className="flex flex-col h-full bg-[#f0f2f5]">
+                {/* Header (Duplicate or Componentize logic needed, but for now inline to keep file count low) */}
+                <div className="h-16 px-6 border-b border-gray-200 flex items-center justify-between bg-white z-10 shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm overflow-hidden
+                            ${conversation?.type === 'group' ? 'bg-indigo-500' : 'bg-pink-500'}`}>
+                            {conversation?.avatar ? (
+                                <img src={conversation.avatar} alt={conversation.title || ''} className="w-full h-full object-cover"
+                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            ) : (conversation?.title?.[0] || '?')}
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 leading-tight">{conversation?.title}</h3>
+                            <p className="text-xs text-gray-500">Nuevo Chat</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-8 text-center">
+                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm animate-bounce-slow">
+                        <PaperPlaneRight size={40} weight="fill" className="text-blue-400" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-700">No hay mensajes aún</h3>
+                    <p className="max-w-xs mt-2 text-sm text-gray-500">Envía un mensaje para comenzar la conversación.</p>
+                </div>
+
+                {/* Input Area (Re-used) */}
+                <div className="bg-white px-4 py-3 border-t border-gray-200">
+                    <div className="flex items-end gap-2 max-w-4xl mx-auto">
+                        <div className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl flex items-center px-2 py-1 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all shadow-sm relative">
+                            <input
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                                placeholder="Escribe un mensaje..."
+                                className="flex-1 bg-transparent border-none focus:ring-0 text-gray-800 placeholder-gray-400 text-[15px] py-2.5 px-2 max-h-32 overflow-y-auto resize-none"
+                            />
+                            <button onClick={handleSend} disabled={!input.trim()} className="p-2 bg-blue-600 text-white rounded-xl shadow-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 mb-1">
+                                <PaperPlaneRight size={18} weight="fill" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
