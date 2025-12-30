@@ -46,29 +46,37 @@ function createS3Client(config: Record<string, any>) {
   });
 }
 
+import { decryptCredentials, getSecretFields } from './storageEncryption';
+
 async function getStorageConfig() {
   try {
     const settings = await db.select().from(organizationSettings).where(eq(organizationSettings.id, 1)).limit(1);
-    if (!settings || settings.length === 0) return null;
+    if (!settings || settings.length === 0 || !settings[0].storageConfig) return null;
 
-    // The storageConfig column acts as the source of truth if populated, or fallback to 'storage' (legacy)
-    // Based on schema, storageConfig is json, valid.
-    // Wait, checked schema: storageConfig: json("storage_config")... matches.
+    const rawConfig = settings[0].storageConfig as any;
 
-    // However, the interface TenantStorageConfig in lib/data.ts structure is what we expect.
-    // Let's assume the UI saves to 'storageConfig' column or 'storage' column?
-    // Note: The schema has `storageConfig` (json) AND `storage` (varchar).
-    // My previous work on Admin Settings likely updated `organizationSettings`.
-    // Let's assume it's in `storageConfig` as per best practice, or `branding`?
-    // Ah, looking at schema again: storageConfig: json("storage_config")
+    // Decrypt credentials if present
+    if (rawConfig.encryptedConfig) {
+      try {
+        const decrypted = decryptCredentials(rawConfig.encryptedConfig);
+        // Merge decrypted secrets into the main config object
+        rawConfig.config = {
+          ...rawConfig.config,
+          ...decrypted
+        };
+      } catch (e) {
+        console.error("Failed to decrypt storage credentials:", e);
+      }
+    }
 
-    // IMPORTANT: The previous Admin Settings code saved to the DB. I need to be sure where.
-    // If I recall correctly, I didn't write the save logic myself in the previous turn, I just did UI.
-    // But assuming the 'StorageConfigPanel' calls an action to save.
+    // Log the endpoint being used (for debugging)
+    if (rawConfig.config?.endpoint) {
+      console.log('[StorageService] Using Endpoint:', rawConfig.config.endpoint);
+    } else {
+      console.log('[StorageService] No endpoint defined in config.');
+    }
 
-    // To be safe, let's use the one that is likely populated. 
-    // If undefined, return null.
-    return settings[0].storageConfig as any;
+    return rawConfig;
   } catch (e) {
     console.error("Error fetching storage config", e);
     return null;
