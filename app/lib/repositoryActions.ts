@@ -300,11 +300,27 @@ export async function getDocumentDownloadUrlAction(docId: string) {
         return { success: true, url: doc.url };
     }
 
-    // It's a file path potentially proxied
-    // Extract key from /api/storage/key
-    const match = doc.url.match(/\/api\/storage\/(.+)/);
-    const key = match ? match[1] : doc.url;
-    
+    // It's a file path potentially proxied or misconfigured absolute URL
+    // We need to extract the clean key (e.g., "repository/General/file.pdf")
+
+    let key = doc.url;
+
+    if (doc.url.includes('/api/storage/')) {
+        key = doc.url.split('/api/storage/')[1];
+    } else if (doc.url.includes('/repository/')) {
+        // Robustness: If the user configured the App URL as the Storage Public URL,
+        // we get https://maturity360.co/repository/... which is a 404.
+        // We extract everything after the first occurrence of "/repository/"
+        // and treat "repository/..." as the key.
+        const parts = doc.url.split('/repository/');
+        if (parts.length > 1) {
+            key = 'repository/' + parts[1];
+        }
+    }
+
+    // Perform cleanup just in case (e.g. double slashes)
+    key = key.replace(/\/\//g, '/');
+
     const storageService = getStorageService();
     return await storageService.download(key);
 }
