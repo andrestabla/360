@@ -20,7 +20,8 @@ import {
     unblockUserAction,
     blockUserAction,
     reportContentAction,
-    getConversationAction
+    getConversationAction,
+    checkNewMessagesAction
 } from '@/app/lib/chatActions';
 
 import { PaperPlaneRight, Paperclip, Smiley, Phone, VideoCamera, Info, Checks, CircleNotch, ArrowDown, DotsThreeVertical, Trash, PencilSimple, X, BellSlash, SignOut, ArrowUUpLeft, Heart, ThumbsUp, SmileyWink, File, Download, MagnifyingGlass } from '@phosphor-icons/react';
@@ -35,7 +36,8 @@ export default function ChatWindow() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [conversation, setConversation] = useState<Conversation | null>(null);
     const [input, setInput] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // Default true on mount
+    const [error, setError] = useState<string | null>(null); // New Error State
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(false);
 
@@ -109,9 +111,43 @@ export default function ChatWindow() {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const endRef = useRef<HTMLDivElement>(null);
 
+    // Polling for New Messages (Simple & Robust)
+    useEffect(() => {
+        if (!activeId || !currentUser || loading || error) return;
+
+        const pollInterval = setInterval(async () => {
+            try {
+                // Get last message date
+                const lastMsg = messages[messages.length - 1];
+                const since = lastMsg?.createdAt || new Date(0).toISOString();
+
+                const res = await checkNewMessagesAction(currentUser.id, since);
+                if (res.success && res.data && res.data.length > 0) {
+                    const newMsgs = res.data as Message[];
+                    // Filter for current conversation
+                    const relevantMsgs = newMsgs.filter(m => m.conversationId === activeId);
+
+                    if (relevantMsgs.length > 0) {
+                        setMessages(prev => {
+                            const existingIds = new Set(prev.map(m => m.id));
+                            const trulyNew = relevantMsgs.filter(m => !existingIds.has(m.id));
+                            if (trulyNew.length === 0) return prev;
+                            return [...prev, ...trulyNew];
+                        });
+                    }
+                }
+            } catch (e) {
+                // Silent fail
+            }
+        }, 5000);
+
+        return () => clearInterval(pollInterval);
+    }, [activeId, currentUser, messages, loading, error]);
+
     // Initial Load
     useEffect(() => {
         if (!activeId || !currentUser) {
+            setLoading(false);
             setConversation(null);
             setMessages([]);
             return;
@@ -119,78 +155,81 @@ export default function ChatWindow() {
 
         const fetchInit = async () => {
             setLoading(true);
+            setError(null);
             try {
-                // Fetch Conversation Metadata from Server
+                // 1. Fetch Conversation
                 const convRes = await getConversationAction(activeId);
-                let convDef = convRes.data;
+                // Even if conv info fails, we might still try to load messages, but safer to stop if critical
+                if (!convRes.success) {
+                    console.warn("Conversation metadata load warning:", convRes.error);
+                    // Decide: Stop or Continue? simpler is stop & show error
+                    // setError("No se pudo cargar la conversación.");
+                    // return; 
+                    // Let's try to proceed to messages anyway, maybe it's just metadata missing
+                }
 
-                if (convDef) {
+                if (convRes.data) {
+                    const convDef = convRes.data;
                     const isB = convDef.isBlocked || false;
                     setIsBlocked(isB);
                     if (isB) setBlockerId(convDef.blockerId || null);
-
                     setConversation(convDef as unknown as Conversation);
                 }
 
-                // Get Messages (First Page)
-                const res = await getMessagesAction(activeId);
-                setMessages(res.data.reverse()); // Initial load is usually newest page
+                // 2. Fetch Messages
+                const msgRes = await getMessagesAction(activeId);
+                if (!msgRes.success) {
+                    throw new Error(msgRes.error || "Failed to load messages");
+                }
 
-                // Set cursor
-                oldestCursorRef.current = res.nextCursor;
-                setHasMore(res.hasMore);
+                setMessages(msgRes.data.reverse());
+                oldestCursorRef.current = msgRes.nextCursor;
+                setHasMore(msgRes.hasMore);
 
-                // HU M1.3 Mark Read
-                await markAsReadAction(activeId, currentUser.id);
-                refreshUnreadCount(); // Update sidebar count immediately
+                // 3. Mark Read & Settings (Non-blocking)
+                markAsReadAction(activeId, currentUser.id).then(() => refreshUnreadCount()).catch(console.warn);
+                getNotificationSettingsAction(activeId, currentUser.id).then(s => setNotificationSettings(s)).catch(console.warn);
 
-                // HU M7.2 Get Settings
-                const settings = await getNotificationSettingsAction(activeId, currentUser.id);
-                setNotificationSettings(settings);
-
-                // Scroll to bottom
+                // Scroll
                 setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'auto' }), 100);
 
-            } catch (e) {
-                console.error(e);
+            } catch (e: any) {
+                console.error("Chat Init Error:", e);
+                setError("Error cargando el chat. Por favor reintenta.");
             } finally {
                 setLoading(false);
             }
         };
 
         fetchInit();
-
     }, [activeId, currentUser]);
 
-    // Infinite Scroll Handler (HU M1.2: Incremental Load)
+    // Infinite Scroll Handler
     const handleScroll = async () => {
         if (!scrollContainerRef.current || loadingMore || !hasMore || !activeId) return;
 
         const { scrollTop } = scrollContainerRef.current;
         if (scrollTop === 0) {
-            // Reached top
             setLoadingMore(true);
-
-            // Capture current height to maintain scroll position
             const previousHeight = scrollContainerRef.current.scrollHeight;
 
             try {
                 const res = await getMessagesAction(activeId, oldestCursorRef.current);
+                if (res.success && res.data.length > 0) {
+                    setMessages(prev => [...res.data, ...prev]);
+                    oldestCursorRef.current = res.nextCursor;
+                    setHasMore(res.hasMore);
 
-                // Prepend messages
-                setMessages(prev => [...res.data, ...prev]);
-                oldestCursorRef.current = res.nextCursor;
-                setHasMore(res.hasMore);
-
-                // Restore scroll position
-                // Wait for render
-                setTimeout(() => {
-                    if (scrollContainerRef.current) {
-                        const newHeight = scrollContainerRef.current.scrollHeight;
-                        scrollContainerRef.current.scrollTop = newHeight - previousHeight;
-                    }
-                }, 0);
-
+                    // Restore scroll
+                    setTimeout(() => {
+                        if (scrollContainerRef.current) {
+                            const newHeight = scrollContainerRef.current.scrollHeight;
+                            scrollContainerRef.current.scrollTop = newHeight - previousHeight;
+                        }
+                    }, 0);
+                } else {
+                    setHasMore(false);
+                }
             } catch (e) {
                 console.error(e);
             } finally {
@@ -237,11 +276,19 @@ export default function ChatWindow() {
         setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
 
         try {
-            const serverMsg = await sendMessageAction(activeId, currentUser.id, newMsg.body, tempId, newMsg.replyToMessageId || undefined, newMsg.attachments);
-            // Replace temp with server
-            setMessages(prev => prev.map(m => m.id === tempId ? serverMsg : m));
+            const serverRes = await sendMessageAction(activeId, currentUser.id, newMsg.body, tempId, newMsg.replyToMessageId || undefined, newMsg.attachments);
+            if (serverRes.success) {
+                // Replace temp with server
+                setMessages(prev => prev.map(m => m.id === tempId ? serverRes as Message : m));
+            } else {
+                // Mark as failed in UI? For now just log
+                console.error("Failed to send (server error):", serverRes.error);
+                alert("Error al enviar mensaje: " + serverRes.error);
+                setMessages(prev => prev.filter(m => m.id !== tempId)); // Revert
+            }
         } catch (e) {
             console.error("Failed to send", e);
+            setMessages(prev => prev.filter(m => m.id !== tempId)); // Revert
         }
     };
 
@@ -410,6 +457,16 @@ export default function ChatWindow() {
         return (
             <div className="h-full flex items-center justify-center bg-white">
                 <CircleNotch size={32} className="animate-spin text-blue-500" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center bg-white gap-4">
+                <div className="text-red-500 bg-red-50 p-4 rounded-full"><Info size={32} /></div>
+                <p className="text-gray-600">{error}</p>
+                <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Recargar</button>
             </div>
         );
     }

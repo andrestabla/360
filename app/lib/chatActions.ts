@@ -6,17 +6,23 @@ import { revalidatePath } from 'next/cache';
 import { auth } from "@/lib/auth";
 
 // Helper to serialize Dates to strings
+// Helper to serialize Dates to strings
 function serialize<T>(obj: T): any {
-    return JSON.parse(JSON.stringify(obj));
+    try {
+        return JSON.parse(JSON.stringify(obj));
+    } catch (e) {
+        console.error("Serialization failed for object:", obj, e);
+        return obj; // Fallback, though likely to cause client error if it contains Dates
+    }
 }
 
 export async function getMessagesAction(conversationId: string, cursor?: string, limit: number = 50) {
     try {
         const res = await ChatService.getMessages(conversationId, cursor, limit);
-        return serialize(res);
-    } catch (error) {
+        return { success: true, ...serialize(res) };
+    } catch (error: any) {
         console.error("Error in getMessagesAction:", error);
-        return { data: [], nextCursor: null };
+        return { success: false, error: error.message || "Failed to fetch messages", data: [], nextCursor: null };
     }
 }
 
@@ -25,13 +31,10 @@ export async function getConversationAction(conversationId: string) {
         const session = await auth();
         const userId = session?.user?.id;
         const res = await ChatService.getConversation(conversationId, userId);
-        return serialize(res);
-    } catch (error) {
+        return { success: true, data: serialize(res) };
+    } catch (error: any) {
         console.error("Error in getConversationAction:", error);
-        // Return dummy/empty or null? ChatWindow expects data.
-        // Returning null might cause client issues if not handled.
-        // Assuming ChatService throws if not found.
-        throw error;
+        return { success: false, error: error.message || "Failed to load conversation", data: null };
     }
 }
 
@@ -43,14 +46,19 @@ export async function sendMessageAction(
     replyToMessageId?: string,
     attachments?: any[]
 ) {
-    // Verify auth for security
-    const session = await auth();
-    if (!session?.user?.id || session.user.id !== senderId) {
-        throw new Error("Unauthorized");
-    }
+    try {
+        // Verify auth for security
+        const session = await auth();
+        if (!session?.user?.id || session.user.id !== senderId) {
+            return { success: false, error: "Unauthorized" };
+        }
 
-    const res = await ChatService.sendMessage(conversationId, senderId, body, tempId, replyToMessageId, attachments);
-    return serialize(res);
+        const res = await ChatService.sendMessage(conversationId, senderId, body, tempId, replyToMessageId, attachments);
+        return { success: true, ...serialize(res) }; // res is likely the message object
+    } catch (error: any) {
+        console.error("Error sending message:", error);
+        return { success: false, error: error.message || "Failed to send" };
+    }
 }
 
 export async function markAsReadAction(conversationId: string, userId: string) {
