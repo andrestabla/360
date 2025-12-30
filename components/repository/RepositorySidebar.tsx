@@ -113,7 +113,7 @@ export function RepositorySidebar({ doc, units, onClose, onDownload, onUpdate, o
 
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto bg-slate-50/50 relative">
-                {activeTab === 'view' && <ViewTab doc={doc} onDownload={() => onDownload(doc)} />}
+                {activeTab === 'view' && <ViewTab doc={doc} units={units} onDownload={() => onDownload(doc)} />}
                 {activeTab === 'edit' && <EditTab doc={doc} units={units} onUpdate={onUpdate} />}
                 {activeTab === 'comments' && <CommentsTab doc={doc} />}
             </div>
@@ -135,7 +135,11 @@ function TabButton({ active, onClick, label }: any) {
 
 // --- TABS ---
 
-function ViewTab({ doc, onDownload }: { doc: RepositoryFile, onDownload: () => void }) {
+// Update ViewTab signature to accept units
+function ViewTab({ doc, units, onDownload }: { doc: RepositoryFile, units: Unit[], onDownload: () => void }) {
+    // Lookup unit name
+    const unitName = units.find(u => u.id === doc.unitId)?.name || 'General';
+
     return (
         <div className="p-6">
             <div className="flex items-center justify-center p-12 bg-white border border-slate-100 rounded-2xl mb-8 shadow-sm">
@@ -153,7 +157,7 @@ function ViewTab({ doc, onDownload }: { doc: RepositoryFile, onDownload: () => v
 
             <div className="space-y-4 bg-white p-4 rounded-xl border border-slate-100">
                 <InfoRow label="Tamaño" value={doc.size || 'N/A'} />
-                <InfoRow label="Unidad" value={doc.unitId || 'General'} />
+                <InfoRow label="Unidad" value={unitName} />
                 {/* <InfoRow label="Subido por" value="Andrés Tabla" />  */}
                 <InfoRow label="Fecha" value={new Date(doc.createdAt || Date.now()).toLocaleDateString()} />
                 {doc.type === 'document' && doc.process && <InfoRow label="Proceso" value={doc.process} />}

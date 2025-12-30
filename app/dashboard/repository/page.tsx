@@ -6,7 +6,7 @@ import { useTranslation } from '@/lib/i18n';
 import { getUnitsAction } from '@/app/lib/unitActions';
 import { Unit } from '@/shared/schema';
 import { RepositoryFile, RepositoryFolder, getFoldersAction, createFolderAction, deleteFolderAction, updateFolderAction, getDocumentsAction, uploadDocumentAction, deleteDocumentAction, toggleLikeAction } from '@/app/lib/repositoryActions';
-import { UploadSimple, Folder, FilePdf, FileDoc, FileXls, Image, Link as LinkIcon, Code, DotsThree, Trash, DownloadSimple, Eye, CloudArrowUp, CaretRight, FolderPlus, Check, MagnifyingGlass, Funnel, X, ListBullets, SquaresFour, PencilSimple, ClipboardText, FilePpt, FileText, ShareNetwork } from '@phosphor-icons/react';
+import { UploadSimple, Folder, FilePdf, FileDoc, FileXls, Image, Link as LinkIcon, Code, DotsThree, Trash, DownloadSimple, Eye, CloudArrowUp, CaretRight, FolderPlus, Check, MagnifyingGlass, Funnel, X, ListBullets, SquaresFour, PencilSimple, ClipboardText, FilePpt, FileText, ShareNetwork, CaretDown, Star } from '@phosphor-icons/react';
 import { AssignTaskModal } from '@/components/repository/AssignTaskModal';
 import { MoveDocumentModal } from '@/components/repository/MoveDocumentModal';
 import { FullScreenPreview } from '@/components/repository/FullScreenPreview';
@@ -250,6 +250,76 @@ export default function RepositoryPage() {
                                 </button>
                             </React.Fragment>
                         ))}
+                    </div>
+
+                    {/* Filters Bar */}
+                    <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
+                        {/* Filter: Tipo */}
+                        <div className="relative">
+                            <select
+                                value={filters.type || ''}
+                                onChange={e => setFilters({ ...filters, type: e.target.value || null })}
+                                className="appearance-none pl-3 pr-8 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none cursor-pointer hover:border-slate-300 transition-all"
+                            >
+                                <option value="">Tipo</option>
+                                <option value="pdf">PDF</option>
+                                <option value="image">Imagen</option>
+                                <option value="document">Documento</option>
+                                <option value="spreadsheet">Hoja de Cálculo</option>
+                                <option value="presentation">Presentación</option>
+                                <option value="link">Enlace</option>
+                                <option value="embed">Embed</option>
+                                <option value="folder">Carpeta</option>
+                            </select>
+                            <CaretDown size={10} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                        </div>
+
+                        {/* Filter: Unidad */}
+                        <div className="relative">
+                            <select
+                                value={filters.unit || ''}
+                                onChange={e => setFilters({ ...filters, unit: e.target.value || null })}
+                                className="appearance-none pl-3 pr-8 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none cursor-pointer hover:border-slate-300 transition-all"
+                            >
+                                <option value="">Unidad</option>
+                                {units.map(u => (
+                                    <option key={u.id} value={u.id}>{u.name}</option>
+                                ))}
+                            </select>
+                            <CaretDown size={10} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                        </div>
+
+                        {/* Filter: Proceso */}
+                        <div className="relative">
+                            <input
+                                value={filters.process || ''}
+                                onChange={e => setFilters({ ...filters, process: e.target.value || null })}
+                                placeholder="Proceso"
+                                className="w-32 pl-3 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none hover:border-slate-300 transition-all placeholder:text-slate-500"
+                            />
+                        </div>
+
+                        {/* Filter: Favoritos */}
+                        <button
+                            onClick={() => setFilters({ ...filters, onlyFavorites: !filters.onlyFavorites })}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${filters.onlyFavorites
+                                ? 'bg-yellow-50 border-yellow-200 text-yellow-600'
+                                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                }`}
+                        >
+                            <Star size={14} weight={filters.onlyFavorites ? 'fill' : 'regular'} />
+                            Favoritos
+                        </button>
+
+                        {/* Clear Filters */}
+                        {(filters.type || filters.unit || filters.process || filters.onlyFavorites) && (
+                            <button
+                                onClick={() => setFilters({ search: filters.search, type: null, unit: null, process: null, status: null, onlyFavorites: false })}
+                                className="px-2 py-1 text-xs font-medium text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1"
+                            >
+                                <X size={12} /> Limpiar
+                            </button>
+                        )}
                     </div>
                 </div>
 
