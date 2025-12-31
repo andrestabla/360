@@ -70,6 +70,7 @@ export default function RepositoryPage() {
     const [units, setUnits] = useState<Unit[]>([]);
     const [uploadTab, setUploadTab] = useState<'file' | 'link' | 'embed'>('file');
     const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null, name: string }[]>([{ id: null, name: 'Repositorio' }]);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -423,17 +424,48 @@ export default function RepositoryPage() {
                             } catch (err: any) { alert(err.message); }
                             finally { setIsUploading(false); }
                         }} className="p-6 space-y-5">
+
                             {uploadTab === 'file' && (
-                                <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors relative">
-                                    <CloudArrowUp size={48} className="mx-auto text-gray-300 mb-2" />
-                                    <p className="text-sm font-medium text-gray-600">Sube un archivo</p>
-                                    <input name="file" type="file" className="absolute inset-0 opacity-0 cursor-pointer" required />
+                                <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors relative ${selectedFile ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'}`}>
+                                    {selectedFile ? (
+                                        <div className="flex flex-col items-center">
+                                            <FileText size={48} className="text-blue-500 mb-2" weight="duotone" />
+                                            <p className="text-sm font-bold text-slate-800">{selectedFile.name}</p>
+                                            <p className="text-xs text-slate-500 mb-4">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setSelectedFile(null);
+                                                }}
+                                                className="px-3 py-1 bg-white border border-red-200 text-red-500 text-xs font-bold rounded-lg hover:bg-red-50"
+                                            >
+                                                Cambiar Archivo
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <CloudArrowUp size={48} className="mx-auto text-slate-300 mb-2" />
+                                            <p className="text-sm font-medium text-slate-600">Arrastra un archivo aquí o haz clic para seleccionar</p>
+                                        </>
+                                    )}
+                                    <input
+                                        name="file"
+                                        type="file"
+                                        className={`absolute inset-0 opacity-0 cursor-pointer ${selectedFile ? 'pointer-events-none' : ''}`}
+                                        onChange={(e) => {
+                                            if (e.target.files && e.target.files.length > 0) {
+                                                setSelectedFile(e.target.files[0]);
+                                            }
+                                        }}
+                                        required={!selectedFile}
+                                    />
                                 </div>
                             )}
                             {uploadTab === 'link' && <input name="url" type="url" placeholder="URL del recurso" className="w-full border p-2.5 rounded-lg text-sm" required />}
                             {uploadTab === 'embed' && <textarea name="embedCode" rows={4} placeholder="Código iframe..." className="w-full border p-2.5 rounded-lg text-sm font-mono" required />}
 
-                            <input name="title" placeholder="Título..." className="w-full border p-2.5 rounded-lg text-sm" required />
+                            <input name="title" placeholder="Título..." className="w-full border p-2.5 rounded-lg text-sm" required defaultValue={selectedFile?.name || ''} />
                             <div className="grid grid-cols-2 gap-4">
                                 <select name="unitId" className="border p-2.5 rounded-lg text-sm bg-white">
                                     <option value="">Unidad...</option>
@@ -442,8 +474,8 @@ export default function RepositoryPage() {
                                 <input name="process" placeholder="Proceso..." className="border p-2.5 rounded-lg text-sm" />
                             </div>
                             <div className="flex gap-3 justify-end pt-2">
-                                <button type="button" onClick={() => setShowUploadModal(false)} className="px-5 py-2.5 text-gray-500 font-bold">Cancelar</button>
-                                <button type="submit" disabled={isUploading} className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-lg disabled:opacity-50">
+                                <button type="button" onClick={() => { setShowUploadModal(false); setSelectedFile(null); }} className="px-5 py-2.5 text-slate-500 font-bold hover:bg-slate-50 rounded-lg">Cancelar</button>
+                                <button type="submit" disabled={isUploading} className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-lg disabled:opacity-50 shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
                                     {isUploading ? 'Subiendo...' : 'Subir'}
                                 </button>
                             </div>
