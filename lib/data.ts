@@ -595,11 +595,11 @@ const defaultPlatformSettings: PlatformSettings = {
 };
 
 const sampleUsers: User[] = [
-  { id: 'u1', name: 'Andrés Tabla', email: 'andres@example.com', role: 'Admin Tenant', unit: 'Root', level: 1, initials: 'AT', status: 'ACTIVE' },
-  { id: 'u2', name: 'Maria Lopez', email: 'maria@example.com', role: 'Gerente', unit: 'Calidad', level: 2, initials: 'ML', status: 'ACTIVE' },
-  { id: 'u3', name: 'Juan Perez', email: 'juan@example.com', role: 'Analista', unit: 'Finanzas', level: 3, initials: 'JP', status: 'ACTIVE' },
-  { id: 'u4', name: 'Carlos Ruiz', email: 'carlos@example.com', role: 'Desarrollador', unit: 'TI', level: 3, initials: 'CR', status: 'ACTIVE' },
-  { id: 'u5', name: 'Ana Gomez', email: 'ana@example.com', role: 'Diseñadora', unit: 'Marketing', level: 3, initials: 'AG', status: 'ACTIVE' }
+  { id: 'u1', name: 'Andrés Tabla', email: 'proyectos@algoritmot.com', role: 'Admin Tenant', unit: 'Root', level: 1, initials: 'AT', status: 'ACTIVE' },
+  { id: 'u2', name: 'Andrea Tabla Rico', email: 'andreatablarico@gmail.com', role: 'Admin Tenant', unit: 'Root', level: 1, initials: 'AR', status: 'ACTIVE' },
+  { id: 'u3', name: 'Andrés Rico', email: 'andresrico50@gmail.com', role: 'Usuario', unit: 'TI', level: 3, initials: 'AR', status: 'ACTIVE' },
+  { id: 'u4', name: 'Maria Lopez', email: 'maria@example.com', role: 'Gerente', unit: 'Calidad', level: 2, initials: 'ML', status: 'ACTIVE' },
+  { id: 'u5', name: 'Juan Perez', email: 'juan@example.com', role: 'Analista', unit: 'Finanzas', level: 3, initials: 'JP', status: 'ACTIVE' }
 ];
 
 const sampleUnits: Unit[] = [
