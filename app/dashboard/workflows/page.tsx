@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
 import { DB, WorkflowCase, WorkflowDefinition, Project, ProjectPhase, ProjectDocument, ProjectActivity, ProjectFolder, User as ProjectUser } from '@/lib/data';
+import ProjectDetailDrawer from '@/components/workflows/ProjectDetailDrawer';
 import {
     Plus, Kanban, CheckCircle, Clock, XCircle, User, Calendar,
     Tray, ArrowRight, CaretRight, ChatCircle, Paperclip, Funnel, UserSwitch, MagnifyingGlass,
@@ -321,33 +322,16 @@ export default function WorkflowsPage() {
 
             {/* Detail Drawer - Projects */}
             {selectedProject && (
-                <div className="w-[600px] bg-white border-l border-slate-200 shadow-2xl flex flex-col overflow-hidden animate-slideLeft z-20">
-                    <div className="p-6 border-b border-slate-100 flex justify-between items-center p-6 bg-slate-50">
-                        <h2 className="text-xl font-bold text-slate-900">{selectedProject.title}</h2>
-                        <button onClick={() => setSelectedProject(null)}><XCircle size={24} className="text-slate-400 hover:text-slate-600" weight="fill" /></button>
-                    </div>
-                    <div className="p-6 overflow-y-auto flex-1">
-                        <h3 className="font-bold text-sm text-slate-500 uppercase mb-4">Fases del Proyecto</h3>
-                        <div className="space-y-4">
-                            {selectedProject.phases.map((phase) => (
-                                <div key={phase.id} className="border border-slate-200 rounded-xl p-4">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <h4 className="font-bold text-slate-800">{phase.name}</h4>
-                                        <span className="text-xs px-2 py-0.5 bg-slate-100 rounded text-slate-600">{phase.status}</span>
-                                    </div>
-                                    <div className="pl-4 border-l-2 border-slate-100 space-y-2">
-                                        {phase.activities.map((act) => (
-                                            <div key={act.id} className="flex justify-between items-center text-sm py-1">
-                                                <span className="text-slate-700">{act.name}</span>
-                                                <span className={`text-[10px] font-bold ${act.status === 'COMPLETED' ? 'text-green-600' : 'text-slate-400'}`}>{act.status}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                <ProjectDetailDrawer
+                    project={selectedProject}
+                    onClose={() => setSelectedProject(null)}
+                    onUpdate={(id, updates) => {
+                        updateProject(id, updates);
+                        // Update local state to reflect changes immediately in the drawer if needed, 
+                        // though context update triggers re-render of page, we might need to update selectedProject ref
+                        setSelectedProject(prev => prev ? { ...prev, ...updates } : null);
+                    }}
+                />
             )}
 
             {/* New Project Modal */}
