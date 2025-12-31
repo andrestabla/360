@@ -190,6 +190,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Initialize
     useEffect(() => {
         const init = async () => {
+            // 0. Import Server Action dynamically or assume imported
+            const { getOrganizationSettings } = await import('@/app/lib/actions');
+
             // 1. Restore Platform Settings (Branding)
             const storedSettings = localStorage.getItem('m360_platform_settings');
             if (storedSettings) {
@@ -202,6 +205,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                     }));
                 } catch (e) { console.error(e); }
             }
+
+            // 1.1 Fetch fresh settings from Server
+            try {
+                const serverSettings = await getOrganizationSettings();
+                if (serverSettings && serverSettings.branding) {
+                    setPlatformSettings(prev => {
+                        const newSettings = {
+                            ...prev,
+                            // Map select fields or deep merge
+                            plan: serverSettings.plan || prev.plan,
+                            branding: {
+                                ...prev.branding,
+                                ...(serverSettings.branding as any)
+                            }
+                        };
+                        localStorage.setItem('m360_platform_settings', JSON.stringify(newSettings));
+                        return newSettings;
+                    });
+                }
+            } catch (e) { console.error("Failed to fetch server settings", e); }
 
             // 2. Verify Session
             try {
