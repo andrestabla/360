@@ -327,7 +327,7 @@ export async function sendNotificationEmail(
           </div>
           <div class="footer">
             <p>Este correo fue enviado automáticamente por Maturity 360</p>
-            <p>${tenantName || 'maturity.online'}</p>
+            <p>${tenantName || 'maturity360.co'}</p>
           </div>
         </div>
       </body>

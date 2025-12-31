@@ -55,7 +55,7 @@ export default function TaskInboxWidget({ tasks }: { tasks: any[] }) {
                 </div>
             </div>
 
-            <div className="divide-y divide-slate-100 overflow-y-auto custom-scrollbar">
+            <div className="divide-y divide-slate-100 overflow-y-auto custom-scrollbar max-h-[350px]">
                 {tasks.map((task: DashboardTask) => (
                     <div
                         key={task.id}
