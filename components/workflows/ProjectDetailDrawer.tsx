@@ -543,93 +543,90 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
             {/* USER PICKER MODAL */}
             {showUserPicker.active && (
                 <div className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[1px] flex items-center justify-center p-8">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm border border-slate-200 animate-in zoom-in-95">
-                        <div className="p-4 border-b flex justify-between items-center">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md border border-slate-200 animate-in zoom-in-95 flex flex-col max-h-[90vh]">
+                        <div className="p-4 border-b flex justify-between items-center shrink-0">
                             <h4 className="font-bold text-lg text-slate-800">Agregar Miembro</h4>
                             <button onClick={handleCloseUserPicker}><X size={20} className="text-slate-400 hover:text-slate-600" /></button>
                         </div>
-                        <div className="p-4">
-                            <input
-                                autoFocus
-                                placeholder="Buscar por nombre o rol..."
-                                className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                                value={userSearch}
-                                onChange={e => setUserSearch(e.target.value)}
-                            />
-                        </div>
 
-                        <div className="relative mb-4">
-                            <span className="absolute left-3 top-2.5 text-slate-400"><Funnel size={16} /></span>
-                            <select
-                                className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 bg-white appearance-none cursor-pointer"
-                                value={unitFilter}
-                                onChange={e => setUnitFilter(e.target.value)}
-                            >
-                                <option value="">Todas las Áreas</option>
-                                {/* Extract unique units from users or use DB.units if robust */}
-                                {[...new Set(DB.users.map(u => u.unit).filter(Boolean))].map(unit => (
-                                    <option key={unit} value={unit}>{unit}</option>
-                                ))}
-                            </select>
-                            <CaretDown className="absolute right-3 top-3 text-slate-400 pointer-events-none" size={14} />
-                        </div>
-
-                        {/* Notification Toggle was here, moved to bottom as per logic flow or kept here? 
-                                User asked to "Add button to reference image". 
-                                Reference has search and filter at top. 
-                                Let's keep notification near the list or actions. 
-                                The previous block removed it from here since I am replacing the whole block logic.
-                                Wait, I am removing the old search/filter block in the chunks.
-                            */}
-
-                        <div className="max-h-60 overflow-y-auto space-y-1 mb-4">
-                            {DB.users.filter(u => {
-                                const matchesName = !userSearch || (u.name || '').toLowerCase().includes(userSearch.toLowerCase());
-                                const matchesUnit = !unitFilter || u.unit === unitFilter;
-                                return matchesName && matchesUnit;
-                            }).map(u => (
-                                <div
-                                    key={u.id}
-                                    onClick={() => setSelectedUser(u)}
-                                    className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${selectedUser?.id === u.id ? 'bg-blue-100 ring-1 ring-blue-500' : 'hover:bg-blue-50'}`}
-                                >
-                                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                                        {u.name?.substring(0, 2).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-slate-800">{u.name}</p>
-                                        <p className="text-xs text-slate-500">{u.role} • {u.unit || 'General'}</p>
-                                    </div>
-                                    {selectedUser?.id === u.id && <Check className="ml-auto text-blue-600" weight="bold" />}
-                                </div>
-                            ))}
-                        </div>
-
-                    </div>
-
-                    <div className="flex items-center justify-between mb-4 px-1">
-                        <label className="flex items-center gap-2 cursor-pointer select-none">
-                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors ${sendNotification ? 'bg-blue-500' : 'bg-slate-200'}`} onClick={() => setSendNotification(!sendNotification)}>
-                                <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${sendNotification ? 'translate-x-4' : 'translate-x-0'}`} />
+                        <div className="p-4 flex-1 overflow-y-auto min-h-0">
+                            <div className="relative mb-3">
+                                {!userSearch && <MagnifyingGlass className="absolute left-3 top-2.5 text-slate-400 pointer-events-none" size={16} />}
+                                <input
+                                    autoFocus
+                                    placeholder="Buscar por nombre o rol..."
+                                    className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                                    value={userSearch}
+                                    onChange={e => setUserSearch(e.target.value)}
+                                />
                             </div>
-                            <span className="text-xs font-bold text-slate-600">Enviar notificación al usuario</span>
-                        </label>
-                    </div>
 
-                    <div className="flex justify-end gap-2 pt-2 border-t border-slate-50">
-                        <button
-                            onClick={() => handleCloseUserPicker()}
-                            className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={() => selectedUser && handleAddMember(selectedUser)}
-                            disabled={!selectedUser}
-                            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
-                        >
-                            Agregar
-                        </button>
+                            <div className="relative mb-4">
+                                <span className="absolute left-3 top-2.5 text-slate-400 pointer-events-none"><Funnel size={16} /></span>
+                                <select
+                                    className="w-full pl-9 pr-9 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 bg-white appearance-none cursor-pointer text-slate-700"
+                                    value={unitFilter}
+                                    onChange={e => setUnitFilter(e.target.value)}
+                                >
+                                    <option value="">Todas las Áreas</option>
+                                    {[...new Set(DB.users.map(u => u.unit).filter(Boolean))].map(unit => (
+                                        <option key={unit} value={unit}>{unit}</option>
+                                    ))}
+                                </select>
+                                <CaretDown className="absolute right-3 top-3 text-slate-400 pointer-events-none" size={14} />
+                            </div>
+
+                            <div className="space-y-1">
+                                {DB.users.filter(u => {
+                                    const matchesName = !userSearch || (u.name || '').toLowerCase().includes(userSearch.toLowerCase());
+                                    const matchesUnit = !unitFilter || u.unit === unitFilter;
+                                    return matchesName && matchesUnit;
+                                }).map(u => (
+                                    <div
+                                        key={u.id}
+                                        onClick={() => setSelectedUser(u)}
+                                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${selectedUser?.id === u.id ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-transparent hover:bg-slate-50 hover:border-slate-200'}`}
+                                    >
+                                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-600 shrink-0">
+                                            {u.name?.substring(0, 2).toUpperCase()}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-slate-800 truncate">{u.name}</p>
+                                            <p className="text-xs text-slate-500 truncate">{u.role} • {u.unit || 'General'}</p>
+                                        </div>
+                                        {selectedUser?.id === u.id && <Check className="text-blue-600" size={20} weight="bold" />}
+                                    </div>
+                                ))}
+                                {DB.users.length === 0 && (
+                                    <p className="text-center text-slate-400 py-4 text-sm">No hay usuarios disponibles</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="p-4 border-t bg-slate-50 rounded-b-xl shrink-0">
+                            <label className="flex items-center gap-2 cursor-pointer select-none mb-4">
+                                <div className={`relative w-9 h-5 rounded-full p-0.5 transition-colors duration-200 ${sendNotification ? 'bg-blue-500' : 'bg-slate-300'}`} onClick={() => setSendNotification(!sendNotification)}>
+                                    <div className={`absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${sendNotification ? 'translate-x-4' : 'translate-x-0'}`} />
+                                </div>
+                                <span className="text-sm font-medium text-slate-700">Enviar notificación al usuario</span>
+                            </label>
+
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={handleCloseUserPicker}
+                                    className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-lg transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={() => selectedUser && handleAddMember(selectedUser)}
+                                    disabled={!selectedUser}
+                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-sm transition-all disabled:opacity-50 disabled:grayscale shadow-sm hover:shadow active:scale-95"
+                                >
+                                    Agregar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

@@ -594,9 +594,21 @@ const defaultPlatformSettings: PlatformSettings = {
   storage: undefined
 };
 
-const sampleUsers: User[] = [];
+const sampleUsers: User[] = [
+  { id: 'u1', name: 'Andrés Tabla', email: 'andres@example.com', role: 'Admin Tenant', unit: 'Root', level: 1, initials: 'AT', status: 'ACTIVE' },
+  { id: 'u2', name: 'Maria Lopez', email: 'maria@example.com', role: 'Gerente', unit: 'Calidad', level: 2, initials: 'ML', status: 'ACTIVE' },
+  { id: 'u3', name: 'Juan Perez', email: 'juan@example.com', role: 'Analista', unit: 'Finanzas', level: 3, initials: 'JP', status: 'ACTIVE' },
+  { id: 'u4', name: 'Carlos Ruiz', email: 'carlos@example.com', role: 'Desarrollador', unit: 'TI', level: 3, initials: 'CR', status: 'ACTIVE' },
+  { id: 'u5', name: 'Ana Gomez', email: 'ana@example.com', role: 'Diseñadora', unit: 'Marketing', level: 3, initials: 'AG', status: 'ACTIVE' }
+];
 
-const sampleUnits: Unit[] = [];
+const sampleUnits: Unit[] = [
+  { id: 'unit1', name: 'Root', type: 'UNIT', depth: 0 },
+  { id: 'unit2', name: 'Calidad', type: 'DEPARTMENT', depth: 1 },
+  { id: 'unit3', name: 'Finanzas', type: 'DEPARTMENT', depth: 1 },
+  { id: 'unit4', name: 'TI', type: 'DEPARTMENT', depth: 1 },
+  { id: 'unit5', name: 'Marketing', type: 'DEPARTMENT', depth: 1 }
+];
 
 const samplePosts: Post[] = [];
 
