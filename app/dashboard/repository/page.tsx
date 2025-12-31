@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
 import { getUnitsAction } from '@/app/lib/unitActions';
 import { Unit } from '@/shared/schema';
-import { RepositoryFile, RepositoryFolder, getFoldersAction, createFolderAction, deleteFolderAction, updateFolderAction, getDocumentsAction, uploadDocumentAction, deleteDocumentAction, toggleLikeAction } from '@/app/lib/repositoryActions';
+import { RepositoryFile, RepositoryFolder, getFoldersAction, createFolderAction, deleteFolderAction, updateFolderAction, getDocumentsAction, getDocumentByIdAction, uploadDocumentAction, deleteDocumentAction, toggleLikeAction } from '@/app/lib/repositoryActions';
 import { UploadSimple, Folder, FilePdf, FileDoc, FileXls, Image, Link as LinkIcon, Code, DotsThree, Trash, DownloadSimple, Eye, CloudArrowUp, CaretRight, FolderPlus, Check, MagnifyingGlass, Funnel, X, ListBullets, SquaresFour, PencilSimple, ClipboardText, FilePpt, FileText, ShareNetwork, CaretDown, Star } from '@phosphor-icons/react';
 import { AssignTaskModal } from '@/components/repository/AssignTaskModal';
 import { MoveDocumentModal } from '@/components/repository/MoveDocumentModal';
@@ -74,7 +75,35 @@ export default function RepositoryPage() {
 
     const searchInputRef = useRef<HTMLInputElement>(null);
 
-    // --- Fetch Data ---
+
+    // --- Deep Linking & Data Fetching ---
+
+    // 1. Initial Load: Check for docId
+    useEffect(() => {
+        const handleDeepLink = async () => {
+            // We access searchParams via window location here to avoid hydration mismatches 
+            // or just use the hook but ensure we only run ONCE on mount
+            const params = new URLSearchParams(window.location.search);
+            const deepLinkDocId = params.get('docId');
+
+            if (deepLinkDocId) {
+                const doc = await getDocumentByIdAction(deepLinkDocId);
+                if (doc) {
+                    // Set the folder context so the doc is visible
+                    if (doc.folderId) {
+                        setCurrentFolderId(doc.folderId);
+                        // We might need to fetch the breadcrumb trail here if we want to be perfect, 
+                        // but setting currentFolderId will trigger the main loadData effect which fetches folders/docs
+                    }
+                    // Select the doc immediately to open sidebar
+                    setSelectedDoc(doc);
+                }
+            }
+        };
+        handleDeepLink();
+    }, []);
+
+    // 2. Main Data Load (Folders & Docs) depending on currentFolderId
     useEffect(() => {
         const loadUnits = async () => {
             const res = await getUnitsAction();
@@ -82,6 +111,7 @@ export default function RepositoryPage() {
         };
         loadUnits();
     }, []);
+
 
     useEffect(() => {
         const loadData = async () => {

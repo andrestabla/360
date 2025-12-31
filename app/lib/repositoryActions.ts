@@ -81,6 +81,17 @@ export async function deleteFolderAction(folderId: string) {
 
 // --- DOCUMENTS ---
 
+
+export async function getDocumentByIdAction(docId: string) {
+    try {
+        const [doc] = await db.select().from(documents).where(eq(documents.id, docId));
+        if (!doc) return null;
+        return serialize(doc);
+    } catch {
+        return null;
+    }
+}
+
 export async function getDocumentsAction(folderId: string | null, unitId?: string, search?: string) {
     let conditions = [];
 
