@@ -17,7 +17,7 @@ import { UserNote, WorkflowCase, UserRecent } from '@/shared/schema';
 
 interface DashboardContentProps {
     initialNotes: UserNote[];
-    initialTasks: WorkflowCase[];
+    initialTasks: any[]; // Using any[] for now as we have a unified structure
     initialRecents: UserRecent[];
     initialPosts: Post[];
 }

@@ -452,3 +452,26 @@ export type WorkflowCase = typeof workflowCases.$inferSelect;
 export type InsertWorkflowCase = typeof workflowCases.$inferInsert;
 export type UserRecent = typeof userRecents.$inferSelect;
 export type InsertUserRecent = typeof userRecents.$inferInsert;
+
+// RELATIONS
+export const tasksRelations = relations(tasks, ({ one }) => ({
+  document: one(documents, {
+    fields: [tasks.documentId],
+    references: [documents.id],
+  }),
+  assignee: one(users, {
+    fields: [tasks.assigneeId],
+    references: [users.id],
+  }),
+}));
+
+export const workflowCasesRelations = relations(workflowCases, ({ one }) => ({
+  workflow: one(workflows, {
+    fields: [workflowCases.workflowId],
+    references: [workflows.id],
+  }),
+  assignee: one(users, {
+    fields: [workflowCases.assigneeId],
+    references: [users.id],
+  }),
+}));

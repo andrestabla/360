@@ -3,7 +3,18 @@ import { CaretRight, CheckCircle, Clock, Tray } from '@phosphor-icons/react';
 import { WorkflowCase } from '@/shared/schema';
 import { useRouter } from 'next/navigation';
 
-export default function TaskInboxWidget({ tasks }: { tasks: WorkflowCase[] }) {
+
+interface DashboardTask {
+    id: string;
+    title: string;
+    priority: string | null;
+    dueDate: Date | null;
+    source: string;
+    link: string;
+    createdAt: Date | null;
+}
+
+export default function TaskInboxWidget({ tasks }: { tasks: any[] }) {
     const router = useRouter();
 
     if (!tasks || tasks.length === 0) {
@@ -45,16 +56,16 @@ export default function TaskInboxWidget({ tasks }: { tasks: WorkflowCase[] }) {
             </div>
 
             <div className="divide-y divide-slate-100 overflow-y-auto custom-scrollbar">
-                {tasks.map(task => (
+                {tasks.map((task: DashboardTask) => (
                     <div
                         key={task.id}
-                        onClick={() => router.push(`/dashboard/workflows/${task.workflowId}`)}
+                        onClick={() => router.push(task.link || '#')}
                         className="p-4 hover:bg-slate-50 transition-colors cursor-pointer group"
                     >
                         <div className="flex justify-between items-start mb-2">
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${task.priority === 'HIGH' ? 'bg-red-100 text-red-600' :
-                                    task.priority === 'LOW' ? 'bg-slate-100 text-slate-600' :
-                                        'bg-amber-100 text-amber-600'
+                                task.priority === 'LOW' ? 'bg-slate-100 text-slate-600' :
+                                    'bg-amber-100 text-amber-600'
                                 }`}>
                                 {task.priority === 'HIGH' ? 'Alta' : task.priority === 'LOW' ? 'Baja' : 'Media'}
                             </span>
@@ -69,7 +80,9 @@ export default function TaskInboxWidget({ tasks }: { tasks: WorkflowCase[] }) {
                         </div>
                         <h4 className="text-sm font-bold text-slate-800 mb-1 group-hover:text-indigo-600 transition-colors leading-tight">{task.title}</h4>
                         <div className="flex items-center justify-between mt-3">
-                            <span className="text-xs text-slate-400 group-hover:text-indigo-500 transition-colors">Resolver ahora</span>
+                            <span className="text-xs text-slate-400 group-hover:text-indigo-500 transition-colors">
+                                {task.source === 'DOCUMENT' ? 'Revisar Documento' : 'Resolver ahora'}
+                            </span>
                             <CaretRight size={14} className="text-slate-300 group-hover:text-indigo-600 transform group-hover:translate-x-1 transition-all" />
                         </div>
                     </div>

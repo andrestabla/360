@@ -3,7 +3,7 @@
 import { signIn, signOut, auth } from '@/lib/auth';
 import { AuthError } from 'next-auth';
 import { db } from '@/server/db';
-import { users, organizationSettings, userNotes, workflowCases, userRecents, emailSettings } from '@/shared/schema';
+import { users, organizationSettings, userNotes, workflowCases, userRecents, emailSettings, tasks } from '@/shared/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
@@ -426,12 +426,54 @@ export async function deleteWorkNote(noteId: string) {
 }
 
 export async function getPendingTasks(userId: string) {
-    // Return pending workflow cases
-    return await db.query.workflowCases.findMany({
+    // 1. Fetch Workflow Cases
+    const cases = await db.query.workflowCases.findMany({
         where: and(eq(workflowCases.assigneeId, userId), eq(workflowCases.status, 'PENDING')),
         orderBy: [desc(workflowCases.createdAt)],
         limit: 5
     });
+
+    // 2. Fetch Document Tasks
+    // We need to join with documents to get the title if task instructions aren't enough,
+    // or just use the instructions/type as title.
+    const docTasks = await db.query.tasks.findMany({
+        where: and(eq(tasks.assigneeId, userId), eq(tasks.status, 'PENDING')),
+        with: {
+            document: true
+        },
+        orderBy: [desc(tasks.createdAt)],
+        limit: 5
+    });
+
+    // 3. Normalize to common interface
+    const unifiedCases = cases.map(c => ({
+        id: c.id,
+        title: c.title,
+        priority: c.priority || 'MEDIUM',
+        dueDate: c.dueDate,
+        source: 'WORKFLOW',
+        link: `/dashboard/workflows/${c.workflowId}`,
+        createdAt: c.createdAt
+    }));
+
+    const unifiedDocTasks = docTasks.map(t => ({
+        id: t.id,
+        title: t.document?.title ? `${t.type}: ${t.document.title}` : `Tarea: ${t.type}`,
+        priority: t.priority || 'MEDIUM',
+        dueDate: t.dueDate,
+        source: 'DOCUMENT',
+        // Link to repository with the doc selected or a specific task view
+        // For now, open repository with the doc
+        link: `/dashboard/repository?docId=${t.documentId}`,
+        createdAt: t.createdAt
+    }));
+
+    // 4. Merge and Sort
+    const all = [...unifiedCases, ...unifiedDocTasks].sort((a, b) => {
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    });
+
+    return all.slice(0, 10);
 }
 
 export async function getUserRecents(userId: string) {
