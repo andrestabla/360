@@ -359,6 +359,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             await loadUnits();
             refreshData();
         } else {
+            console.error("Failed to create unit", res.error);
             addNotification({ title: 'Error', message: res.error || 'No se pudo crear la unidad', type: 'error' });
         }
     };
@@ -391,6 +392,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             refreshData();
         } else {
             addNotification({ title: 'Error', message: res.error || 'No se pudo eliminar la unidad', type: 'error' });
+        }
+    };
+
+    const createWorkflowCase = async (data: any) => {
+        const { createWorkflowCaseAction } = await import('@/app/actions/workflow');
+        const res = await createWorkflowCaseAction(data);
+        if (res.success && res.data) {
+            // Optimistic / Sync
+            const newCaseWithDefaults = {
+                ...res.data,
+                history: [],
+                comments: []
+            } as import("@/lib/data").WorkflowCase; // Cast to bypass strict status type check for legacy compatibility
+            DB.workflowCases.unshift(newCaseWithDefaults); // Add to local DB mock for immediate UI update
+            refreshData(); // Trigger re-render
+        } else {
+            console.error("Failed to create workflow case", res.error);
+            alert("Error al crear la solicitud: " + res.error);
         }
     };
 
@@ -604,6 +623,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             updateUnit,
             deleteUnit,
             adminCreateWorkflow,
+            createWorkflowCase,
             updateUser,
             originalSession: null,
             stopImpersonation,
