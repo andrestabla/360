@@ -579,6 +579,6 @@ export default function WorkflowsPage() {
                 )
             }
         </div>
-    </div >
+    </div>
     );
 }
