@@ -39,13 +39,22 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
     // Toggle Edit Mode
     const [isEditing, setIsEditing] = useState(false);
 
-    // Local state for editing (buffered)
+    // Helper for safe date parsing
+    const formatDateForInput = (date: string | Date | undefined | null) => {
+        if (!date) return '';
+        if (date instanceof Date) return date.toISOString().split('T')[0];
+        // Handle if string is already YYYY-MM-DD or partial ISO
+        if (typeof date === 'string') return date.split('T')[0];
+        return '';
+    };
+
+    // Buffer state
     const [title, setTitle] = useState(project.title);
     const [description, setDescription] = useState(project.description || '');
     const [folderId, setFolderId] = useState(project.folderId || '');
     const [color, setColor] = useState(project.color || '#3b82f6');
-    const [startDate, setStartDate] = useState(project.startDate?.split('T')[0] || '');
-    const [endDate, setEndDate] = useState(project.endDate?.split('T')[0] || '');
+    const [startDate, setStartDate] = useState(formatDateForInput(project.startDate));
+    const [endDate, setEndDate] = useState(formatDateForInput(project.endDate));
     const [phases, setPhases] = useState<ProjectPhase[]>(project.phases || []);
 
     // Modals state
@@ -485,12 +494,12 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                                                 {isEditing ? (
                                                     <input
                                                         type="date"
-                                                        value={act.startDate?.split('T')[0] || ''}
+                                                        value={formatDateForInput(act.startDate)}
                                                         onChange={(e) => updateActivity(phase.id, act.id, { startDate: e.target.value })}
                                                         className="text-xs text-slate-600 border-none p-0 focus:ring-0 w-full bg-transparent"
                                                     />
                                                 ) : (
-                                                    <span className="text-xs text-slate-600">{act.startDate?.split('T')[0] || '-'}</span>
+                                                    <span className="text-xs text-slate-600">{formatDateForInput(act.startDate) || '-'}</span>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-2 border rounded p-1.5 px-3 bg-slate-50">
@@ -498,12 +507,12 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                                                 {isEditing ? (
                                                     <input
                                                         type="date"
-                                                        value={act.endDate?.split('T')[0] || ''}
+                                                        value={formatDateForInput(act.endDate)}
                                                         onChange={(e) => updateActivity(phase.id, act.id, { endDate: e.target.value })}
                                                         className="text-xs text-slate-600 border-none p-0 focus:ring-0 w-full bg-transparent"
                                                     />
                                                 ) : (
-                                                    <span className="text-xs text-slate-600">{act.endDate?.split('T')[0] || '-'}</span>
+                                                    <span className="text-xs text-slate-600">{formatDateForInput(act.endDate) || '-'}</span>
                                                 )}
                                             </div>
                                         </div>
