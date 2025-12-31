@@ -465,13 +465,85 @@ export const tasksRelations = relations(tasks, ({ one }) => ({
   }),
 }));
 
-export const workflowCasesRelations = relations(workflowCases, ({ one }) => ({
-  workflow: one(workflows, {
-    fields: [workflowCases.workflowId],
-    references: [workflows.id],
+// 5. PROJECTS & HIERARCHY
+// =========================================================================
+
+export const projects = pgTable("projects", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: varchar("status", { length: 50 }).default("PLANNED"),
+  startDate: timestamp("start_date", { mode: 'date' }),
+  endDate: timestamp("end_date", { mode: 'date' }),
+  creatorId: varchar("creator_id", { length: 255 }).references(() => users.id, { onDelete: 'set null' }),
+  managerId: varchar("manager_id", { length: 255 }).references(() => users.id, { onDelete: 'set null' }),
+  folderId: varchar("folder_id", { length: 255 }), // Loose coupling to projectFolders for now or add table
+  unit: varchar("unit", { length: 255 }),
+  process: varchar("process", { length: 255 }),
+  color: varchar("color", { length: 50 }),
+  budget: integer("budget").default(0),
+  spent: integer("spent").default(0),
+  participants: json("participants").$type<(string | { userId: string; role?: string })[]>().default([]),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
+}, (table) => [
+  index("idx_projects_creator").on(table.creatorId),
+  index("idx_projects_status").on(table.status),
+]);
+
+export const projectPhases = pgTable("project_phases", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  projectId: varchar("project_id", { length: 255 }).notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  order: integer("order").notNull().default(0),
+  status: varchar("status", { length: 50 }).default("PENDING"),
+  startDate: timestamp("start_date", { mode: 'date' }),
+  endDate: timestamp("end_date", { mode: 'date' }),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
+}, (table) => [
+  index("idx_project_phases_project").on(table.projectId),
+]);
+
+export const projectActivities = pgTable("project_activities", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  phaseId: varchar("phase_id", { length: 255 }).notNull().references(() => projectPhases.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  status: varchar("status", { length: 50 }).default("PENDING"), // COMPLETED, IN_PROGRESS
+  startDate: timestamp("start_date", { mode: 'date' }),
+  endDate: timestamp("end_date", { mode: 'date' }),
+  participants: json("participants").$type<(string | { userId: string; role?: string })[]>().default([]),
+  documents: json("documents").$type<any[]>().default([]), // Store simple doc refs for now
+  weight: integer("weight").default(1),
+  progress: integer("progress").default(0),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
+}, (table) => [
+  index("idx_project_activities_phase").on(table.phaseId),
+]);
+
+export type Project = typeof projects.$inferSelect;
+export type InsertProject = typeof projects.$inferInsert;
+export type ProjectPhase = typeof projectPhases.$inferSelect;
+export type InsertProjectPhase = typeof projectPhases.$inferInsert;
+export type ProjectActivity = typeof projectActivities.$inferSelect;
+export type InsertProjectActivity = typeof projectActivities.$inferInsert;
+
+export const projectsRelations = relations(projects, ({ many }) => ({
+  phases: many(projectPhases),
+}));
+
+export const projectPhasesRelations = relations(projectPhases, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [projectPhases.projectId],
+    references: [projects.id],
   }),
-  assignee: one(users, {
-    fields: [workflowCases.assigneeId],
-    references: [users.id],
+  activities: many(projectActivities),
+}));
+
+export const projectActivitiesRelations = relations(projectActivities, ({ one }) => ({
+  phase: one(projectPhases, {
+    fields: [projectActivities.phaseId],
+    references: [projectPhases.id],
   }),
 }));

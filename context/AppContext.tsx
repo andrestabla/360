@@ -117,6 +117,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const openMobileMenu = () => setIsMobileMenuOpen(true);
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
+    // Helpers (Hoisted for use in other functions)
+    const refreshData = useCallback(() => {
+        setDataVersion(v => v + 1);
+    }, []);
+
+    const addNotification = useCallback((n: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+        const newNotification: Notification = {
+            ...n,
+            id: Date.now().toString(),
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        setNotifications(prev => [newNotification, ...prev]);
+    }, []);
+
+    const markNotificationAsRead = (id: string) => {
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    };
+
+    const clearNotifications = () => {
+        setNotifications([]);
+    };
+
     const refreshUnreadCount = useCallback(async () => {
         if (!currentUser) return;
         try {
@@ -149,82 +172,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
+    const loadProjects = useCallback(async () => {
+        const { getProjectsAction } = await import('@/app/actions/projectActions');
+        const res = await getProjectsAction();
+        if (res.success && res.data) {
+            DB.projects = res.data as any;
+            refreshData();
+        }
+    }, [refreshData]);
+
     useEffect(() => {
         refreshUnreadCount();
         loadUnits();
-    }, [refreshUnreadCount, loadUnits]);
+        loadProjects(); // Load projects on mount
+    }, [refreshUnreadCount, loadUnits, loadProjects]);
 
     // Initialize
     useEffect(() => {
         const init = async () => {
-            try {
-                // 1. Restore Platform Settings (Branding)
-                const storedSettings = localStorage.getItem('m360_platform_settings');
-                if (storedSettings) {
-                    try {
-                        const parsed = JSON.parse(storedSettings);
-                        // Merge with default DB settings to ensure new fields (like branding) exist if local storage is old
-                        setPlatformSettings(prev => ({
-                            ...prev,
-                            ...parsed,
-                            branding: { ...prev.branding, ...(parsed.branding || {}) }
-                        }));
-                    } catch (e) {
-                        console.error('Error parsing stored settings:', e);
-                    }
-                }
+            // 1. Restore Platform Settings (Branding)
+            const storedSettings = localStorage.getItem('m360_platform_settings');
+            if (storedSettings) {
+                try {
+                    const parsed = JSON.parse(storedSettings);
+                    setPlatformSettings(prev => ({
+                        ...prev,
+                        ...parsed,
+                        branding: { ...prev.branding, ...(parsed.branding || {}) }
+                    }));
+                } catch (e) { console.error(e); }
+            }
 
-                // 2. Verify Session
+            // 2. Verify Session
+            try {
                 const response = await fetch('/api/auth/verify');
                 const data = await response.json();
-
                 if (data.success && data.user) {
                     setCurrentUser(data.user);
                     setIsSuperAdmin(!!data.user.isSuperAdmin);
-                    // Also update localStorage user backup
                     localStorage.setItem('m360_user', JSON.stringify(data.user));
-
-                    // 3. Update Platform Settings from Server (Branding)
-                    if (data.platformSettings) {
-                        const mergedSettings = {
-                            ...platformSettings,
-                            ...data.platformSettings,
-                            branding: { ...(platformSettings.branding || {}), ...(data.platformSettings.branding || {}) }
-                        };
-                        setPlatformSettings(mergedSettings);
-
-                        // Persist to local storage
-                        localStorage.setItem('m360_platform_settings', JSON.stringify(mergedSettings));
-
-                        // Inject Global Branding CSS
-                        if (mergedSettings.branding?.primaryColor) {
-                            document.documentElement.style.setProperty('--primary', mergedSettings.branding.primaryColor);
-                        }
-                    }
-                } else {
-                    // Session invalid or expired
-                    // Only clear if we really want to force logout, or just leave as null
-                    // If we want to strictly enforce session validity:
-                    // setCurrentUser(null);
-                    // setIsSuperAdmin(false);
-                    // localStorage.removeItem('m360_user');
-                    // But maybe we want to allow the "localStorage user" to work offline/mock?
-                    // For now, let's trust the verify route. If it fails, we are logged out.
-                    // However, to prevent "flicker" if offline, we might want to keep the local user
-                    // BUT the user request is specifically about "unlogging on update", which suggests the cookie persists but state is lost.
-                    // This verify call RECOVERS the state from the cookie.
                 }
-
-            } catch (error) {
-                console.error('Error initializing app:', error);
-            } finally {
-                setIsLoading(false);
-            }
+            } catch (e) { console.error(e); }
+            setIsLoading(false);
         };
         init();
     }, []);
 
-    // Login
     const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
         setIsLoading(true);
         try {
@@ -233,54 +226,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });
-
             const data = await response.json();
+            if (!data.success) return { success: false, error: data.error };
 
-            if (!data.success) {
-                return { success: false, error: data.error };
-            }
-
-            const user = data.user;
-            setCurrentUser(user);
+            setCurrentUser(data.user);
             setIsSuperAdmin(!!data.user.isSuperAdmin);
+            localStorage.setItem('m360_user', JSON.stringify(data.user));
 
-            localStorage.setItem('m360_user', JSON.stringify(user));
-
-            // Redirect logic
-            if (data.user.isSuperAdmin) {
-                router.push('/dashboard/admin');
-            } else {
-                router.push('/dashboard');
-            }
-
+            if (data.user.isSuperAdmin) router.push('/dashboard/admin');
+            else router.push('/dashboard');
             return { success: true };
         } catch (error: any) {
-            console.error('Login error:', error);
             return { success: false, error: 'Error de conexión' };
-        } finally {
-            setIsLoading(false);
-        }
+        } finally { setIsLoading(false); }
     };
-
 
     const logout = async () => {
         setIsLoading(true);
         try {
-            // Clear local storage first (synchronous, safe operation)
             localStorage.removeItem('m360_user');
-
-            // Call server action which handles signOut with redirect
-            // This will trigger NEXT_REDIRECT, so we don't manually update React state
             await logoutAction();
-
-        } catch (error) {
-            console.error('Logout error:', error);
-            // Only reset loading if redirect fails
-            setIsLoading(false);
-        }
-        // No finally block - redirect will unmount component naturally
+        } catch (error) { setIsLoading(false); }
     };
-
 
     const updatePlatformSettings = (settings: Partial<PlatformSettings>) => {
         setPlatformSettings(prev => {
@@ -296,7 +263,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (!currentUser) return;
         const updated = { ...currentUser, ...updates };
         setCurrentUser(updated);
-
+        // Sync local mock
         const index = DB.users.findIndex(u => u.id === currentUser.id);
         if (index !== -1) {
             DB.users[index] = updated;
@@ -304,31 +271,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const stopImpersonation = () => {
-        // Implementation for stopping impersonation
-    };
-
-    const addNotification = (n: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
-        const newNotification: Notification = {
-            ...n,
-            id: Date.now().toString(),
-            timestamp: new Date().toISOString(),
-            read: false
-        };
-        setNotifications(prev => [newNotification, ...prev]);
-    };
-
-    const markNotificationAsRead = (id: string) => {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    };
-
-    const clearNotifications = () => {
-        setNotifications([]);
-    };
-
-    const refreshData = useCallback(() => {
-        setDataVersion(v => v + 1);
-    }, []);
+    const stopImpersonation = () => { };
 
     const adminCreatePost = (post: any) => {
         const newPost: import("@/lib/data").Post = {
@@ -359,12 +302,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     const updateLevelPermissions = (level: number, permissions: string[]) => {
-        // In a real app, this would update DB.platformSettings.roleTemplates
-        // But roleTemplates might be on tenant or platform. 
-        // Assuming platform settings for now based on context.
-        if (!DB.platformSettings.roleTemplates) {
-            DB.platformSettings.roleTemplates = {};
-        }
+        if (!DB.platformSettings.roleTemplates) DB.platformSettings.roleTemplates = {};
         DB.platformSettings.roleTemplates[level] = permissions;
         refreshData();
     };
@@ -437,42 +375,67 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } as import("@/lib/data").WorkflowDefinition;
         DB.workflowDefinitions.push(newWorkflow);
         refreshData();
-        refreshData();
     };
 
-    const createProject = (project: Partial<import("@/lib/data").Project>) => {
-        const newProject: import("@/lib/data").Project = {
+
+    const createProject = async (project: Partial<import("@/lib/data").Project>) => {
+        const { createProjectAction } = await import('@/app/actions/projectActions');
+        const newProject = {
             id: Date.now().toString(),
             title: 'Nuevo Proyecto',
             description: '',
             status: 'PLANNED',
-            startDate: new Date().toISOString().split('T')[0],
-            endDate: '',
-            managerId: currentUser?.id || '',
-            members: [],
-            budget: 0,
-            spent: 0,
-            phases: [],
+            startDate: new Date(),
+            creatorId: currentUser?.id,
+            managerId: currentUser?.id,
             ...project
-        } as import("@/lib/data").Project;
-        DB.projects.push(newProject);
+        };
+
+        // Optimistic Update
+        DB.projects.push(newProject as any);
         refreshData();
+
+        const res = await createProjectAction(newProject);
+        if (res.success) {
+            loadProjects(); // Reload to get real ID and data
+        } else {
+            console.error("Failed to create project", res.error);
+            addNotification({ title: 'Error', message: 'No se pudo guardar el proyecto', type: 'error' });
+        }
     };
 
-    const updateProject = (id: string, updates: Partial<import("@/lib/data").Project>) => {
+    const updateProject = async (id: string, updates: Partial<import("@/lib/data").Project>) => {
+        const { updateProjectAction } = await import('@/app/actions/projectActions');
+
+        // Optimistic Update
         const index = DB.projects.findIndex(p => p.id === id);
         if (index !== -1) {
             DB.projects[index] = { ...DB.projects[index], ...updates };
             refreshData();
         }
+
+        const res = await updateProjectAction(id, updates);
+        if (!res.success) {
+            console.error("Failed to update project", res.error);
+            addNotification({ title: 'Error', message: 'No se pudo guardar los cambios', type: 'error' });
+        }
     };
 
-    // Assuming this deletes a project, renamed/mapped to deleteProjectFolder as per usage
-    const deleteProjectFolder = (id: string) => {
+    const deleteProjectFolder = async (id: string) => {
+        // This function name is misleading in the original code, it was used for deleting projects
+        const { deleteProjectAction } = await import('@/app/actions/projectActions');
+
+        // Optimistic
         const index = DB.projects.findIndex(p => p.id === id);
         if (index !== -1) {
             DB.projects.splice(index, 1);
             refreshData();
+        }
+
+        const res = await deleteProjectAction(id);
+        if (!res.success) {
+            addNotification({ title: 'Error', message: 'No se pudo eliminar el proyecto', type: 'error' });
+            loadProjects(); // Revert
         }
     };
 
