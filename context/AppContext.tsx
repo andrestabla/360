@@ -404,7 +404,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 ...res.data,
                 history: [],
                 comments: []
-            } as import("@/lib/data").WorkflowCase; // Cast to bypass strict status type check for legacy compatibility
+            } as unknown as import("@/lib/data").WorkflowCase; // Force cast to bypass Date vs String mismatch
             DB.workflowCases.unshift(newCaseWithDefaults); // Add to local DB mock for immediate UI update
             refreshData(); // Trigger re-render
         } else {
