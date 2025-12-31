@@ -85,11 +85,7 @@ export async function updateProjectAction(id: string, updates: any) {
         await db.transaction(async (tx) => {
             // 1. Update Project Fields
             if (Object.keys(projectData).length > 0) {
-                // Ensure participants is consistent JSON
-                if (projectData.participants && Array.isArray(projectData.participants)) {
-                    // Start of cleaning if needed
-                }
-
+                console.log('Updating project fields:', projectData);
                 await tx.update(projects)
                     .set({ ...projectData, updatedAt: new Date() })
                     .where(eq(projects.id, id));
