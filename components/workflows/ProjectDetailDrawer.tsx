@@ -184,7 +184,7 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                     activityName: activity.name,
                     startDate: activity.startDate,
                     endDate: activity.endDate,
-                    assigneeEmail: user.email,
+                    assigneeEmail: user.email || '',
                     assigneeName: user.name
                 });
             }
