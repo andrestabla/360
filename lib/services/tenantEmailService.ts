@@ -294,3 +294,49 @@ export async function testEmailConfig(): Promise<{ success: boolean; error?: str
     return { success: false, error: error.message };
   }
 }
+
+export async function sendNotificationEmail(
+  to: string,
+  title: string,
+  message: string,
+  tenantName?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const subject = tenantName ? `[${tenantName}] ${title}` : `[Maturity 360] ${title}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0f172a; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+          .content { background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px; }
+          .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #64748b; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h2 style="margin: 0;">${title}</h2>
+          </div>
+          <div class="content">
+            <p>${message}</p>
+          </div>
+          <div class="footer">
+            <p>Este correo fue enviado automáticamente por Maturity 360</p>
+            <p>${tenantName || 'maturity.online'}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmail({ to, subject, html });
+  } catch (error: any) {
+    console.error('Error sending notification email:', error);
+    return { success: false, error: error.message };
+  }
+}

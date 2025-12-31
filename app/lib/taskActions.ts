@@ -15,7 +15,7 @@ function serialize<T>(obj: T): any {
 
 // --- ACTIONS ---
 
-import { sendNotificationEmail } from '@/lib/services/emailService';
+import { sendNotificationEmail } from '@/lib/services/tenantEmailService';
 
 export async function createTaskAction(data: {
     type: string;
