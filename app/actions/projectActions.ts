@@ -35,24 +35,21 @@ export async function createProjectAction(data: any) {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: 'Unauthorized' };
 
+    const userId = session.user.id; // Extract here where it is guaranteed
+
     try {
         const { phases, ...projectData } = data;
 
-        // Ensure ID is unique if passed, or rely on client generation (Date.now() string is okay for varchar PK but better to validate)
-        // Check if ID exists? No, insert will fail on PK constraint.
-
-        // Use transaction to ensure consistency if we were adding phases (which we might in future)
         const result = await db.transaction(async (tx) => {
             await tx.insert(projects).values({
                 ...projectData,
-                creatorId: session.user.id,
-                managerId: projectData.managerId || session.user.id,
+                creatorId: userId,
+                managerId: projectData.managerId || userId,
                 participants: projectData.participants || [],
                 createdAt: new Date(),
                 updatedAt: new Date()
             });
 
-            // If phases were passed in create (unlikely for new empty project, but possible via duplicated/template)
             if (phases && Array.isArray(phases)) {
                 for (const phase of phases) {
                     const { activities, ...phaseFields } = phase;
