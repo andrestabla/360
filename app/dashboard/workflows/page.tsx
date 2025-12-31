@@ -45,7 +45,8 @@ export default function WorkflowsPage() {
     const [showNewProjectModal, setShowNewProjectModal] = useState(false);
     const [showNewFolderModal, setShowNewFolderModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
-    const { refreshData } = useApp(); // Destructure refreshData
+    const { isSuperAdmin, currentUser, DB, refreshData, updateProject, deleteProject, createProject, createWorkflowCase } = useApp();
+    const router = useRouter();
 
     const [isClient, setIsClient] = useState(false);
 
@@ -577,7 +578,7 @@ export default function WorkflowsPage() {
                     </div>
                 )
             }
-        </div >
+        </div>
     </div >
     );
 }
