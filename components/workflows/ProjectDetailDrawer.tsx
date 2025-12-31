@@ -101,8 +101,8 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
             description,
             folderId,
             color,
-            startDate: startDate ? new Date(startDate) : null,
-            endDate: endDate ? new Date(endDate) : null,
+            startDate: (startDate || null) as any,
+            endDate: (endDate || null) as any,
             phases
         });
         setIsSaving(false);
