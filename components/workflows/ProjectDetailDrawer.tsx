@@ -3,10 +3,11 @@ import { Project, ProjectPhase, ProjectActivity, DB, User, Doc, ProjectFolder } 
 import {
     X, FloppyDisk, Plus, Trash, Calendar, User as UserIcon,
     FileText, CaretDown, CaretRight, Check, XCircle,
-    Paperclip, MagnifyingGlass, Folder, Kanban, PencilSimple, Funnel
+    Paperclip, MagnifyingGlass, Folder, Kanban, PencilSimple, Funnel, Users
 } from '@phosphor-icons/react';
 import { sendAssignmentNotification } from '@/app/actions/workflow';
 import { useApp } from '@/context/AppContext';
+import { TeamStructureModal } from './TeamStructureModal';
 
 interface ProjectDetailDrawerProps {
     project: Project;
@@ -50,6 +51,7 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
     // Modals state
     const [showUserPicker, setShowUserPicker] = useState<{ active: boolean; phaseId?: string; activityId?: string }>({ active: false });
     const [showDocPicker, setShowDocPicker] = useState<{ active: boolean; phaseId?: string; activityId?: string }>({ active: false });
+    const [showTeamModal, setShowTeamModal] = useState(false);
 
     // Search states for pickers
     const [userSearch, setUserSearch] = useState('');
@@ -186,7 +188,7 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
             const activity = phase?.activities?.find(a => a.id === showUserPicker.activityId);
 
             if (phase && activity) {
-                // Fire and forget notification
+                // Fire notification with feedback
                 sendAssignmentNotification({
                     projectName: project.title,
                     phaseName: phase.name,
@@ -195,6 +197,16 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                     endDate: activity.endDate,
                     assigneeEmail: user.email || '',
                     assigneeName: user.name
+                }).then(res => {
+                    if (res?.success === false) {
+                        alert(`Error enviando notificación: ${res.error}`);
+                    } else {
+                        // Ideally use a sophisticated toast here, falling back to simple alert or nothing if desired. 
+                        // For this request "UI Feedback", a quick non-blocking toast would be best, 
+                        // but since we don't have a toast context handy, we'll log it and maybe flash a temporary state.
+                        console.log('Notificación enviada correctamente');
+                        alert(`Notificación enviada a ${user.name}`);
+                    }
                 });
             }
         }
@@ -253,13 +265,25 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                             Guardar
                         </button>
                     ) : (
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all"
-                        >
-                            <PencilSimple size={18} weight="fill" />
-                            Editar
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setShowTeamModal(true)}
+                                className="flex items-center gap-2 px-3 py-1.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                            >
+                                <Users size={16} />
+                                Ver Equipo
+                            </button>
+                            <button
+                                onClick={() => setIsEditing(!isEditing)}
+                                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-bold rounded-lg transition-colors ${isEditing
+                                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
+                                    }`}
+                            >
+                                <PencilSimple size={18} weight="fill" />
+                                Editar
+                            </button>
+                        </div>
                     )}
 
                     <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-lg text-slate-500">
@@ -629,6 +653,15 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* TEAM STRUCTURE MODAL */}
+            {showTeamModal && (
+                <TeamStructureModal
+                    project={project}
+                    phases={phases}
+                    onClose={() => setShowTeamModal(false)}
+                />
             )}
 
             {/* DOC PICKER MODAL */}
