@@ -595,15 +595,15 @@ const defaultPlatformSettings: PlatformSettings = {
 };
 
 const sampleUsers: User[] = [
-  { id: 'u1', name: 'Andrés Tabla', email: 'proyectos@algoritmot.com', role: 'Admin Tenant', unit: 'Root', level: 1, initials: 'AT', status: 'ACTIVE' },
-  { id: 'u2', name: 'Andrea Tabla Rico', email: 'andreatablarico@gmail.com', role: 'Admin Tenant', unit: 'Root', level: 1, initials: 'AR', status: 'ACTIVE' },
+  { id: 'u1', name: 'Andrés Tabla', email: 'proyectos@algoritmot.com', role: 'Administrador', unit: 'Gerencia General', level: 1, initials: 'AT', status: 'ACTIVE' },
+  { id: 'u2', name: 'Andrea Tabla Rico', email: 'andreatablarico@gmail.com', role: 'Administrador', unit: 'Gerencia General', level: 1, initials: 'AR', status: 'ACTIVE' },
   { id: 'u3', name: 'Andrés Rico', email: 'andresrico50@gmail.com', role: 'Usuario', unit: 'TI', level: 3, initials: 'AR', status: 'ACTIVE' },
   { id: 'u4', name: 'Maria Lopez', email: 'maria@example.com', role: 'Gerente', unit: 'Calidad', level: 2, initials: 'ML', status: 'ACTIVE' },
   { id: 'u5', name: 'Juan Perez', email: 'juan@example.com', role: 'Analista', unit: 'Finanzas', level: 3, initials: 'JP', status: 'ACTIVE' }
 ];
 
 const sampleUnits: Unit[] = [
-  { id: 'unit1', name: 'Root', type: 'UNIT', depth: 0 },
+  { id: 'unit1', name: 'Gerencia General', type: 'UNIT', depth: 0 },
   { id: 'unit2', name: 'Calidad', type: 'DEPARTMENT', depth: 1 },
   { id: 'unit3', name: 'Finanzas', type: 'DEPARTMENT', depth: 1 },
   { id: 'unit4', name: 'TI', type: 'DEPARTMENT', depth: 1 },
