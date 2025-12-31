@@ -40,7 +40,14 @@ export async function createProjectAction(data: any) {
     try {
         const { phases, ...projectData } = data;
 
+        console.log('Creating project with data:', JSON.stringify(projectData, null, 2));
+        console.log('User ID:', userId);
+
         const result = await db.transaction(async (tx) => {
+            // Validate if user exists (optional, but good for debugging FK errors)
+            // const userExists = await tx.query.users.findFirst({ where: eq(users.id, userId) });
+            // if (!userExists) throw new Error(`User ${userId} not found in DB`);
+
             await tx.insert(projects).values({
                 ...projectData,
                 creatorId: userId,
@@ -63,7 +70,8 @@ export async function createProjectAction(data: any) {
         return { success: true, data: result };
     } catch (e: any) {
         console.error('Create Project Error:', e);
-        return { success: false, error: e.message };
+        // Return explicit error message to client
+        return { success: false, error: `Failed to create: ${e.message}` };
     }
 }
 

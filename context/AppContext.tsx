@@ -380,14 +380,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const createProject = async (project: Partial<import("@/lib/data").Project>) => {
         const { createProjectAction } = await import('@/app/actions/projectActions');
+
+        // Ensure we have a valid user ID. 
+        // If currentUser is not yet loaded or null, we shouldn't allow creation or it will fail on server.
+        // But the UI usually protects this. We'll default to 'unknown' or empty if missing which will fail gracefully on server.
+        const uid = currentUser?.id;
+
         const newProject = {
-            id: Date.now().toString(),
+            id: `p-${Date.now()}`, // Ensure ID format is robust
             title: 'Nuevo Proyecto',
             description: '',
             status: 'PLANNED',
             startDate: new Date(),
-            creatorId: currentUser?.id,
-            managerId: currentUser?.id,
+            creatorId: uid,
+            managerId: uid,
             ...project
         };
 
@@ -395,20 +401,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         DB.projects.push(newProject as any);
         refreshData();
 
-        const res = await createProjectAction(newProject);
+        // Pass only data schema expects, filtering any undefineds to avoid serialization issues
+        const { id, title, description, status, startDate, creatorId, managerId, participants, phases } = newProject;
+        const payload = {
+            id,
+            title,
+            description,
+            status,
+            startDate: startDate instanceof Date ? startDate : new Date(startDate || Date.now()),
+            creatorId,
+            managerId,
+            participants,
+            phases // Phases might be relevant if duplicating
+        };
+
+        const res = await createProjectAction(payload);
         if (res.success) {
-            // Reload to ensure we have the server state (and real timestamps/user data)
-            // Ideally we replace the optimistic one with the real one, but loadProjects does full refresh
             loadProjects();
         } else {
             console.error("Failed to create project", res.error);
-            // Revert optimistic update
             const idx = DB.projects.findIndex(p => p.id === newProject.id);
             if (idx !== -1) {
                 DB.projects.splice(idx, 1);
                 refreshData();
             }
-            addNotification({ title: 'Error', message: 'No se pudo guardar el proyecto', type: 'error' });
+            addNotification({ title: 'Error', message: `No se pudo guardar: ${res.error}`, type: 'error' });
         }
     };
 
