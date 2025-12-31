@@ -53,6 +53,8 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
 
     // Search states for pickers
     const [userSearch, setUserSearch] = useState('');
+    const [unitFilter, setUnitFilter] = useState('');
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [docSearch, setDocSearch] = useState('');
     const [sendNotification, setSendNotification] = useState(true);
 
@@ -191,6 +193,9 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
         }
 
         setShowUserPicker({ active: false });
+        setSelectedUser(null);
+        setUnitFilter('');
+        setUserSearch('');
     };
 
     const handleAddDoc = (doc: Doc) => {
@@ -540,15 +545,28 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                             <button onClick={() => setShowUserPicker({ active: false })}><X size={18} className="text-slate-400" /></button>
                         </div>
                         <div className="p-4">
-                            <div className="relative mb-3">
-                                {!userSearch && <MagnifyingGlass className="absolute left-3 top-2.5 text-slate-400" size={16} />}
-                                <input
-                                    autoFocus
-                                    placeholder="Buscar por nombre..."
-                                    className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-blue-400"
-                                    value={userSearch}
-                                    onChange={e => setUserSearch(e.target.value)}
-                                />
+                            <div className="flex gap-2 mb-3">
+                                <div className="relative flex-1">
+                                    {!userSearch && <MagnifyingGlass className="absolute left-3 top-2.5 text-slate-400" size={16} />}
+                                    <input
+                                        autoFocus
+                                        placeholder="Buscar..."
+                                        className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-blue-400"
+                                        value={userSearch}
+                                        onChange={e => setUserSearch(e.target.value)}
+                                    />
+                                </div>
+                                <select
+                                    className="w-1/3 border rounded-lg text-sm px-2 py-2 focus:outline-none focus:border-blue-400 bg-white"
+                                    value={unitFilter}
+                                    onChange={e => setUnitFilter(e.target.value)}
+                                >
+                                    <option value="">Todas</option>
+                                    {/* Extract unique units from users or use DB.units if robust */}
+                                    {[...new Set(DB.users.map(u => u.unit).filter(Boolean))].map(unit => (
+                                        <option key={unit} value={unit}>{unit}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="flex items-center justify-between mb-3 px-1">
@@ -560,20 +578,36 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                                 </label>
                             </div>
 
-                            <div className="max-h-60 overflow-y-auto space-y-1">
-                                {DB.users.filter(u => !userSearch || u.name.toLowerCase().includes(userSearch.toLowerCase())).map(u => (
-                                    <div key={u.id} onClick={() => handleAddMember(u)} className="flex items-center gap-3 p-2 hover:bg-blue-50 rounded-lg cursor-pointer group">
+                            <div className="max-h-60 overflow-y-auto space-y-1 mb-4">
+                                {DB.users.filter(u => {
+                                    const matchesName = !userSearch || (u.name || '').toLowerCase().includes(userSearch.toLowerCase());
+                                    const matchesUnit = !unitFilter || u.unit === unitFilter;
+                                    return matchesName && matchesUnit;
+                                }).map(u => (
+                                    <div
+                                        key={u.id}
+                                        onClick={() => setSelectedUser(u)}
+                                        className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${selectedUser?.id === u.id ? 'bg-blue-100 ring-1 ring-blue-500' : 'hover:bg-blue-50'}`}
+                                    >
                                         <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                                            {u.name.substring(0, 2).toUpperCase()}
+                                            {u.name?.substring(0, 2).toUpperCase()}
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-slate-800">{u.name}</p>
-                                            <p className="text-xs text-slate-500">{u.role}</p>
+                                            <p className="text-xs text-slate-500">{u.role} • {u.unit || 'General'}</p>
                                         </div>
-                                        <Plus className="ml-auto text-blue-500 opacity-0 group-hover:opacity-100" />
+                                        {selectedUser?.id === u.id && <Check className="ml-auto text-blue-600" weight="bold" />}
                                     </div>
                                 ))}
                             </div>
+
+                            <button
+                                onClick={() => selectedUser && handleAddMember(selectedUser)}
+                                disabled={!selectedUser}
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Asignar Miembro
+                            </button>
                         </div>
                     </div>
                 </div>
