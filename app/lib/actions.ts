@@ -446,15 +446,25 @@ export async function getPendingTasks(userId: string) {
     });
 
     // 3. Normalize to common interface
-    const unifiedCases = cases.map(c => ({
-        id: c.id,
-        title: c.title,
-        priority: c.priority || 'MEDIUM',
-        dueDate: c.dueDate,
-        source: 'WORKFLOW',
-        link: `/dashboard/workflows/${c.workflowId}`,
-        createdAt: c.createdAt
-    }));
+    const unifiedCases = cases.map(c => {
+        let link = `/dashboard/workflows/${c.workflowId}`;
+        const data = c.data as any; // Cast for access
+
+        // Handle Project Assignments from Inbox Integration
+        if (data?.type === 'PROJECT_ASSIGNMENT' && data?.projectId) {
+            link = `/dashboard/workflows?projectId=${data.projectId}`;
+        }
+
+        return {
+            id: c.id,
+            title: c.title,
+            priority: c.priority || 'MEDIUM',
+            dueDate: c.dueDate,
+            source: 'WORKFLOW',
+            link,
+            createdAt: c.createdAt
+        };
+    });
 
     const unifiedDocTasks = docTasks.map(t => ({
         id: t.id,

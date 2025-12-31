@@ -191,6 +191,7 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                 // Fire notification with feedback
                 sendAssignmentNotification({
                     projectName: project.title,
+                    projectId: project.id, // Pass ID for inbox linking
                     phaseName: phase.name,
                     activityName: activity.name,
                     startDate: activity.startDate,

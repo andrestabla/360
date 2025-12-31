@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation'; // Added
 import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
 import { DB, WorkflowCase, WorkflowDefinition, Project, ProjectPhase, ProjectDocument, ProjectActivity, ProjectFolder, User as ProjectUser } from '@/lib/data';
@@ -56,6 +57,23 @@ export default function WorkflowsPage() {
 
 
     // Filter Logic
+    const searchParams = useSearchParams(); // Needs import
+
+    useEffect(() => {
+        if (isClient && searchParams) {
+            const pid = searchParams.get('projectId');
+            if (pid) {
+                const targetProject = DB.projects.find(p => p.id === pid);
+                if (targetProject) {
+                    setMainView('PROJECTS');
+                    setSelectedProject(targetProject);
+                    // Clear param to avoid re-opening on refresh? Optional, but better UX usually to keep it or replace it.
+                    // For now, jus open it.
+                }
+            }
+        }
+    }, [isClient, searchParams]);
+
     const myRequests = useMemo(() => {
         if (!isClient) return [];
         return DB.workflowCases.filter(c =>

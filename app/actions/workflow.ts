@@ -1,8 +1,13 @@
 'use server';
 
 import { sendNotificationEmail } from '@/lib/services/tenantEmailService';
+import { db } from '@/server/db';
+import { workflowCases, users } from '@/shared/schema';
+import { eq } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
 
 interface ActivityAssignmentDetails {
+    projectId: string; // Added field
     projectName: string;
     phaseName: string;
     activityName: string;
@@ -39,6 +44,42 @@ export async function sendAssignmentNotification(details: ActivityAssignmentDeta
             title,
             message
         );
+
+        // --- INBOX INTEGRATION ---
+        try {
+            // 1. Ensure user exists (sync/check)
+            // In a real scenario, the user should already exist. We'll proceed to create the case for the email.
+            // We use the email to find the user ID effectively or assume the frontend passed a valid one if we had it.
+            // But details only has email/name. Ideally we pass userId.
+            const [user] = await db.select().from(users).where(eq(users.email, details.assigneeEmail)).limit(1);
+
+            if (user) {
+                await db.insert(workflowCases).values({
+                    id: `case-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                    workflowId: 'manual-assignment', // Virtual ID
+                    title: `Asignación: ${details.activityName} (${details.projectName})`,
+                    status: 'PENDING',
+                    creatorId: 'system', // or current user if available
+                    assigneeId: user.id,
+                    priority: 'MEDIUM',
+                    dueDate: details.endDate ? new Date(details.endDate) : undefined,
+                    data: {
+                        type: 'PROJECT_ASSIGNMENT',
+                        projectId: details.projectId,
+                        projectName: details.projectName,
+                        phaseName: details.phaseName,
+                        activityName: details.activityName
+                    },
+                    createdAt: new Date()
+                });
+            } else {
+                console.warn(`User with email ${details.assigneeEmail} not found in DB for inbox task creation.`);
+            }
+
+        } catch (dbError) {
+            console.error('Error creating inbox task:', dbError);
+            // Don't fail the whole action just because inbox task failed, email was sent.
+        }
 
         return result;
     } catch (error: any) {
