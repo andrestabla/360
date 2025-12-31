@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation'; // Added
+import { useSearchParams, useRouter } from 'next/navigation'; // Added
 import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
 import { DB, WorkflowCase, WorkflowDefinition, Project, ProjectPhase, ProjectDocument, ProjectActivity, ProjectFolder, User as ProjectUser } from '@/lib/data';
@@ -45,7 +45,7 @@ export default function WorkflowsPage() {
     const [showNewProjectModal, setShowNewProjectModal] = useState(false);
     const [showNewFolderModal, setShowNewFolderModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
-    const { isSuperAdmin, currentUser, DB, refreshData, updateProject, deleteProject, createProject, createWorkflowCase } = useApp();
+    const { isSuperAdmin, currentUser, refreshData, updateProject, createProject, createWorkflowCase } = useApp();
     const router = useRouter();
 
     const [isClient, setIsClient] = useState(false);
@@ -579,6 +579,6 @@ export default function WorkflowsPage() {
                 )
             }
         </div>
-    </div>
+    </div >
     );
 }
