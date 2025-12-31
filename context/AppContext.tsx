@@ -214,7 +214,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                         const newSettings = {
                             ...prev,
                             // Map select fields or deep merge
-                            plan: serverSettings.plan || prev.plan,
+                            plan: (serverSettings.plan as any) || prev.plan,
                             branding: {
                                 ...prev.branding,
                                 ...(serverSettings.branding as any)
