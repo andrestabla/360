@@ -3,7 +3,7 @@ import { Project, ProjectPhase, ProjectActivity, DB, User, Doc, ProjectFolder } 
 import {
     X, FloppyDisk, Plus, Trash, Calendar, User as UserIcon,
     FileText, CaretDown, CaretRight, Check, XCircle,
-    Paperclip, MagnifyingGlass, Folder, Kanban
+    Paperclip, MagnifyingGlass, Folder, Kanban, PencilSimple
 } from '@phosphor-icons/react';
 import { useApp } from '@/context/AppContext';
 
@@ -13,8 +13,29 @@ interface ProjectDetailDrawerProps {
     onUpdate: (id: string, updates: Partial<Project>) => void;
 }
 
+const STATUS_WEIGHTS: Record<string, number> = {
+    'PENDING': 0,
+    'IN_PROGRESS': 50,
+    'COMPLETED': 80,
+    'IN_REVIEW': 90,
+    'DELIVERED': 95,
+    'VALIDATED': 100
+};
+
+const STATUS_LABELS: Record<string, string> = {
+    'PENDING': 'Sin iniciar',
+    'IN_PROGRESS': 'En proceso',
+    'COMPLETED': 'Finalizado',
+    'IN_REVIEW': 'En revisión (QA)',
+    'DELIVERED': 'Entregado',
+    'VALIDATED': 'Validado'
+};
+
 export default function ProjectDetailDrawer({ project, onClose, onUpdate }: ProjectDetailDrawerProps) {
     const { currentUser } = useApp();
+
+    // Toggle Edit Mode
+    const [isEditing, setIsEditing] = useState(false);
 
     // Local state for editing (buffered)
     const [title, setTitle] = useState(project.title);
@@ -36,20 +57,23 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
     // Save Display
     const [isSaving, setIsSaving] = useState(false);
 
-    // Calculate Progress
+    // Calculate Progress (Weighted)
     const progress = useMemo(() => {
         if (!phases.length) return 0;
-        let total = 0;
-        let completed = 0;
+        let totalWeight = 0;
+        let totalActivities = 0;
+
         phases.forEach(p => {
             if (p.activities) {
                 p.activities.forEach(a => {
-                    total++;
-                    if (a.status === 'COMPLETED') completed++;
+                    totalActivities++;
+                    const weight = STATUS_WEIGHTS[a.status] || 0;
+                    totalWeight += weight;
                 });
             }
         });
-        return total === 0 ? 0 : Math.round((completed / total) * 100);
+
+        return totalActivities === 0 ? 0 : Math.round(totalWeight / totalActivities);
     }, [phases]);
 
     const handleSave = async () => {
@@ -67,6 +91,7 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
             phases
         });
         setIsSaving(false);
+        setIsEditing(false); // Exit edit mode on save
     };
 
     // --- PHASE MANAGEMENT ---
@@ -125,9 +150,6 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
     const handleAddMember = (user: User) => {
         if (!showUserPicker.phaseId || !showUserPicker.activityId) return;
 
-        // Check if already added
-        // Simple check, could be cleaner
-
         setPhases(prev => prev.map(p => {
             if (p.id !== showUserPicker.phaseId) return p;
             return {
@@ -180,20 +202,36 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
         <div className="w-[800px] bg-white border-l border-slate-200 shadow-2xl flex flex-col h-full animate-slideLeft z-30 fixed right-0 top-0 bottom-0">
             {/* Header */}
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="text-xl font-bold text-slate-900 bg-transparent border-none focus:ring-0 w-full"
-                />
-                <div className="flex gap-2">
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all disabled:opacity-50"
-                    >
-                        {isSaving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <FloppyDisk size={18} weight="fill" />}
-                        Guardar
-                    </button>
+                {isEditing ? (
+                    <input
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        className="text-xl font-bold text-slate-900 bg-transparent border-none focus:ring-0 w-full"
+                    />
+                ) : (
+                    <h2 className="text-xl font-bold text-slate-900 truncate pr-4">{title}</h2>
+                )}
+
+                <div className="flex gap-2 shrink-0">
+                    {isEditing ? (
+                        <button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all disabled:opacity-50"
+                        >
+                            {isSaving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <FloppyDisk size={18} weight="fill" />}
+                            Guardar
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all"
+                        >
+                            <PencilSimple size={18} weight="fill" />
+                            Editar
+                        </button>
+                    )}
+
                     <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-lg text-slate-500">
                         <XCircle size={24} weight="fill" />
                     </button>
@@ -205,65 +243,88 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                 {/* General Info */}
                 <div className="grid gap-6 mb-8">
                     <div className="space-y-1">
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Descripción del proyecto..."
-                            rows={2}
-                            className="w-full text-sm text-slate-600 border border-slate-200 rounded-lg p-3 focus:outline-none focus:border-blue-400 resize-none"
-                        />
+                        {isEditing ? (
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Descripción del proyecto..."
+                                rows={2}
+                                className="w-full text-sm text-slate-600 border border-slate-200 rounded-lg p-3 focus:outline-none focus:border-blue-400 resize-none"
+                            />
+                        ) : (
+                            <p className="text-sm text-slate-600">{description || 'Sin descripción'}</p>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Carpeta</label>
-                            <div className="relative">
-                                <Folder size={16} className="absolute left-3 top-3 text-slate-400" />
-                                <select
-                                    value={folderId}
-                                    onChange={(e) => setFolderId(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 appearance-none focus:outline-none focus:border-blue-400"
-                                >
-                                    <option value="">-- Sin Carpeta (Raíz) --</option>
-                                    {DB.projectFolders.map(f => (
-                                        <option key={f.id} value={f.id}>{f.name} {f.parentId ? '(Sub-carpeta)' : ''}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            {isEditing ? (
+                                <div className="relative">
+                                    <Folder size={16} className="absolute left-3 top-3 text-slate-400" />
+                                    <select
+                                        value={folderId}
+                                        onChange={(e) => setFolderId(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 appearance-none focus:outline-none focus:border-blue-400"
+                                    >
+                                        <option value="">-- Sin Carpeta (Raíz) --</option>
+                                        {DB.projectFolders.map(f => (
+                                            <option key={f.id} value={f.id}>{f.name} {f.parentId ? '(Sub-carpeta)' : ''}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2 text-sm text-slate-700 font-medium">
+                                    <Folder size={18} className="text-slate-400" />
+                                    {DB.projectFolders.find(f => f.id === folderId)?.name || 'Raíz'}
+                                </div>
+                            )}
                         </div>
 
                         <div>
                             <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Color de Tarjeta</label>
-                            <div className="flex gap-2 py-1">
-                                {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#64748b'].map(c => (
-                                    <button
-                                        key={c}
-                                        onClick={() => setColor(c)}
-                                        className={`w-6 h-6 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'hover:scale-105'}`}
-                                        style={{ backgroundColor: c }}
-                                    />
-                                ))}
-                            </div>
+                            {isEditing ? (
+                                <div className="flex gap-2 py-1">
+                                    {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#64748b'].map(c => (
+                                        <button
+                                            key={c}
+                                            onClick={() => setColor(c)}
+                                            className={`w-6 h-6 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'hover:scale-105'}`}
+                                            style={{ backgroundColor: c }}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: color }}></div>
+                            )}
                         </div>
 
                         <div>
                             <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Inicio</label>
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-400"
-                            />
+                            {isEditing ? (
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-400"
+                                />
+                            ) : (
+                                <p className="text-sm text-slate-700 font-medium">{startDate || '-'}</p>
+                            )}
                         </div>
 
                         <div>
                             <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Fin</label>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-400"
-                            />
+                            {isEditing ? (
+                                <input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-400"
+                                />
+                            ) : (
+                                <p className="text-sm text-slate-700 font-medium">{endDate || '-'}</p>
+                            )}
                         </div>
                     </div>
 
@@ -285,12 +346,14 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                     <h3 className="font-bold text-sm text-slate-500 uppercase flex items-center gap-2">
                         <Kanban size={18} /> Estructura del Proyecto
                     </h3>
-                    <button
-                        onClick={addPhase}
-                        className="text-purple-600 hover:text-purple-700 text-sm font-bold flex items-center gap-1 hover:bg-purple-50 px-2 py-1 rounded-lg transition-colors"
-                    >
-                        <Plus weight="bold" /> Agregar Fase
-                    </button>
+                    {isEditing && (
+                        <button
+                            onClick={addPhase}
+                            className="text-purple-600 hover:text-purple-700 text-sm font-bold flex items-center gap-1 hover:bg-purple-50 px-2 py-1 rounded-lg transition-colors"
+                        >
+                            <Plus weight="bold" /> Agregar Fase
+                        </button>
+                    )}
                 </div>
 
                 <div className="space-y-6 pb-20">
@@ -300,18 +363,23 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                                 <div className="w-6 h-6 rounded bg-white text-slate-500 flex items-center justify-center font-bold text-xs shadow-sm shadow-slate-200">
                                     {pIndex + 1}
                                 </div>
-                                <input
-                                    className="bg-transparent font-bold text-slate-700 flex-1 border-none focus:ring-0 p-0 text-sm focus:bg-white focus:px-2 focus:py-1 rounded transition-all"
-                                    value={phase.name}
-                                    onChange={(e) => updatePhaseName(phase.id, e.target.value)}
-                                />
+                                {isEditing ? (
+                                    <input
+                                        className="bg-transparent font-bold text-slate-700 flex-1 border-none focus:ring-0 p-0 text-sm focus:bg-white focus:px-2 focus:py-1 rounded transition-all"
+                                        value={phase.name}
+                                        onChange={(e) => updatePhaseName(phase.id, e.target.value)}
+                                    />
+                                ) : (
+                                    <h4 className="font-bold text-slate-700 flex-1 text-sm">{phase.name}</h4>
+                                )}
+
                                 <div className="text-xs text-slate-400 mr-2">{phase.activities?.length || 0} Actividades</div>
-                                <button onClick={() => deletePhase(phase.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover/phase:opacity-100 transition-opacity">
-                                    <Trash size={16} />
-                                </button>
-                                <button className="text-slate-300 hover:text-slate-500">
-                                    <CaretDown size={16} />
-                                </button>
+
+                                {isEditing && (
+                                    <button onClick={() => deletePhase(phase.id)} className="text-slate-300 hover:text-red-500">
+                                        <Trash size={16} />
+                                    </button>
+                                )}
                             </div>
 
                             {/* Activities Container */}
@@ -319,49 +387,69 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                                 {phase.activities?.map((act) => (
                                     <div key={act.id} className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
                                         <div className="flex justify-between items-start mb-3">
-                                            <input
-                                                className="font-bold text-slate-800 text-sm border-none focus:ring-0 p-0 w-full"
-                                                value={act.name}
-                                                onChange={(e) => updateActivity(phase.id, act.id, { name: e.target.value })}
-                                            />
+                                            {isEditing ? (
+                                                <input
+                                                    className="font-bold text-slate-800 text-sm border-none focus:ring-0 p-0 w-full"
+                                                    value={act.name}
+                                                    onChange={(e) => updateActivity(phase.id, act.id, { name: e.target.value })}
+                                                />
+                                            ) : (
+                                                <h5 className="font-bold text-slate-800 text-sm w-full">{act.name}</h5>
+                                            )}
+
                                             <div className="flex items-center gap-2">
                                                 <select
                                                     value={act.status}
                                                     onChange={(e) => updateActivity(phase.id, act.id, { status: e.target.value })}
-                                                    className={`text-xs font-bold px-2 py-1 rounded-full border-none focus:ring-0 cursor-pointer ${act.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
-                                                            act.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' :
-                                                                'bg-slate-100 text-slate-500'
-                                                        }`}
+                                                    // Status is always editable? Probably yes, to update progress without full edit mode
+                                                    // User Requirement: "Verificar estados de la actividad" implies checking them.
+                                                    // But typically status is updated frequently. I will keep it enabled always for now, 
+                                                    // or enable it only in Edit mode. 
+                                                    // Request says: "Al dar clic sobre la tarjeta del proyecto, mostrar side con opción de "Editar". Al dar clic sobre "Editar" cambia opción a "Guardar"".
+                                                    // This usually implies view-only default. 
+                                                    // However, updating Status is a "Task execution" action, not necessarily "Configuration/Editing". 
+                                                    // I will allow status update ALWAYS because it's the main interaction.
+                                                    className={`text-[10px] font-bold px-2 py-1.5 rounded-lg border-slate-200 bg-slate-50 text-slate-600 cursor-pointer min-w-[120px]`}
                                                 >
-                                                    <option value="PENDING">Sin iniciar</option>
-                                                    <option value="IN_PROGRESS">En proceso</option>
-                                                    <option value="IN_REVIEW">En revisión (QA)</option>
-                                                    <option value="COMPLETED">Finalizado</option>
+                                                    {Object.entries(STATUS_LABELS).map(([key, label]) => (
+                                                        <option key={key} value={key}>{label}</option>
+                                                    ))}
                                                 </select>
-                                                <button onClick={() => deleteActivity(phase.id, act.id)} className="text-slate-300 hover:text-red-500">
-                                                    <Trash size={14} />
-                                                </button>
+
+                                                {isEditing && (
+                                                    <button onClick={() => deleteActivity(phase.id, act.id)} className="text-slate-300 hover:text-red-500">
+                                                        <Trash size={14} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4 mb-4">
-                                            <div className="flex items-center gap-2 border rounded p-1.5 px-3">
+                                            <div className="flex items-center gap-2 border rounded p-1.5 px-3 bg-slate-50">
                                                 <Calendar size={14} className="text-slate-400" />
-                                                <input
-                                                    type="date"
-                                                    value={act.startDate?.split('T')[0] || ''}
-                                                    onChange={(e) => updateActivity(phase.id, act.id, { startDate: e.target.value })}
-                                                    className="text-xs text-slate-600 border-none p-0 focus:ring-0 w-full"
-                                                />
+                                                {isEditing ? (
+                                                    <input
+                                                        type="date"
+                                                        value={act.startDate?.split('T')[0] || ''}
+                                                        onChange={(e) => updateActivity(phase.id, act.id, { startDate: e.target.value })}
+                                                        className="text-xs text-slate-600 border-none p-0 focus:ring-0 w-full bg-transparent"
+                                                    />
+                                                ) : (
+                                                    <span className="text-xs text-slate-600">{act.startDate?.split('T')[0] || '-'}</span>
+                                                )}
                                             </div>
-                                            <div className="flex items-center gap-2 border rounded p-1.5 px-3">
+                                            <div className="flex items-center gap-2 border rounded p-1.5 px-3 bg-slate-50">
                                                 <Calendar size={14} className="text-slate-400" />
-                                                <input
-                                                    type="date"
-                                                    value={act.endDate?.split('T')[0] || ''}
-                                                    onChange={(e) => updateActivity(phase.id, act.id, { endDate: e.target.value })}
-                                                    className="text-xs text-slate-600 border-none p-0 focus:ring-0 w-full"
-                                                />
+                                                {isEditing ? (
+                                                    <input
+                                                        type="date"
+                                                        value={act.endDate?.split('T')[0] || ''}
+                                                        onChange={(e) => updateActivity(phase.id, act.id, { endDate: e.target.value })}
+                                                        className="text-xs text-slate-600 border-none p-0 focus:ring-0 w-full bg-transparent"
+                                                    />
+                                                ) : (
+                                                    <span className="text-xs text-slate-600">{act.endDate?.split('T')[0] || '-'}</span>
+                                                )}
                                             </div>
                                         </div>
 
@@ -374,12 +462,12 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                                                         // const user = DB.users.find(u => u.id === uid);
                                                         return (
                                                             <div key={i} className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 border border-white flex items-center justify-center text-[10px] font-bold" title={uid}>
-                                                                {/* Initials would go here */}
                                                                 U
                                                             </div>
                                                         )
                                                     })}
                                                 </div>
+                                                {/* Allow assigning/attaching always or just in edit? Usually always for easier work. */}
                                                 <button
                                                     onClick={() => setShowUserPicker({ active: true, phaseId: phase.id, activityId: act.id })}
                                                     className="text-[10px] font-bold text-blue-500 hover:bg-blue-50 px-2 py-1 rounded flex items-center gap-1"
@@ -405,12 +493,14 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                                     </div>
                                 ))}
 
-                                <button
-                                    onClick={() => addActivity(phase.id)}
-                                    className="w-full border-2 border-dashed border-slate-200 rounded-lg p-2 text-xs font-bold text-slate-400 hover:border-purple-200 hover:text-purple-500 hover:bg-purple-50 transition-all"
-                                >
-                                    + Nueva Actividad
-                                </button>
+                                {isEditing && (
+                                    <button
+                                        onClick={() => addActivity(phase.id)}
+                                        className="w-full border-2 border-dashed border-slate-200 rounded-lg p-2 text-xs font-bold text-slate-400 hover:border-purple-200 hover:text-purple-500 hover:bg-purple-50 transition-all"
+                                    >
+                                        + Nueva Actividad
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}
