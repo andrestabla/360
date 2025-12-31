@@ -72,6 +72,7 @@ interface AppContextType {
 
     // Workflows
     adminCreateWorkflow: (workflow: Partial<import("@/lib/data").WorkflowDefinition>) => void;
+    createWorkflowCase: (data: any) => Promise<void>;
 
 
     // Projects (for Workflows page)
@@ -181,11 +182,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     }, [refreshData]);
 
+    const loadWorkflowCases = useCallback(async () => {
+        const { getWorkflowCasesAction } = await import('@/app/actions/workflow');
+        const res = await getWorkflowCasesAction();
+        if (res.success && res.data) {
+            DB.workflowCases = res.data as any;
+            refreshData();
+        }
+    }, [refreshData]);
+
     useEffect(() => {
         refreshUnreadCount();
         loadUnits();
         loadProjects(); // Load projects on mount
-    }, [refreshUnreadCount, loadUnits, loadProjects]);
+        loadWorkflowCases();
+    }, [refreshUnreadCount, loadUnits, loadProjects, loadWorkflowCases]);
 
     // Initialize
     useEffect(() => {

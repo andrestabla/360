@@ -3,8 +3,10 @@
 import { sendNotificationEmail } from '@/lib/services/tenantEmailService';
 import { db } from '@/server/db';
 import { workflowCases, users } from '@/shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
+import { auth } from '@/lib/auth'; // Check path
+import { revalidatePath } from 'next/cache';
 
 interface ActivityAssignmentDetails {
     projectId: string; // Added field
@@ -84,6 +86,54 @@ export async function sendAssignmentNotification(details: ActivityAssignmentDeta
         return result;
     } catch (error: any) {
         console.error('Error in sendAssignmentNotification:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// --- INBOX INTEGRATION ---
+export async function getWorkflowCasesAction() {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    try {
+        const cases = await db.select().from(workflowCases)
+            .where(or(
+                eq(workflowCases.creatorId, session.user.id),
+                eq(workflowCases.assigneeId, session.user.id)
+            ));
+
+        return { success: true, data: cases };
+    } catch (error: any) {
+        console.error("Error fetching workflow cases:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function createWorkflowCaseAction(data: any) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    try {
+        const newCase = {
+            id: `case-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+            workflowId: data.workflowId || 'custom-request',
+            title: data.title,
+            description: data.description,
+            status: 'PENDING',
+            creatorId: session.user.id,
+            assigneeId: data.assigneeId || session.user.id, // Auto-assign or specific
+            priority: data.priority || 'MEDIUM',
+            dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+            data: data.data || {},
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        await db.insert(workflowCases).values(newCase);
+        revalidatePath('/dashboard/workflows');
+        return { success: true, data: newCase };
+    } catch (error: any) {
+        console.error("Error creating workflow case:", error);
         return { success: false, error: error.message };
     }
 }
