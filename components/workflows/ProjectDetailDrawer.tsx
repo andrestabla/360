@@ -467,6 +467,9 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                                                         )
                                                     })}
                                                 </div>
+                                                {act.participants?.length > 0 && (
+                                                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full">{act.participants.length}</span>
+                                                )}
                                                 {/* Allow assigning/attaching always or just in edit? Usually always for easier work. */}
                                                 <button
                                                     onClick={() => setShowUserPicker({ active: true, phaseId: phase.id, activityId: act.id })}
@@ -517,7 +520,7 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                         </div>
                         <div className="p-4">
                             <div className="relative mb-3">
-                                <MagnifyingGlass className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                                {!userSearch && <MagnifyingGlass className="absolute left-3 top-2.5 text-slate-400" size={16} />}
                                 <input
                                     autoFocus
                                     placeholder="Buscar por nombre..."
@@ -555,7 +558,7 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                         </div>
                         <div className="p-4">
                             <div className="relative mb-3">
-                                <MagnifyingGlass className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                                {!docSearch && <MagnifyingGlass className="absolute left-3 top-2.5 text-slate-400" size={16} />}
                                 <input
                                     autoFocus
                                     placeholder="Buscar documento..."
