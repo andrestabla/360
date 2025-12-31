@@ -5,6 +5,7 @@ import {
     FileText, CaretDown, CaretRight, Check, XCircle,
     Paperclip, MagnifyingGlass, Folder, Kanban, PencilSimple
 } from '@phosphor-icons/react';
+import { sendAssignmentNotification } from '@/app/actions/workflow';
 import { useApp } from '@/context/AppContext';
 
 interface ProjectDetailDrawerProps {
@@ -53,6 +54,7 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
     // Search states for pickers
     const [userSearch, setUserSearch] = useState('');
     const [docSearch, setDocSearch] = useState('');
+    const [sendNotification, setSendNotification] = useState(true);
 
     // Save Display
     const [isSaving, setIsSaving] = useState(false);
@@ -169,6 +171,25 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                 })
             };
         }));
+
+        if (sendNotification) {
+            const phase = phases.find(p => p.id === showUserPicker.phaseId);
+            const activity = phase?.activities?.find(a => a.id === showUserPicker.activityId);
+
+            if (phase && activity) {
+                // Fire and forget notification
+                sendAssignmentNotification({
+                    projectName: project.title,
+                    phaseName: phase.name,
+                    activityName: activity.name,
+                    startDate: activity.startDate,
+                    endDate: activity.endDate,
+                    assigneeEmail: user.email,
+                    assigneeName: user.name
+                });
+            }
+        }
+
         setShowUserPicker({ active: false });
     };
 
@@ -529,6 +550,16 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                                     onChange={e => setUserSearch(e.target.value)}
                                 />
                             </div>
+
+                            <div className="flex items-center justify-between mb-3 px-1">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <div className={`w-9 h-5 rounded-full p-0.5 transition-colors ${sendNotification ? 'bg-blue-500' : 'bg-slate-200'}`} onClick={() => setSendNotification(!sendNotification)}>
+                                        <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${sendNotification ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                    <span className="text-xs font-bold text-slate-600">Enviar notificación</span>
+                                </label>
+                            </div>
+
                             <div className="max-h-60 overflow-y-auto space-y-1">
                                 {DB.users.filter(u => !userSearch || u.name.toLowerCase().includes(userSearch.toLowerCase())).map(u => (
                                     <div key={u.id} onClick={() => handleAddMember(u)} className="flex items-center gap-3 p-2 hover:bg-blue-50 rounded-lg cursor-pointer group">
