@@ -397,9 +397,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         const res = await createProjectAction(newProject);
         if (res.success) {
-            loadProjects(); // Reload to get real ID and data
+            // Reload to ensure we have the server state (and real timestamps/user data)
+            // Ideally we replace the optimistic one with the real one, but loadProjects does full refresh
+            loadProjects();
         } else {
             console.error("Failed to create project", res.error);
+            // Revert optimistic update
+            const idx = DB.projects.findIndex(p => p.id === newProject.id);
+            if (idx !== -1) {
+                DB.projects.splice(idx, 1);
+                refreshData();
+            }
             addNotification({ title: 'Error', message: 'No se pudo guardar el proyecto', type: 'error' });
         }
     };

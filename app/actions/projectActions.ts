@@ -36,17 +36,34 @@ export async function createProjectAction(data: any) {
     if (!session?.user?.id) return { success: false, error: 'Unauthorized' };
 
     try {
-        await db.insert(projects).values({
-            ...data,
-            creatorId: session.user.id,
-            managerId: data.managerId || session.user.id,
-            participants: data.participants || [],
-            createdAt: new Date(),
-            updatedAt: new Date()
+        const { phases, ...projectData } = data;
+
+        // Ensure ID is unique if passed, or rely on client generation (Date.now() string is okay for varchar PK but better to validate)
+        // Check if ID exists? No, insert will fail on PK constraint.
+
+        // Use transaction to ensure consistency if we were adding phases (which we might in future)
+        const result = await db.transaction(async (tx) => {
+            await tx.insert(projects).values({
+                ...projectData,
+                creatorId: session.user.id,
+                managerId: projectData.managerId || session.user.id,
+                participants: projectData.participants || [],
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+
+            // If phases were passed in create (unlikely for new empty project, but possible via duplicated/template)
+            if (phases && Array.isArray(phases)) {
+                for (const phase of phases) {
+                    const { activities, ...phaseFields } = phase;
+                    await tx.insert(projectPhases).values({ ...phaseFields, projectId: projectData.id });
+                }
+            }
+            return projectData;
         });
 
         revalidatePath('/dashboard/workflows');
-        return { success: true };
+        return { success: true, data: result };
     } catch (e: any) {
         console.error('Create Project Error:', e);
         return { success: false, error: e.message };
