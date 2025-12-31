@@ -24,6 +24,7 @@ export async function createTaskAction(data: {
     priority?: string;
     dueDate?: Date;
     instructions?: string;
+    sendNotification?: boolean;
 }) {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
@@ -40,28 +41,29 @@ export async function createTaskAction(data: {
         instructions: data.instructions,
     }).returning();
 
-    // Send Email Notification to Assignee
-    try {
-        // 1. Get Assignee Email
-        const assignee = await db.query.users.findFirst({
-            where: eq(users.id, data.assigneeId),
-            columns: { email: true, name: true }
-        });
+    // Send Email Notification to Assignee (only if requested)
+    if (data.sendNotification) {
+        try {
+            // 1. Get Assignee Email
+            const assignee = await db.query.users.findFirst({
+                where: eq(users.id, data.assigneeId),
+                columns: { email: true, name: true }
+            });
 
-        // 2. Get Document Title
-        const document = await db.query.documents.findFirst({
-            where: eq(documents.id, data.documentId),
-            columns: { title: true }
-        });
+            // 2. Get Document Title
+            const document = await db.query.documents.findFirst({
+                where: eq(documents.id, data.documentId),
+                columns: { title: true }
+            });
 
-        if (assignee?.email && document) {
-            const urgency = data.priority === 'HIGH' ? '🔴 Alta' : data.priority === 'LOW' ? '🟢 Baja' : '🟡 Media';
-            const dueDateStr = data.dueDate ? new Date(data.dueDate).toLocaleDateString('es-ES') : 'Sin fecha';
+            if (assignee?.email && document) {
+                const urgency = data.priority === 'HIGH' ? '🔴 Alta' : data.priority === 'LOW' ? '🟢 Baja' : '🟡 Media';
+                const dueDateStr = data.dueDate ? new Date(data.dueDate).toLocaleDateString('es-ES') : 'Sin fecha';
 
-            await sendNotificationEmail(
-                assignee.email,
-                `Nueva Tarea Asignada: ${data.type} - ${document.title}`,
-                `
+                await sendNotificationEmail(
+                    assignee.email,
+                    `Nueva Tarea Asignada: ${data.type} - ${document.title}`,
+                    `
                 Hola ${assignee.name},<br><br>
                 Se te ha asignado una nueva tarea en el documento <strong>${document.title}</strong>.<br><br>
                 <strong>Tipo:</strong> ${data.type}<br>
@@ -70,11 +72,13 @@ export async function createTaskAction(data: {
                 <strong>Instrucciones:</strong> ${data.instructions || 'Sin instrucciones adicionales'}<br><br>
                 Por favor ingresa a la plataforma para gestionar esta tarea.
                 `
-            );
+                );
+            }
+        } catch (emailError) {
+            console.error("Error sending task notification email:", emailError);
+            // We don't fail the action if email fails, just log it
         }
-    } catch (emailError) {
-        console.error("Error sending task notification email:", emailError);
-        // We don't fail the action if email fails, just log it
+
     }
 
     revalidatePath('/dashboard/repository');

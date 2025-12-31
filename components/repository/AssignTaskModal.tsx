@@ -86,6 +86,8 @@ export function AssignTaskModal({ documentId, documentTitle, isOpen, onClose }: 
         setShowDropdown(true);
     };
 
+    const [sendNotification, setSendNotification] = useState(true);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -102,7 +104,8 @@ export function AssignTaskModal({ documentId, documentTitle, isOpen, onClose }: 
                 assigneeId: selectedUser.id,
                 priority,
                 dueDate: dueDate ? new Date(dueDate) : undefined,
-                instructions
+                instructions,
+                sendNotification
             });
             alert('Tarea asignada correctamente');
             onClose();
@@ -236,6 +239,19 @@ export function AssignTaskModal({ documentId, documentTitle, isOpen, onClose }: 
                             value={instructions}
                             onChange={e => setInstructions(e.target.value)}
                         />
+                    </div>
+
+                    <div className="flex items-center gap-2 px-1">
+                        <input
+                            type="checkbox"
+                            checked={sendNotification}
+                            onChange={(e) => setSendNotification(e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                            id="notify"
+                        />
+                        <label htmlFor="notify" className="text-sm font-medium text-slate-700 cursor-pointer select-none">
+                            Enviar notificación por correo
+                        </label>
                     </div>
 
                     <div className="pt-2 flex justify-end gap-3">
