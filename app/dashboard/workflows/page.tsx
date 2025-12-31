@@ -525,6 +525,59 @@ export default function WorkflowsPage() {
                 </div>
             )}
 
-        </div>
+            {/* NEW REQUEST MODAL (Missing Implementation) */}
+            {
+                showNewModal && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center animate-in fade-in">
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const fd = new FormData(e.currentTarget);
+                            createWorkflowCase({
+                                title: fd.get('title') as string,
+                                description: fd.get('description') as string,
+                                priority: fd.get('priority') as any || 'MEDIUM',
+                                dueDate: fd.get('dueDate') as string || undefined,
+                            });
+                            setShowNewModal(false);
+                        }} className="bg-white rounded-xl w-full max-w-lg shadow-2xl">
+                            <div className="p-5 border-b flex justify-between items-center">
+                                <h3 className="font-bold text-lg">Nueva Solicitud</h3>
+                                <button type="button" onClick={() => setShowNewModal(false)}><XCircle size={24} className="text-slate-300 hover:text-slate-500" /></button>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Título</label>
+                                    <input name="title" className="w-full border p-2.5 rounded-lg text-sm" required autoFocus placeholder="Ej. Aprobación de Presupuesto" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Descripción</label>
+                                    <textarea name="description" rows={3} className="w-full border p-2.5 rounded-lg text-sm" placeholder="Detalles de la solicitud..."></textarea>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Prioridad</label>
+                                        <select name="priority" className="w-full border p-2.5 rounded-lg text-sm bg-white">
+                                            <option value="LOW">Baja</option>
+                                            <option value="MEDIUM">Media</option>
+                                            <option value="HIGH">Alta</option>
+                                            <option value="URGENT">Urgente</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Fecha Límite</label>
+                                        <input type="date" name="dueDate" className="w-full border p-2.5 rounded-lg text-sm" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-5 border-t bg-slate-50 rounded-b-xl flex justify-end gap-2">
+                                <button type="button" onClick={() => setShowNewModal(false)} className="px-4 py-2 text-slate-500 font-bold text-sm">Cancelar</button>
+                                <button type="submit" className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm shadow-lg shadow-blue-500/30">Crear Solicitud</button>
+                            </div>
+                        </form>
+                    </div>
+                )
+            }
+        </div >
+    </div >
     );
 }

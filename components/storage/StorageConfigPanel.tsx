@@ -75,23 +75,22 @@ export default function StorageConfigPanel() {
         setTestResult(null);
 
         try {
-            const response = await fetch('/api/admin/storage-config/test', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    provider: selectedProvider,
-                    config: config
-                }),
+            // Dynamic import to handle server action usage in client component
+            const { testStorageConfigurationAction } = await import('@/app/lib/actions');
+
+            const result = await testStorageConfigurationAction({
+                provider: selectedProvider,
+                config: config,
+                enabled: true
             });
 
-            const data = await response.json();
-            if (data.success) {
+            if (result.success) {
                 setTestResult({ status: 'success', message: 'Conexión exitosa. El proveedor está configurado correctamente.' });
             } else {
-                setTestResult({ status: 'failed', message: data.error || 'Error de conexión.' });
+                setTestResult({ status: 'failed', message: result.message || 'Error de conexión.' });
             }
-        } catch (error) {
-            setTestResult({ status: 'failed', message: 'Error de conexión. Verifica las credenciales.' });
+        } catch (error: any) {
+            setTestResult({ status: 'failed', message: error.message || 'Error de conexión. Verifica las credenciales.' });
         } finally {
             setTesting(false);
         }

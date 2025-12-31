@@ -753,3 +753,18 @@ export async function createStripeCheckoutSession(planId: string, interval: 'mon
         return { error: 'Stripe Error: ' + e.message };
     }
 }
+
+import { TenantStorageConfig } from '@/lib/data';
+
+export async function testStorageConfigurationAction(config: TenantStorageConfig) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'Unauthorized' };
+
+    try {
+        const { testStorageConnection } = await import('@/lib/services/storageService');
+        const result = await testStorageConnection(config);
+        return result;
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}

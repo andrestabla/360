@@ -121,12 +121,14 @@ export async function createWorkflowCaseAction(data: any) {
             description: data.description,
             status: 'PENDING',
             creatorId: session.user.id,
-            assigneeId: data.assigneeId || session.user.id, // Auto-assign or specific
+            assigneeId: data.assigneeId || session.user.id,
             priority: data.priority || 'MEDIUM',
             dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
             data: data.data || {},
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            history: [],
+            comments: []
         };
 
         await db.insert(workflowCases).values(newCase);

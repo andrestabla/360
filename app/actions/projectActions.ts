@@ -137,11 +137,16 @@ export async function updateProjectAction(id: string, updates: any) {
                                 .values({
                                     ...act,
                                     phaseId: phase.id,
+                                    documents: act.documents || [], // Explicitly map documents
                                     updatedAt: new Date()
                                 })
                                 .onConflictDoUpdate({
                                     target: projectActivities.id,
-                                    set: { ...act, updatedAt: new Date() }
+                                    set: {
+                                        ...act,
+                                        documents: act.documents || [], // Explicitly map documents
+                                        updatedAt: new Date()
+                                    }
                                 });
                         }
                     }
@@ -149,8 +154,21 @@ export async function updateProjectAction(id: string, updates: any) {
             }
         });
 
+
+        // Fetch updated project with full structure to return to client
+        const updatedProject = await db.query.projects.findFirst({
+            where: eq(projects.id, id),
+            with: {
+                phases: {
+                    with: {
+                        activities: true
+                    }
+                }
+            }
+        });
+
         revalidatePath('/dashboard/workflows');
-        return { success: true };
+        return { success: true, data: updatedProject };
     } catch (e: any) {
         console.error('Update Project Error:', e);
         return { success: false, error: e.message };

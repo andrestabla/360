@@ -17,6 +17,47 @@ import {
 } from '@/app/lib/unitActions';
 // Theme handled via CSS/Tailwind directly
 
+// Helper to hydrate date strings back to Date objects
+const hydrateProjectDates = (project: any) => {
+    if (!project) return project;
+
+    // Helper to safe convert
+    const toDate = (d: any) => (d && typeof d === 'string' ? new Date(d) : d);
+
+    return {
+        ...project,
+        createdAt: toDate(project.createdAt),
+        updatedAt: toDate(project.updatedAt),
+        startDate: toDate(project.startDate),
+        endDate: toDate(project.endDate),
+        phases: project.phases?.map((p: any) => ({
+            ...p,
+            startDate: toDate(p.startDate),
+            endDate: toDate(p.endDate),
+            createdAt: toDate(p.createdAt),
+            updatedAt: toDate(p.updatedAt),
+            activities: p.activities?.map((a: any) => ({
+                ...a,
+                startDate: toDate(a.startDate),
+                endDate: toDate(a.endDate),
+                createdAt: toDate(a.createdAt),
+                updatedAt: toDate(a.updatedAt),
+            }))
+        }))
+    };
+};
+
+const hydrateWorkflowCaseDates = (wc: any) => {
+    if (!wc) return wc;
+    const toDate = (d: any) => (d && typeof d === 'string' ? new Date(d) : d);
+    return {
+        ...wc,
+        dueDate: toDate(wc.dueDate),
+        createdAt: toDate(wc.createdAt),
+        updatedAt: toDate(wc.updatedAt)
+    };
+};
+
 
 interface AppContextType {
     // User & Auth
@@ -177,7 +218,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const { getProjectsAction } = await import('@/app/actions/projectActions');
         const res = await getProjectsAction();
         if (res.success && res.data) {
-            DB.projects = res.data as any;
+            DB.projects = res.data.map(hydrateProjectDates) as any;
             refreshData();
         }
     }, [refreshData]);
@@ -186,7 +227,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const { getWorkflowCasesAction } = await import('@/app/actions/workflow');
         const res = await getWorkflowCasesAction();
         if (res.success && res.data) {
-            DB.workflowCases = res.data as any;
+            DB.workflowCases = res.data.map(hydrateWorkflowCaseDates) as any;
             refreshData();
         }
     }, [refreshData]);
@@ -401,7 +442,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (res.success && res.data) {
             // Optimistic / Sync
             const newCaseWithDefaults = {
-                ...res.data,
+                ...hydrateWorkflowCaseDates(res.data),
                 history: [],
                 comments: []
             } as unknown as import("@/lib/data").WorkflowCase; // Force cast to bypass Date vs String mismatch
@@ -493,9 +534,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
 
         const res = await updateProjectAction(id, updates);
-        if (!res.success) {
+        if (res.success && res.data) {
+            // Update local state with FULL server data (including new IDs for created sub-items)
+            const index = DB.projects.findIndex(p => p.id === id);
+            if (index !== -1) {
+                // Hydrate dates from server response (strings) to Date objects
+                const hydratedProject = hydrateProjectDates(res.data);
+                DB.projects[index] = hydratedProject as any;
+                refreshData();
+            }
+        } else if (!res.success) {
             console.error("Failed to update project", res.error);
             addNotification({ title: 'Error', message: 'No se pudo guardar los cambios', type: 'error' });
+            // Revert changes if needed, though simple refresh might be safer
+            loadProjects();
         }
     };
 

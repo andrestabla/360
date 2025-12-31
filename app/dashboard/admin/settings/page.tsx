@@ -296,7 +296,7 @@ export default function AdminSettingsPage() {
         setIsTestingEmail(true);
         setTestEmailResult(null);
         try {
-            const result = await testSmtpConnection({
+            const res = await testSmtpConnection({
                 smtpHost: formData.smtpHost,
                 smtpPort: parseInt(formData.smtpPort),
                 smtpUser: formData.smtpUser,
@@ -305,17 +305,18 @@ export default function AdminSettingsPage() {
                 fromName: formData.appTitle
             }, formData.testEmailTo);
 
-            if (result.success) {
+            if (res.success) {
                 setTestEmailResult({ success: true, message: "Conexión exitosa. Revisa tu bandeja de entrada." });
             } else {
-                setTestEmailResult({ success: false, message: result.error || "Falló la conexión." });
+                setTestEmailResult({ success: false, message: res.error || "Falló la conexión." });
             }
         } catch (error: any) {
-            setTestEmailResult({ success: false, message: error.message || "Error testing connection." });
+            setTestEmailResult({ success: false, message: error.message || "Error desconocido" });
         } finally {
             setIsTestingEmail(false);
         }
     };
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -814,6 +815,12 @@ export default function AdminSettingsPage() {
                                                 <option value="sendgrid">SendGrid (Próximamente)</option>
                                             </select>
                                         </div>
+
+                                        <div className="flex gap-4 items-end">
+                                            <div className="flex-1"></div>
+                                        </div>
+
+
 
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Host SMTP</label>
