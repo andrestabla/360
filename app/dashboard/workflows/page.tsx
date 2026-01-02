@@ -9,7 +9,7 @@ import { DB, WorkflowCase, Project, ProjectFolder } from '@/lib/data';
 import { createProjectFolderAction, getProjectFoldersAction, getProjectByIdAction } from '@/app/actions/projectActions';
 import {
     Plus, CheckCircle, Clock, XCircle, CaretRight, FileCsv,
-    Briefcase, Folder, CloudArrowUp, FolderPlus, CaretLeft, DownloadSimple, PencilSimple, Trash
+    Briefcase, Folder, CloudArrowUp, FolderPlus, CaretLeft, DownloadSimple, PencilSimple, Trash, Copy
 } from '@phosphor-icons/react';
 import { deleteProjectFolderAction, updateProjectFolderAction } from '@/app/actions/projectActions';
 
@@ -385,9 +385,9 @@ export default function WorkflowsPage() {
                                     <div className="p-3 rounded-lg bg-yellow-50 text-yellow-500 group-hover:bg-yellow-100 transition-colors">
                                         <Folder size={28} weight="duotone" />
                                     </div>
-                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={(e) => { e.stopPropagation(); setEditingFolder(f); setShowNewFolderModal(true); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-500 transition-colors"><PencilSimple size={16} /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteFolder(f.id); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-red-500 transition-colors"><Trash size={16} /></button>
+                                    <div className="flex gap-1 transition-opacity">
+                                        <button onClick={(e) => { e.stopPropagation(); setEditingFolder(f); setShowNewFolderModal(true); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-500 transition-colors" title="Editar"><PencilSimple size={16} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteFolder(f.id); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-red-500 transition-colors" title="Eliminar"><Trash size={16} /></button>
                                     </div>
                                 </div>
                                 <h3 className="font-bold text-lg text-slate-900 mb-1">{f.name}</h3>
