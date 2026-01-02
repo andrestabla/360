@@ -56,9 +56,11 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
     useEffect(() => {
         const fetchUrl = async () => {
             if (!doc.url) {
+                console.log('[DocumentViewer] No URL found for doc:', doc);
                 setLoadingPreview(false);
                 return;
             }
+            console.log('[DocumentViewer] Fetching URL for:', doc.id, 'Original URL:', doc.url);
             try {
                 // First try standard repo action
                 const res = await getDocumentDownloadUrlAction(doc.id);
@@ -152,21 +154,19 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                     </div>
 
                     <div className="flex items-center gap-2">
+                        {/* Always visible: History/Details Toggle */}
+                        <button
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            className={`flex items-center gap-2 px-3 py-2 border font-bold rounded-lg text-xs transition-all shadow-sm ${isSidebarOpen ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:text-blue-600 hover:border-blue-200'}`}
+                            title="Ver historial y detalles"
+                        >
+                            {isSidebarOpen ? <SidebarSimple size={18} weight="fill" /> : <ClockCounterClockwise size={18} />}
+                            <span className="hidden sm:inline">Historial</span>
+                        </button>
+
                         {/* Work Mode Actions */}
                         {mode === 'work' && (
                             <>
-                                <button
-                                    onClick={() => {
-                                        setIsSidebarOpen(true);
-                                        // We might need a way to force History tab, but for now just opening sidebar is good step.
-                                        // Ideally RepositorySidebar exposes tab control or we pass it? 
-                                        // Let's assume user finds the tab, or we pass a prop later.
-                                    }}
-                                    className="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-lg text-xs transition-colors"
-                                >
-                                    <ClockCounterClockwise size={18} />
-                                    <span className="hidden sm:inline">Historial</span>
-                                </button>
                                 <button
                                     onClick={handleCapture}
                                     className="flex items-center gap-2 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg text-xs transition-colors"
