@@ -263,6 +263,12 @@ export async function updateProjectAction(id: string, updates: any) {
 }
 
 
+import { v4 as uuidv4 } from 'uuid'; // Standard uuid if available, or custom
+import { randomUUID } from 'crypto';
+
+// Helper if crypto not available in edge (though likely Node env for actions)
+const generateId = () => crypto.randomUUID();
+
 export async function duplicateProjectAction(id: string) {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: 'Unauthorized' };
@@ -286,10 +292,13 @@ export async function duplicateProjectAction(id: string) {
 
             // 2. Clone Project
             const { id: oldId, createdAt, updatedAt, phases, ...projectData } = original;
+            const newProjectId = generateId(); // Manual ID
+
             const newProjectData = {
                 ...projectData,
+                id: newProjectId, // Explicit ID
                 title: `${projectData.title} (Copy)`,
-                creatorId: userId, // New copy owned by current user? Or preserve structure? Usually copier becomes owner or manager.
+                creatorId: userId,
                 createdAt: new Date(),
                 updatedAt: new Date()
             };
@@ -300,9 +309,12 @@ export async function duplicateProjectAction(id: string) {
             if (phases && phases.length > 0) {
                 for (const phase of phases) {
                     const { id: oldPhaseId, projectId, createdAt, updatedAt, activities, ...phaseData } = phase;
+                    const newPhaseId = generateId(); // Manual ID
+
                     const [newPhase] = await tx.insert(projectPhases).values({
                         ...phaseData,
-                        projectId: newProject.id,
+                        id: newPhaseId, // Explicit ID
+                        projectId: newProjectId, // Link to new project
                         createdAt: new Date(),
                         updatedAt: new Date()
                     }).returning();
@@ -310,9 +322,12 @@ export async function duplicateProjectAction(id: string) {
                     if (activities && activities.length > 0) {
                         for (const act of activities) {
                             const { id: oldActId, phaseId, createdAt, updatedAt, ...actData } = act;
+                            const newActId = generateId(); // Manual ID
+
                             await tx.insert(projectActivities).values({
                                 ...actData,
-                                phaseId: newPhase.id,
+                                id: newActId, // Explicit ID
+                                phaseId: newPhaseId, // Link to new phase
                                 createdAt: new Date(),
                                 updatedAt: new Date()
                             });
