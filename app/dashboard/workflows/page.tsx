@@ -112,9 +112,9 @@ export default function WorkflowsPage() {
                 description: p.description || '',
                 startDate: p.startDate ? p.startDate.toISOString() : undefined,
                 endDate: p.endDate ? p.endDate.toISOString() : undefined,
-                status: p.status,
-                creatorId: p.creatorId,
-                createdAt: p.createdAt.toISOString(),
+                status: p.status || 'DRAFT',
+                creatorId: p.creatorId || 'unknown',
+                createdAt: p.createdAt ? p.createdAt.toISOString() : new Date().toISOString(),
                 updatedAt: p.updatedAt?.toISOString(),
                 participants: [], // Basic mapping, participants not fetched broadly here usually
                 folderId: p.folderId || undefined,
