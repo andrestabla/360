@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { X, MagnifyingGlass, FileText, UploadSimple, Link as LinkIcon, Code } from '@phosphor-icons/react';
 import { DB, Doc } from '@/lib/data';
+import { uploadProjectEvidenceAction } from '@/app/actions/uploadActions';
+import toast from 'react-hot-toast';
 
 interface AddEvidenceModalProps {
     isOpen: boolean;
+    projectId: string; // Added prop
     onClose: () => void;
     onAdd: (evidence: any) => void;
 }
 
-export function AddEvidenceModal({ isOpen, onClose, onAdd }: AddEvidenceModalProps) {
+export function AddEvidenceModal({ isOpen, projectId, onClose, onAdd }: AddEvidenceModalProps) {
     const [activeTab, setActiveTab] = useState<'repo' | 'link' | 'upload' | 'embed'>('repo');
     const [search, setSearch] = useState('');
 
@@ -22,6 +25,7 @@ export function AddEvidenceModal({ isOpen, onClose, onAdd }: AddEvidenceModalPro
 
     // Upload State
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     if (!isOpen) return null;
 
