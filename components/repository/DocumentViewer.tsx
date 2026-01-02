@@ -322,19 +322,6 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                         doc={doc}
                         units={units}
                         mode={mode} // Pass mode
-                        onClose={() => setIsSidebarOpen(false)}
-                        onDownload={handleDownload}
-                        onUpdate={refreshDoc}
-                        onAssign={() => { /* Implement if needed or use modal logic */ }}
-                        onToggleLike={async (d) => { await toggleLikeAction(d.id); refreshDoc(); }}
-                        onShare={() => { navigator.clipboard.writeText(doc.url || ''); alert("Link copiado!"); }}
-                        onDelete={handleDelete}
-                        onMove={() => { /* Implement move logic if needed */ }}
-                        onExpand={() => { /* Already expanded */ }}
-                    <RepositorySidebar
-                        doc={doc}
-                        units={units}
-                        mode={mode} // Pass mode
                         activeTabOverride={sidebarMode === 'history' ? 'history' : (sidebarMode === 'comments' ? 'comments' : undefined)}
                         onClose={() => setIsSidebarOpen(false)}
                         onDownload={handleDownload}
