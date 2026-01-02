@@ -270,7 +270,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                             branding: {
                                 ...prev.branding,
                                 ...(serverSettings.branding as any)
-                            }
+                            },
+                            roleTemplates: (serverSettings.policies as any)?.roleTemplates || prev.roleTemplates
                         };
                         localStorage.setItem('m360_platform_settings', JSON.stringify(newSettings));
                         return newSettings;

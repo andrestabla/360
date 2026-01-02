@@ -5,13 +5,13 @@ import { getUnitsAction } from '@/app/lib/unitActions';
 import DocumentViewer from '@/components/repository/DocumentViewer';
 
 interface PageProps {
-    params: {
+    params: Promise<{
         docId: string;
-    };
+    }>;
 }
 
 export default async function DocumentPage({ params }: PageProps) {
-    const { docId } = params;
+    const { docId } = await params;
 
     const [doc, unitsRes] = await Promise.all([
         getDocumentByIdAction(docId),

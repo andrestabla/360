@@ -14,8 +14,10 @@ import {
     MagnifyingGlass,
     Sparkle,
     PaperPlaneRight,
-    Upload
+    Upload,
+    ShieldCheck
 } from '@phosphor-icons/react';
+import RolesMatrix from '@/components/admin/RolesMatrix';
 import { createUserAction, updateUserAction, deleteUserAction, getUsersAction, sendWelcomeEmailAction, getUserActivityAction } from '@/app/lib/userActions';
 import { generateSecurePassword } from '@/lib/utils/passwordUtils';
 import UserCreatedModal from '@/components/UserCreatedModal';
@@ -62,6 +64,8 @@ export default function UsersPage() {
     });
     const [sendInvitation, setSendInvitation] = useState(false);
     const [activeTab, setActiveTab] = useState<'details' | 'security' | 'activity'>('details');
+    // Main View Active Tab (Users or Roles)
+    const [viewTab, setViewTab] = useState<'users' | 'roles'>('users');
 
     const loadUsers = useCallback(async () => {
         setLoading(true);
@@ -320,118 +324,140 @@ export default function UsersPage() {
                 <div className="flex gap-2">
                     <button
                         onClick={() => setIsImportModalOpen(true)}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors"
+                        className={`px-4 py-2 border border-slate-200 text-slate-600 rounded-lg flex items-center gap-2 hover:bg-slate-50 transition-colors ${viewTab !== 'users' ? 'hidden' : ''}`}
                     >
                         <Upload weight="bold" /> Importar CSV
                     </button>
                     <button
                         onClick={handleCreate}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                        className={`px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors ${viewTab !== 'users' ? 'hidden' : ''}`}
                     >
                         <Plus weight="bold" /> Nuevo Usuario
                     </button>
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                {/* Search Bar & Filters */}
-                <div className="p-4 border-b border-slate-100 space-y-3">
-                    <div className="relative max-w-md">
-                        <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 ring-blue-500/10"
-                            placeholder="Buscar por nombre, email o cargo..."
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                        />
-                    </div>
-
-                    {/* Filters */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <select
-                            value={filterUnit}
-                            onChange={e => setFilterUnit(e.target.value)}
-                            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 ring-blue-500/10"
-                        >
-                            <option value="">Todas las Unidades</option>
-                            {units.map(unit => (
-                                <option key={unit.id} value={unit.name}>{unit.name}</option>
-                            ))}
-                        </select>
-
-                        <select
-                            value={filterLevel}
-                            onChange={e => setFilterLevel(e.target.value === '' ? '' : Number(e.target.value))}
-                            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 ring-blue-500/10"
-                        >
-                            <option value="">Todos los Niveles</option>
-                            {LEVELS.map(l => (
-                                <option key={l.level} value={l.level}>{l.label}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                {/* Table */}
-                <table className="w-full text-sm text-left">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold text-xs">
-                        <tr>
-                            <th className="px-6 py-4">Usuario</th>
-                            <th className="px-6 py-4">Rol / Nivel</th>
-                            <th className="px-6 py-4">Estado</th>
-                            <th className="px-6 py-4 text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                        {filteredUsers.map(user => (
-                            <tr key={user.id} className="hover:bg-slate-50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
-                                            {user.name.substring(0, 2).toUpperCase()}
-                                        </div>
-                                        <div>
-                                            <div className="font-medium text-slate-900">{user.name}</div>
-                                            <div className="text-xs text-slate-500">{user.email}</div>
-                                            <div className="text-xs text-slate-400">{user.jobTitle}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                                        Nivel {user.level} - {LEVELS.find(l => l.level === user.level)?.label.split('(')[1].replace(')', '') || 'N/A'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${user.status === 'ACTIVE' ? 'bg-green-50 text-green-700 border-green-200' :
-                                        user.status === 'SUSPENDED' ? 'bg-red-50 text-red-700 border-red-200' :
-                                            'bg-yellow-50 text-yellow-700 border-yellow-200'
-                                        }`}>
-                                        {user.status === 'ACTIVE' ? 'Activo' : user.status === 'SUSPENDED' ? 'Suspendido' : 'Pendiente'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex justify-end gap-1">
-                                        <button onClick={() => handleEdit(user)} className="p-1.5 hover:bg-blue-50 text-blue-600 rounded" title="Editar">
-                                            <Pencil size={18} />
-                                        </button>
-                                        <button onClick={() => handleDeleteClick(user)} className="p-1.5 hover:bg-red-50 text-red-600 rounded" title="Eliminar">
-                                            <Trash size={18} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                        {filteredUsers.length === 0 && (
-                            <tr>
-                                <td colSpan={4} className="p-8 text-center text-slate-400">
-                                    No se encontraron usuarios.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+            {/* Top Tabs */}
+            <div className="flex gap-4 mb-6 border-b border-slate-200">
+                <button
+                    onClick={() => setViewTab('users')}
+                    className={`pb-3 px-2 text-sm font-medium transition-colors border-b-2 flex items-center gap-2 ${viewTab === 'users' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'
+                        }`}
+                >
+                    <Users size={18} /> Usuarios
+                </button>
+                <button
+                    onClick={() => setViewTab('roles')}
+                    className={`pb-3 px-2 text-sm font-medium transition-colors border-b-2 flex items-center gap-2 ${viewTab === 'roles' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'
+                        }`}
+                >
+                    <ShieldCheck size={18} /> Roles y Permisos
+                </button>
             </div>
+
+            {viewTab === 'roles' ? (
+                <RolesMatrix />
+            ) : (
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    {/* Search Bar & Filters */}
+                    <div className="p-4 border-b border-slate-100 space-y-3">
+                        <div className="relative max-w-md">
+                            <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 ring-blue-500/10"
+                                placeholder="Buscar por nombre, email o cargo..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Filters */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <select
+                                value={filterUnit}
+                                onChange={e => setFilterUnit(e.target.value)}
+                                className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 ring-blue-500/10"
+                            >
+                                <option value="">Todas las Unidades</option>
+                                {units.map(unit => (
+                                    <option key={unit.id} value={unit.name}>{unit.name}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                value={filterLevel}
+                                onChange={e => setFilterLevel(e.target.value === '' ? '' : Number(e.target.value))}
+                                className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 ring-blue-500/10"
+                            >
+                                <option value="">Todos los Niveles</option>
+                                {LEVELS.map(l => (
+                                    <option key={l.level} value={l.level}>{l.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Table */}
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold text-xs">
+                            <tr>
+                                <th className="px-6 py-4">Usuario</th>
+                                <th className="px-6 py-4">Rol / Nivel</th>
+                                <th className="px-6 py-4">Estado</th>
+                                <th className="px-6 py-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {filteredUsers.map(user => (
+                                <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+                                                {user.name.substring(0, 2).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <div className="font-medium text-slate-900">{user.name}</div>
+                                                <div className="text-xs text-slate-500">{user.email}</div>
+                                                <div className="text-xs text-slate-400">{user.jobTitle}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                            Nivel {user.level} - {LEVELS.find(l => l.level === user.level)?.label.split('(')[1].replace(')', '') || 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${user.status === 'ACTIVE' ? 'bg-green-50 text-green-700 border-green-200' :
+                                            user.status === 'SUSPENDED' ? 'bg-red-50 text-red-700 border-red-200' :
+                                                'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                            }`}>
+                                            {user.status === 'ACTIVE' ? 'Activo' : user.status === 'SUSPENDED' ? 'Suspendido' : 'Pendiente'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-1">
+                                            <button onClick={() => handleEdit(user)} className="p-1.5 hover:bg-blue-50 text-blue-600 rounded" title="Editar">
+                                                <Pencil size={18} />
+                                            </button>
+                                            <button onClick={() => handleDeleteClick(user)} className="p-1.5 hover:bg-red-50 text-red-600 rounded" title="Eliminar">
+                                                <Trash size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {filteredUsers.length === 0 && (
+                                <tr>
+                                    <td colSpan={4} className="p-8 text-center text-slate-400">
+                                        No se encontraron usuarios.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
             {/* Modal */}
             {isModalOpen && (
