@@ -37,7 +37,10 @@ interface RepositorySidebarProps {
 }
 
 export function RepositorySidebar({ doc, units, mode = 'repository', onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand }: RepositorySidebarProps) {
-    const [activeTab, setActiveTab] = useState<'view' | 'edit' | 'comments' | 'history'>(mode === 'work' ? 'comments' : 'view');
+    // In 'view' mode, we default to history and show NOTHING else (per user request).
+    const [activeTab, setActiveTab] = useState<'view' | 'edit' | 'comments' | 'history'>(
+        mode === 'view' ? 'history' : (mode === 'work' ? 'comments' : 'view')
+    );
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
 
@@ -55,44 +58,54 @@ export function RepositorySidebar({ doc, units, mode = 'repository', onClose, on
             {/* Top Toolbar */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
                 <div className="flex items-center gap-1">
-                    <button
-                        onClick={handleToggleFavorite}
-                        title={isFavorite ? "Quitar favorito" : "Marcar favorito"}
-                        className={`p-2 rounded-full hover:bg-slate-100 transition-colors ${isFavorite ? 'text-yellow-400' : 'text-slate-400'}`}
-                    >
-                        <Star size={20} weight={isFavorite ? "fill" : "regular"} />
-                    </button>
-                    <button onClick={() => onShare(doc)} title="Compartir enlace" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-blue-500 transition-colors">
-                        <ShareNetwork size={20} />
-                    </button>
-                    <button onClick={() => onExpand(doc)} title="Ver en pantalla completa" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
-                        <Eye size={20} />
-                    </button>
-                    <div className="relative">
-                        <button onClick={() => setShowMoreMenu(!showMoreMenu)} className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
-                            <DotsThreeVertical size={20} weight="bold" />
-                        </button>
-                        {showMoreMenu && (
-                            <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-50 origin-top-left animate-in fade-in zoom-in-95 duration-200">
-                                <button onClick={() => { setShowMoreMenu(false); onClose(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
-                                    <CaretDoubleRight size={16} /> Contraer Panel
+                    {/* In View/History mode, maybe hide actions except close? User said "no debe desplegar más opciones". 
+                        Let's keep close but maybe hide others if truly "exclusive". 
+                        The request says "The option History must display exclusively previous versions... not display more options or views".
+                        Safest is to hide the toolbar actions in 'view' mode too, keeping only Close.
+                    */}
+                    {mode !== 'view' && (
+                        <>
+                            <button
+                                onClick={handleToggleFavorite}
+                                title={isFavorite ? "Quitar favorito" : "Marcar favorito"}
+                                className={`p-2 rounded-full hover:bg-slate-100 transition-colors ${isFavorite ? 'text-yellow-400' : 'text-slate-400'}`}
+                            >
+                                <Star size={20} weight={isFavorite ? "fill" : "regular"} />
+                            </button>
+                            <button onClick={() => onShare(doc)} title="Compartir enlace" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-blue-500 transition-colors">
+                                <ShareNetwork size={20} />
+                            </button>
+                            <button onClick={() => onExpand(doc)} title="Ver en pantalla completa" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                                <Eye size={20} />
+                            </button>
+                            <div className="relative">
+                                <button onClick={() => setShowMoreMenu(!showMoreMenu)} className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                                    <DotsThreeVertical size={20} weight="bold" />
                                 </button>
-                                <button onClick={() => { setShowMoreMenu(false); setActiveTab('edit'); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
-                                    <PencilSimple size={16} /> Editar Metadatos
-                                </button>
-                                <button onClick={() => { setShowMoreMenu(false); onAssign(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-blue-600">
-                                    <ClipboardText size={16} /> Asignar Tarea
-                                </button>
-                                <hr className="border-slate-100 my-1" />
-                                <button onClick={() => { setShowMoreMenu(false); onMove(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
-                                    <FolderMinus size={16} /> Mover a Carpeta
-                                </button>
-                                <button onClick={() => { setShowMoreMenu(false); onDelete(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-red-50 text-red-600 flex items-center gap-2">
-                                    <Trash size={16} /> Eliminar
-                                </button>
+                                {showMoreMenu && (
+                                    <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-50 origin-top-left animate-in fade-in zoom-in-95 duration-200">
+                                        <button onClick={() => { setShowMoreMenu(false); onClose(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
+                                            <CaretDoubleRight size={16} /> Contraer Panel
+                                        </button>
+                                        <button onClick={() => { setShowMoreMenu(false); setActiveTab('edit'); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
+                                            <PencilSimple size={16} /> Editar Metadatos
+                                        </button>
+                                        <button onClick={() => { setShowMoreMenu(false); onAssign(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-blue-600">
+                                            <ClipboardText size={16} /> Asignar Tarea
+                                        </button>
+                                        <hr className="border-slate-100 my-1" />
+                                        <button onClick={() => { setShowMoreMenu(false); onMove(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
+                                            <FolderMinus size={16} /> Mover a Carpeta
+                                        </button>
+                                        <button onClick={() => { setShowMoreMenu(false); onDelete(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-red-50 text-red-600 flex items-center gap-2">
+                                            <Trash size={16} /> Eliminar
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
+                        </>
+                    )}
+                    {mode === 'view' && <span className="text-sm font-bold text-slate-500 px-2">Historial</span>}
                 </div>
 
                 <button onClick={onClose} title="Contraer panel" className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 ml-auto">
@@ -100,15 +113,17 @@ export function RepositorySidebar({ doc, units, mode = 'repository', onClose, on
                 </button>
             </div>
 
-            {/* Tabs */}
-            <div className="px-4 py-2 border-b border-slate-100 bg-white">
-                <div className="flex gap-1 bg-slate-50 p-1 rounded-xl">
-                    <TabButton active={activeTab === 'view'} onClick={() => setActiveTab('view')} label="Ver" />
-                    {mode !== 'view' && <TabButton active={activeTab === 'edit'} onClick={() => setActiveTab('edit')} label="Editar" />}
-                    <TabButton active={activeTab === 'comments'} onClick={() => setActiveTab('comments')} label="Comentarios" />
-                    <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')} label="Historial" />
+            {/* Tabs - HIDE in view mode */}
+            {mode !== 'view' && (
+                <div className="px-4 py-2 border-b border-slate-100 bg-white">
+                    <div className="flex gap-1 bg-slate-50 p-1 rounded-xl">
+                        <TabButton active={activeTab === 'view'} onClick={() => setActiveTab('view')} label="Ver" />
+                        <TabButton active={activeTab === 'edit'} onClick={() => setActiveTab('edit')} label="Editar" />
+                        <TabButton active={activeTab === 'comments'} onClick={() => setActiveTab('comments')} label="Comentarios" />
+                        <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')} label="Historial" />
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto bg-slate-50/50 relative">
