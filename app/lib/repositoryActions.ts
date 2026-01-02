@@ -332,7 +332,10 @@ export async function getDocumentDownloadUrlAction(docId: string) {
     }
 
     // If it's effectively an external URL and not internal storage, return it
-    if (isExternalUrl && !isInternal) {
+    // EXCEPTION: If it is our R2 domain (files.maturity360.co), we must treat it as internal to sign it if needed.
+    const isR2Domain = doc.url.includes('files.maturity360.co');
+
+    if (isExternalUrl && !isInternal && !isR2Domain) {
         return { success: true, url: doc.url };
     }
 
@@ -348,12 +351,18 @@ export async function getDocumentDownloadUrlAction(docId: string) {
         if (parts.length > 1) {
             key = 'repository/' + parts[1];
         }
+    } else if (doc.url.includes('files.maturity360.co/')) {
+        // Handle R2 Custom Domain: Extract key after domain
+        const parts = doc.url.split('files.maturity360.co/');
+        if (parts.length > 1) {
+            key = parts[1];
+        }
     }
 
     console.log(`[DownloadAction] Extracted key: ${key}`);
 
     // Perform cleanup just in case (e.g. double slashes)
-    key = key.replace(/\/\//g, '/');
+    key = key.replace(/\/\/\//g, '/');
 
     const storageService = getStorageService();
     const result = await storageService.download(key);
