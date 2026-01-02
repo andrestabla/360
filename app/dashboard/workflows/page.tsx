@@ -438,7 +438,7 @@ export default function WorkflowsPage() {
 
                         {/* Projects */}
                         {projectsList.map(p => (
-                            <div key={p.id} onClick={() => router.push(`/dashboard/workflows/${p.id}`)} className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md cursor-pointer hover:border-purple-300 transition-all">
+                            <div key={p.id} onClick={() => router.push(`/dashboard/workflows/${p.id}`)} className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md cursor-pointer hover:border-purple-300 transition-all group">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="p-3 rounded-lg bg-purple-50 text-purple-600" style={{ backgroundColor: p.color ? `${p.color}20` : undefined, color: p.color }}>
                                         <Briefcase size={24} weight="duotone" />
