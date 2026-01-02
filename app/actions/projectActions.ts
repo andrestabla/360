@@ -15,7 +15,7 @@ export async function createProjectFolderAction(data: InsertProjectFolder) {
         return { success: true, data };
     } catch (error: any) {
         console.error('createProjectFolderAction error:', error);
-        return { success: false, error: 'Failed to create folder' };
+        return { success: false, error: error.message || 'Failed to create folder' };
     }
 }
 
@@ -29,7 +29,7 @@ export async function updateProjectFolderAction(id: string, data: Partial<Insert
         return { success: true };
     } catch (error: any) {
         console.error('updateProjectFolderAction error:', error);
-        return { success: false, error: 'Failed to update folder' };
+        return { success: false, error: error.message || 'Failed to update folder' };
     }
 }
 
@@ -41,7 +41,7 @@ export async function getProjectFoldersAction() {
         return { success: true, data: folders };
     } catch (error: any) {
         console.error('getProjectFoldersAction error:', error);
-        return { success: false, error: 'Failed to fetch folders' };
+        return { success: false, error: error.message || 'Failed to fetch folders' };
     }
 }
 
@@ -52,7 +52,7 @@ export async function deleteProjectFolderAction(id: string) {
         return { success: true };
     } catch (error: any) {
         console.error('deleteProjectFolderAction error:', error);
-        return { success: false, error: 'Failed to delete folder' };
+        return { success: false, error: error.message || 'Failed to delete folder' };
     }
 }
 
