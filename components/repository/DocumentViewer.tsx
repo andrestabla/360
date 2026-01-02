@@ -6,7 +6,7 @@ import {
     X, DownloadSimple, ShareNetwork, Eye, DotsThreeVertical,
     PencilSimple, ClipboardText, FolderMinus, Trash,
     FilePdf, FileDoc, FileXls, FilePpt, Image, Link as LinkIcon,
-    Code, FileText, Folder, CaretLeft, Star, CaretDoubleLeft, SidebarSimple, Camera
+    Code, FileText, Folder, CaretLeft, Star, CaretDoubleLeft, SidebarSimple
 } from '@phosphor-icons/react';
 import { RepositoryFile, updateDocumentMetadataAction, getDocumentDownloadUrlAction, deleteDocumentAction, toggleLikeAction } from '@/app/lib/repositoryActions';
 import { createCommentAction, getCommentsAction } from '@/app/lib/commentActions';
@@ -142,7 +142,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                                     onClick={handleCapture}
                                     className="flex items-center gap-2 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg text-xs transition-colors"
                                 >
-                                    <Camera size={18} />
+                                    <Image size={18} />
                                     <span className="hidden sm:inline">Capturar</span>
                                 </button>
                                 <div className="w-px h-6 bg-slate-200 mx-1"></div>

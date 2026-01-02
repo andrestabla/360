@@ -37,21 +37,13 @@ interface RepositorySidebarProps {
 }
 
 export function RepositorySidebar({ doc, units, mode = 'repository', onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand }: RepositorySidebarProps) {
-    const [activeTab, setActiveTab] = useState<'view' | 'edit' | 'comments'>('view');
+    const [activeTab, setActiveTab] = useState<'view' | 'edit' | 'comments'>(mode === 'work' ? 'comments' : 'view');
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
 
     // Initial favorite state - ideally passed as prop or fetched.
     // For now, if likes > 0 we'll assume it's liked for UI demonstration if not per-user data available yet.
     // Actually, onToggleLike will handle the real logic.
-    useEffect(() => {
-        // Here we could fetch if user favorites this doc
-    }, [doc.id]);
-
-    // Force tab based on mode if needed, or set default
-    useEffect(() => {
-        if (mode === 'work') setActiveTab('comments');
-    }, [mode]);
 
     const handleToggleFavorite = () => {
         setIsFavorite(!isFavorite);
