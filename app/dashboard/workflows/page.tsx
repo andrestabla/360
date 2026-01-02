@@ -213,6 +213,46 @@ export default function WorkflowsPage() {
         }
     };
 
+
+
+    const handleDownloadFolderCSV = (folderId: string, folderName: string) => {
+        const toastId = toast.loading('Generando reporte de carpeta...');
+        try {
+            // Filter projects in this folder from known projects
+            // Ideally should fetch from server to be sure, but using current view data for now
+            const folderProjects = DB.projects.filter(p => p.folderId === folderId);
+
+            if (folderProjects.length === 0) {
+                toast.success('Carpeta vacía', { id: toastId });
+                return;
+            }
+
+            const rows = [['Nombre Proyecto', 'Estado', 'Progreso', 'Fecha Inicio', 'Fecha Fin']];
+            folderProjects.forEach(p => {
+                rows.push([
+                    p.title.replace(/,/g, ' '),
+                    p.status,
+                    getProjectProgress(p) + '%',
+                    p.startDate ? new Date(p.startDate).toLocaleDateString() : '',
+                    p.endDate ? new Date(p.endDate).toLocaleDateString() : ''
+                ]);
+            });
+
+            const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `${folderName.replace(/\s+/g, '_')}_projects.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            toast.success('Descarga completada', { id: toastId });
+        } catch (e) {
+            console.error(e);
+            toast.error('Error al descargar carpeta', { id: toastId });
+        }
+    };
+
     const handleImportCSV = async (file: File) => {
         const text = await file.text();
         const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -385,9 +425,10 @@ export default function WorkflowsPage() {
                                     <div className="p-3 rounded-lg bg-yellow-50 text-yellow-500 group-hover:bg-yellow-100 transition-colors">
                                         <Folder size={28} weight="duotone" />
                                     </div>
-                                    <div className="flex gap-1 transition-opacity">
-                                        <button onClick={(e) => { e.stopPropagation(); setEditingFolder(f); setShowNewFolderModal(true); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-500 transition-colors" title="Editar"><PencilSimple size={16} /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteFolder(f.id); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-red-500 transition-colors" title="Eliminar"><Trash size={16} /></button>
+                                    <div className="flex gap-1 transition-opacity opacity-0 group-hover:opacity-100">
+                                        <button onClick={(e) => { e.stopPropagation(); handleDownloadFolderCSV(f.id, f.name); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-green-600 transition-colors" title="Descargar Reporte"><DownloadSimple size={18} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); setEditingFolder(f); setShowNewFolderModal(true); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-500 transition-colors" title="Editar"><PencilSimple size={18} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteFolder(f.id); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-red-500 transition-colors" title="Eliminar"><Trash size={18} /></button>
                                     </div>
                                 </div>
                                 <h3 className="font-bold text-lg text-slate-900 mb-1">{f.name}</h3>
