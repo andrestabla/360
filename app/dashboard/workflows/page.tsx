@@ -435,7 +435,6 @@ export default function WorkflowsPage() {
                             color: fd.get('color') as string
                         };
 
-                        import toast from 'react-hot-toast';
 
                         // ...
 
