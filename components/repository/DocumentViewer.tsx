@@ -14,13 +14,16 @@ import { Unit } from '@/shared/schema';
 import { RepositorySidebar } from './RepositorySidebar';
 
 // Reusing helper from sidebar/page (should be in utils)
-const getFileIcon = (type: string, size: number) => {
+// Reusing helper from sidebar/page (should be in utils)
+const getFileIcon = (type: string, title: string, size: number) => {
     const t = (type || '').toLowerCase();
-    if (t.includes('pdf')) return <FilePdf size={size} weight="duotone" className="text-red-500" />;
-    if (t.includes('doc') || t.includes('word')) return <FileDoc size={size} weight="duotone" className="text-blue-500" />;
-    if (t.includes('xls') || t.includes('sheet') || t.includes('csv')) return <FileXls size={size} weight="duotone" className="text-green-500" />;
-    if (t.includes('ppt') || t.includes('powerpoint')) return <FilePpt size={size} weight="duotone" className="text-orange-500" />;
-    if (t.includes('image') || t.includes('png') || t.includes('jpg')) return <Image size={size} weight="duotone" className="text-purple-500" />;
+    const name = (title || '').toLowerCase();
+
+    if (t.includes('pdf') || name.endsWith('.pdf')) return <FilePdf size={size} weight="duotone" className="text-red-500" />;
+    if (t.match(/(doc|word)/) || name.match(/\.(doc|docx)$/)) return <FileDoc size={size} weight="duotone" className="text-blue-500" />;
+    if (t.match(/(xls|sheet|csv)/) || name.match(/\.(xls|xlsx|csv)$/)) return <FileXls size={size} weight="duotone" className="text-green-500" />;
+    if (t.match(/(ppt|powerpoint)/) || name.match(/\.(ppt|pptx)$/)) return <FilePpt size={size} weight="duotone" className="text-orange-500" />;
+    if (t.match(/(image|png|jpg)/) || name.match(/\.(jpg|jpeg|png|gif|webp)$/)) return <Image size={size} weight="duotone" className="text-purple-500" />;
     if (t === 'carpeta') return <Folder size={size} weight="duotone" className="text-yellow-400" />;
     if (t === 'link') return <LinkIcon size={size} weight="duotone" className="text-blue-400" />;
     if (t === 'embed') return <Code size={size} weight="duotone" className="text-slate-600" />;
@@ -102,9 +105,12 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
         alert("Captura de pantalla simulada: Se ha tomado una instantánea de la vista actual.");
     };
 
-    const isImage = doc.type?.match(/(image|jpg|jpeg|png|gif|webp)/i);
-    const isPDF = doc.type?.match(/pdf/i);
-    const isOffice = doc.type?.match(/(doc|docx|xls|xlsx|ppt|pptx|msword|officedocument)/i);
+    // Helper to check extensions
+    const checkExt = (str: string | undefined, regex: RegExp) => (str || '').match(regex);
+
+    const isImage = checkExt(doc.type, /(image|jpg|jpeg|png|gif|webp)/i) || checkExt(doc.title, /\.(jpg|jpeg|png|gif|webp)$/i);
+    const isPDF = checkExt(doc.type, /pdf/i) || checkExt(doc.title, /\.pdf$/i);
+    const isOffice = checkExt(doc.type, /(doc|docx|xls|xlsx|ppt|pptx|msword|officedocument)/i) || checkExt(doc.title, /\.(doc|docx|xls|xlsx|ppt|pptx)$/i);
     const isEmbed = doc.type === 'embed';
 
 
@@ -126,7 +132,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                             <CaretLeft size={20} weight="bold" />
                         </button>
                         <div className="flex items-center gap-3">
-                            {getFileIcon(doc.type || '', 24)}
+                            {getFileIcon(doc.type || '', doc.title, 24)}
                             <div>
                                 <h1 className="text-lg font-bold text-slate-800 leading-tight truncate max-w-md">{doc.title}</h1>
                                 <p className="text-xs text-slate-500 font-medium">
