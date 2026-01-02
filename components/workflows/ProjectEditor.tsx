@@ -1,21 +1,11 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import { Project, ProjectPhase, ProjectActivity, DB, User, Doc } from '@/lib/data';
-import {
-    FloppyDisk, Plus, Trash, Calendar, User as UserIcon,
-    FileText, CaretDown, Check, XCircle,
-    Paperclip, MagnifyingGlass, Folder, Kanban, PencilSimple, Funnel, Users, X
-} from '@phosphor-icons/react';
-import { sendAssignmentNotification } from '@/app/actions/workflow';
-import { useApp } from '@/context/AppContext';
-import { TeamStructureModal } from './TeamStructureModal';
-import { useRouter } from 'next/navigation';
-import { AddEvidenceModal } from './AddEvidenceModal';
-import DocumentViewer from '@/components/repository/DocumentViewer';
+import { Project, ProjectPhase, ProjectActivity, DB, User, Doc, ProjectFolder } from '@/lib/data';
 
 interface ProjectEditorProps {
     project: Project;
+    folders: ProjectFolder[];
     onUpdate?: (id: string, updates: Partial<Project>) => void; // Optional if we handle it internally via useApp pending refactor, but kept for compatibility
     readOnly?: boolean;
 }
@@ -38,7 +28,7 @@ const STATUS_LABELS: Record<string, string> = {
     'VALIDATED': 'Validado'
 };
 
-export default function ProjectEditor({ project, onUpdate, readOnly = false }: ProjectEditorProps) {
+export default function ProjectEditor({ project, folders, onUpdate, readOnly = false }: ProjectEditorProps) {
     const { currentUser, updateProject, refreshData } = useApp();
     const router = useRouter();
 
@@ -422,7 +412,7 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
                                             className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 appearance-none focus:outline-none focus:border-blue-400 transition-all"
                                         >
                                             <option value="">-- Raíz --</option>
-                                            {DB.projectFolders.map(f => (
+                                            {folders.map(f => (
                                                 <option key={f.id} value={f.id}>{f.name}</option>
                                             ))}
                                         </select>
@@ -430,7 +420,7 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
                                 ) : (
                                     <div className="flex items-center gap-2 text-sm text-slate-700 font-medium">
                                         <Folder size={18} className="text-blue-500" weight="duotone" />
-                                        {DB.projectFolders.find(f => f.id === folderId)?.name || 'Carpeta Raíz'}
+                                        {folders.find(f => f.id === folderId)?.name || 'Carpeta Raíz'}
                                     </div>
                                 )}
                             </div>

@@ -1,7 +1,8 @@
-import { getProjectByIdAction } from "@/app/actions/projectActions";
+import { getProjectByIdAction, getProjectFoldersAction } from "@/app/actions/projectActions";
 import ProjectEditor from "@/components/workflows/ProjectEditor";
 import { Warning } from "@phosphor-icons/react/dist/ssr"; // SSR import for server components usually works, but this is a page that uses client component
 import Link from "next/link";
+import { ProjectFolder } from "@/lib/data";
 
 interface PageProps {
     params: Promise<{ projectId: string }>;
@@ -11,7 +12,23 @@ export default async function ProjectPage({ params }: PageProps) {
     const resolvedParams = await params;
     const { projectId } = resolvedParams;
 
-    const { success, data, error } = await getProjectByIdAction(projectId);
+    const [projectRes, foldersRes] = await Promise.all([
+        getProjectByIdAction(projectId),
+        getProjectFoldersAction()
+    ]);
+
+    const { success, data, error } = projectRes;
+    const foldersData = foldersRes.success && foldersRes.data ? foldersRes.data : [];
+
+    // Map DB folders to UI folders
+    const folders: ProjectFolder[] = foldersData.map(f => ({
+        id: f.id,
+        name: f.name,
+        description: f.description || '',
+        parentId: f.parentId || undefined,
+        createdAt: f.createdAt ? f.createdAt.toISOString() : new Date().toISOString(),
+        color: f.color || undefined
+    }));
 
     if (!success || !data) {
         return (
@@ -32,6 +49,6 @@ export default async function ProjectPage({ params }: PageProps) {
     }
 
     return (
-        <ProjectEditor project={data as any} />
+        <ProjectEditor project={data as any} folders={folders} />
     );
 }
