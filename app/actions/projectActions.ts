@@ -19,6 +19,20 @@ export async function createProjectFolderAction(data: InsertProjectFolder) {
     }
 }
 
+export async function updateProjectFolderAction(id: string, data: Partial<InsertProjectFolder>) {
+    try {
+        await db.update(projectFolders).set({
+            ...data,
+            updatedAt: new Date()
+        }).where(eq(projectFolders.id, id));
+        revalidatePath('/dashboard/workflows');
+        return { success: true };
+    } catch (error: any) {
+        console.error('updateProjectFolderAction error:', error);
+        return { success: false, error: 'Failed to update folder' };
+    }
+}
+
 export async function getProjectFoldersAction() {
     try {
         const folders = await db.query.projectFolders.findMany({
