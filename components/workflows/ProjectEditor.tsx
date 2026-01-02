@@ -12,6 +12,7 @@ import { useApp } from '@/context/AppContext';
 import { TeamStructureModal } from './TeamStructureModal';
 import { useRouter } from 'next/navigation';
 import { AddEvidenceModal } from './AddEvidenceModal';
+import DocumentViewer from '@/components/repository/DocumentViewer';
 
 interface ProjectEditorProps {
     project: Project;
@@ -45,6 +46,21 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
     // For a dedicated page, we might want "Edit" button or always editable fields with auto-save?
     // Let's keep the explicit "Edit" mode from the drawer for consistency and safety.
     const [isEditing, setIsEditing] = useState(false);
+    const [selectedDoc, setSelectedDoc] = useState<{ doc: any, mode: 'view' | 'work' } | null>(null);
+
+    // Handle Document Open (View/Work)
+    const handleOpenDocument = (doc: any, mode: 'view' | 'work') => {
+        const repoFile = {
+            id: doc.id,
+            title: doc.name || doc.title,
+            type: doc.type,
+            url: doc.url,
+            content: doc.content,
+            size: doc.size,
+            createdAt: doc.createdAt ? new Date(doc.createdAt) : new Date(),
+        };
+        setSelectedDoc({ doc: repoFile, mode });
+    };
 
     // Helper for safe date parsing
     const formatDateForInput = (date: string | Date | undefined | null) => {
@@ -616,13 +632,13 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
 
                                                             <div className="flex items-center gap-2 self-end sm:self-auto">
                                                                 <button
-                                                                    onClick={() => window.open(`/dashboard/project-document/${doc.id}?mode=view`, '_blank')}
+                                                                    onClick={() => handleOpenDocument(doc, 'view')}
                                                                     className="px-3 py-1.5 bg-white text-blue-600 border border-blue-200 hover:bg-blue-50 text-xs font-bold rounded-lg transition-colors"
                                                                 >
                                                                     Ver
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => window.open(`/dashboard/project-document/${doc.id}?mode=work`, '_blank')}
+                                                                    onClick={() => handleOpenDocument(doc, 'work')}
                                                                     className="px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 text-xs font-bold rounded-lg transition-colors"
                                                                 >
                                                                     Trabajar
@@ -734,6 +750,17 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
                     onClose={() => setShowDocPicker({ active: false })}
                     onAdd={handleAddEvidence}
                 />
+            )}
+            {/* Document Viewer Modal - Full Screen Overlay */}
+            {selectedDoc && (
+                <div className="fixed inset-0 z-[100] bg-white">
+                    <DocumentViewer
+                        initialDoc={selectedDoc.doc}
+                        units={[]} // Pass units if available in context, or empty array if acceptable for now
+                        initialMode={selectedDoc.mode}
+                        onClose={() => setSelectedDoc(null)}
+                    />
+                </div>
             )}
         </div>
     );

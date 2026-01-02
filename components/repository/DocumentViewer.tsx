@@ -31,9 +31,10 @@ interface DocumentViewerProps {
     initialDoc: RepositoryFile;
     units: Unit[];
     initialMode?: 'repository' | 'view' | 'work';
+    onClose?: () => void;
 }
 
-export default function DocumentViewer({ initialDoc, units, initialMode = 'repository' }: DocumentViewerProps) {
+export default function DocumentViewer({ initialDoc, units, initialMode = 'repository', onClose }: DocumentViewerProps) {
     const router = useRouter();
     const [doc, setDoc] = useState(initialDoc);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -85,7 +86,8 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
         if (!confirm("¿Estás seguro de eliminar este documento?")) return;
         try {
             await deleteDocumentAction(doc.id);
-            router.push('/dashboard/repository');
+            if (onClose) onClose();
+            else router.push('/dashboard/repository');
         } catch (e: any) {
             alert(e.message);
         }
@@ -115,7 +117,8 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                     <div className="flex items-center gap-4">
                         <button // Disable back in standalone mode? Or close window?
                             onClick={() => {
-                                if (window.history.length > 2) router.back();
+                                if (onClose) onClose();
+                                else if (window.history.length > 2) router.back();
                                 else window.close();
                             }}
                             className="p-2 -ml-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
