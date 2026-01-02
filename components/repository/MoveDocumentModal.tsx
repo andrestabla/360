@@ -28,7 +28,11 @@ export function MoveDocumentModal({ isOpen, onClose, doc, onMoveConfirm }: MoveD
     const loadFolders = async (parentId: string | null) => {
         try {
             const res = await getFoldersAction(parentId);
-            setFolders(res);
+            if (res.success && res.data) {
+                setFolders(res.data);
+            } else {
+                setFolders([]);
+            }
         } catch (e) { console.error(e); }
     };
 
