@@ -69,6 +69,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                 } else {
                     // Fallback: If not found in repo (e.g. project evidence), try generic signer
                     const signRes = await getSignedUrlAction(doc.url);
+                    console.log('[DocumentViewer] Signed URL result:', signRes);
                     if (signRes.success && 'url' in signRes && signRes.url) {
                         setPreviewUrl(signRes.url);
                     } else {
