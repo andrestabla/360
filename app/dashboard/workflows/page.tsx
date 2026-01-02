@@ -7,12 +7,14 @@ import { useTranslation } from '@/lib/i18n';
 import toast from 'react-hot-toast';
 import { DB, WorkflowCase, Project, ProjectFolder } from '@/lib/data';
 import { createProjectFolderAction, getProjectFoldersAction, getProjectByIdAction, getProjectsAction } from '@/app/actions/projectActions';
+import { getUnitsAction } from '@/app/lib/unitActions';
 import {
     Plus, CheckCircle, Clock, XCircle, CaretRight, FileCsv,
     Briefcase, Folder, CloudArrowUp, FolderPlus, CaretLeft, DownloadSimple, PencilSimple, Trash, Copy,
     MagnifyingGlass, Funnel, CalendarBlank, CaretDown
 } from '@phosphor-icons/react';
 import { deleteProjectFolderAction, updateProjectFolderAction, duplicateProjectAction, deleteProjectAction } from '@/app/actions/projectActions';
+import { Unit } from '@/lib/data';
 
 // --- GLOBAL PROGRESS UTILS ---
 const getProjectProgress = (proj: Project) => {
@@ -67,6 +69,7 @@ export default function WorkflowsPage() {
 
     const [folders, setFolders] = useState<ProjectFolder[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
+    const [units, setUnits] = useState<Unit[]>([]);
 
     const handleDeleteFolder = async (folderId: string) => {
         if (!confirm(t('wf_confirm_delete_folder') || '¿Seguro que deseas eliminar esta carpeta?')) return;
@@ -85,9 +88,10 @@ export default function WorkflowsPage() {
     }, [version]); // Reload on version change too
 
     const loadData = async () => {
-        const [resFolders, resProjects] = await Promise.all([
+        const [resFolders, resProjects, resUnits] = await Promise.all([
             getProjectFoldersAction(),
-            getProjectsAction()
+            getProjectsAction(),
+            getUnitsAction()
         ]);
 
         if (resFolders.success && resFolders.data) {
@@ -141,7 +145,20 @@ export default function WorkflowsPage() {
             }));
             setProjects(mappedProjs);
         }
+
+        if (resUnits.success && resUnits.data) {
+            // Map DB Units (schema format) to UI Units (lib/data format) if needed, or assume compatible base
+            // The Select from `units` table returns { id, name, type, ... } which matches mostly
+            // We need to be careful about types.
+            // Casting forcefully for now as the core fields match
+            setUnits(resUnits.data as any[]);
+        }
     };
+
+    // Derived lists for filters
+    const areaOptions = useMemo(() => units.filter(u => u.type === 'DEPARTMENT' || u.type === 'UNIT'), [units]);
+    const processOptions = useMemo(() => units.filter(u => u.type === 'PROCESS'), [units]);
+
 
     // Filter Logic
     const searchParams = useSearchParams();
@@ -173,6 +190,10 @@ export default function WorkflowsPage() {
         return projects.filter(p => {
             const matchesSearch = !search || p.title.toLowerCase().includes(search.toLowerCase());
             const matchesFolder = selectedFolderId ? p.folderId === selectedFolderId : !p.folderId;
+            // Area/Process stores the ID usually? Or Name?
+            // If the project stores the ID, we match ID. If name, we match name.
+            // Let's assume ID for robustness if select values are IDs.
+            // The select values below uses IDs.
             const matchesArea = filterArea === 'ALL' || (p.unit === filterArea);
             const matchesProcess = filterProcess === 'ALL' || (p.process === filterProcess);
             const matchesStatus = filterStatus === 'ALL' || (p.status === filterStatus);
@@ -528,12 +549,9 @@ export default function WorkflowsPage() {
                                 className="w-full pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-blue-500 appearance-none shadow-sm"
                             >
                                 <option value="ALL">Todas las Áreas</option>
-                                {/* Mock Populate - ideally distinct from DB */}
-                                <option value="Operaciones">Operaciones</option>
-                                <option value="Tecnología">Tecnología</option>
-                                <option value="Finanzas">Finanzas</option>
-                                <option value="Marketing">Marketing</option>
-                                <option value="Recursos Humanos">Recursos Humanos</option>
+                                {areaOptions.map(u => (
+                                    <option key={u.id} value={u.id}>{u.name}</option>
+                                ))}
                             </select>
                             <CaretDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                         </div>
@@ -546,10 +564,9 @@ export default function WorkflowsPage() {
                                 className="w-full pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-blue-500 appearance-none shadow-sm"
                             >
                                 <option value="ALL">Todos los Procesos</option>
-                                <option value="Onboarding">Onboarding</option>
-                                <option value="Desarrollo">Desarrollo</option>
-                                <option value="Auditoría">Auditoría</option>
-                                <option value="Ventas">Ventas</option>
+                                {processOptions.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                ))}
                             </select>
                             <CaretDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                         </div>
