@@ -610,7 +610,7 @@ export default function WorkflowsPage() {
                         {foldersList.map(f => (
                             <div key={f.id} onClick={() => setSelectedFolderId(f.id)} className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md cursor-pointer hover:border-blue-300 transition-all group">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className="p-3 rounded-lg bg-yellow-50 text-yellow-500 group-hover:bg-yellow-100 transition-colors">
+                                    <div className="p-3 rounded-lg bg-opacity-20 transition-colors" style={{ backgroundColor: (f.color || '#FBBF24') + '33', color: f.color || '#FBBF24' }}>
                                         <Folder size={28} weight="duotone" />
                                     </div>
                                     <div className="flex gap-1 transition-opacity opacity-0 group-hover:opacity-100">
@@ -806,8 +806,14 @@ export default function WorkflowsPage() {
                                 <div className="flex gap-2">
                                     {['#fbbf24', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#64748b'].map(c => (
                                         <label key={c} className="cursor-pointer">
-                                            <input type="radio" name="color" value={c} className="peer sr-only" defaultChecked={editingFolder ? editingFolder.color === c : c === '#fbbf24'} />
-                                            <div className="w-8 h-8 rounded-full bg-current border-2 border-transparent peer-checked:border-slate-800 active:scale-95 transition-all" style={{ color: c }}></div>
+                                            <input
+                                                type="radio"
+                                                name="color"
+                                                value={c}
+                                                className="peer sr-only"
+                                                defaultChecked={editingFolder ? (editingFolder.color === c) : (c === '#fbbf24')}
+                                            />
+                                            <div className="w-8 h-8 rounded-full bg-current border-2 border-transparent peer-checked:border-slate-800 peer-checked:ring-2 peer-checked:ring-slate-300 active:scale-95 transition-all" style={{ color: c }}></div>
                                         </label>
                                     ))}
                                 </div>
