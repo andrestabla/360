@@ -157,9 +157,9 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
     // Helper to check extensions
     const checkExt = (str: string | undefined, regex: RegExp) => (str || '').match(regex);
 
-    const isImage = checkExt(doc.type || undefined, /(image|jpg|jpeg|png|gif|webp)/i) || checkExt(doc.title, /\.(jpg|jpeg|png|gif|webp)$/i);
-    const isPDF = checkExt(doc.type || undefined, /pdf/i) || checkExt(doc.title, /\.pdf$/i);
-    const isOffice = checkExt(doc.type || undefined, /(doc|docx|xls|xlsx|ppt|pptx|msword|officedocument)/i) || checkExt(doc.title, /\.(doc|docx|xls|xlsx|ppt|pptx)$/i);
+    const isImage = checkExt(doc.type || undefined, /(image|jpg|jpeg|png|gif|webp)/i) || checkExt(doc.title, /\.(jpg|jpeg|png|gif|webp)$/i) || checkExt(doc.url, /\.(jpg|jpeg|png|gif|webp)(\?|$)/i);
+    const isPDF = checkExt(doc.type || undefined, /pdf/i) || checkExt(doc.title, /\.pdf$/i) || checkExt(doc.url, /\.pdf(\?|$)/i);
+    const isOffice = checkExt(doc.type || undefined, /(doc|docx|xls|xlsx|ppt|pptx|msword|officedocument)/i) || checkExt(doc.title, /\.(doc|docx|xls|xlsx|ppt|pptx)$/i) || checkExt(doc.url, /\.(doc|docx|xls|xlsx|ppt|pptx)(\?|$)/i);
     const isEmbed = doc.type === 'embed';
 
 
@@ -305,7 +305,6 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                                 src={previewUrl || doc.url || ''}
                                 className="w-full h-full rounded-lg"
                                 title="Web Preview"
-                                sandbox="allow-scripts allow-same-origin allow-popups"
                             />
                             <div className="absolute top-2 right-2 md:bottom-4 md:right-4 z-10">
                                 <button
