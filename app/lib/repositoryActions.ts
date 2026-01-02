@@ -319,10 +319,20 @@ export async function getDocumentDownloadUrlAction(docId: string) {
     const [doc] = await db.select().from(documents).where(eq(documents.id, docId));
     if (!doc || !doc.url) return { success: false, error: 'Document not found' };
 
+    console.log(`[DownloadAction] Processing doc: ${doc.id}, type: ${doc.type}, url: ${doc.url}`);
+
     // If it's a link type or external URL (that is NOT our internal storage), return it as is
     const isInternal = doc.url && (doc.url.includes('/api/storage/') || doc.url.includes('/repository/'));
+    const isExternalUrl = doc.url.startsWith('http') || doc.url.startsWith('https');
 
-    if (doc.type === 'link' || doc.type === 'embed' || (doc.url.startsWith('http') && !isInternal)) {
+    // If explicit link/embed AND it looks like a URL/Code, return it. 
+    // BUT if it's 'link' but looks like a filename, fall through to signing.
+    if ((doc.type === 'link' || doc.type === 'embed') && (isExternalUrl || isInternal)) {
+        return { success: true, url: doc.url };
+    }
+
+    // If it's effectively an external URL and not internal storage, return it
+    if (isExternalUrl && !isInternal) {
         return { success: true, url: doc.url };
     }
 
@@ -334,19 +344,21 @@ export async function getDocumentDownloadUrlAction(docId: string) {
     if (doc.url.includes('/api/storage/')) {
         key = doc.url.split('/api/storage/')[1];
     } else if (doc.url.includes('/repository/')) {
-        // Robustness: If the user configured the App URL as the Storage Public URL,
-        // we get https://maturity360.co/repository/... which is a 404.
-        // We extract everything after the first occurrence of "/repository/"
-        // and treat "repository/..." as the key.
         const parts = doc.url.split('/repository/');
         if (parts.length > 1) {
             key = 'repository/' + parts[1];
         }
     }
 
+    console.log(`[DownloadAction] Extracted key: ${key}`);
+
     // Perform cleanup just in case (e.g. double slashes)
     key = key.replace(/\/\//g, '/');
 
     const storageService = getStorageService();
-    return await storageService.download(key);
+    const result = await storageService.download(key);
+
+    console.log(`[DownloadAction] Storage result:`, result.success, result.url ? 'URL_PRESENT' : 'NO_URL');
+
+    return result;
 }
