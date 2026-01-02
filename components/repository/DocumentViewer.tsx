@@ -51,6 +51,11 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
 
     // Notify Modal State
     const [showNotifyModal, setShowNotifyModal] = useState(false);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     // Refresh doc data logic (could just be revalidating path, but handling local state for speed)
     const refreshDoc = async () => {
@@ -180,7 +185,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                             <div>
                                 <h1 className="text-lg font-bold text-slate-800 leading-tight truncate max-w-md">{doc.title}</h1>
                                 <p className="text-xs text-slate-500 font-medium">
-                                    {(doc.size ? doc.size : '')} • {new Date(doc.createdAt || Date.now()).toLocaleDateString()}
+                                    {(doc.size ? doc.size : '')} • {isClient ? new Date(doc.createdAt || Date.now()).toLocaleDateString() : ''}
                                     {mode === 'view' && <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">SOLO LECTURA</span>}
                                     {mode === 'work' && <span className="ml-2 text-slate-400">Editando en línea • v{doc.version || '0'}</span>}
                                 </p>
