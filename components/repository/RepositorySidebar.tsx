@@ -81,9 +81,7 @@ export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOv
                             <button onClick={() => onShare(doc)} title="Compartir enlace" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-blue-500 transition-colors">
                                 <ShareNetwork size={20} />
                             </button>
-                            <button onClick={() => onExpand(doc)} title="Ver en pantalla completa" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
-                                <Eye size={20} />
-                            </button>
+
                             <div className="relative">
                                 <button onClick={() => setShowMoreMenu(!showMoreMenu)} className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
                                     <DotsThreeVertical size={20} weight="bold" />
@@ -135,7 +133,7 @@ export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOv
             <div className="flex-1 overflow-y-auto bg-slate-50/50 relative">
                 {activeTab === 'view' && <ViewTab doc={doc} units={units} onDownload={() => onDownload(doc)} />}
                 {activeTab === 'edit' && <EditTab doc={doc} units={units} onUpdate={onUpdate} />}
-                {activeTab === 'comments' && <CommentsTab doc={doc} />}
+                {activeTab === 'comments' && <CommentsTab doc={doc} mode={mode} />}
                 {activeTab === 'history' && <HistoryTab doc={doc} mode={mode} />}
             </div>
         </div>
@@ -331,7 +329,7 @@ function InputGroup({ label, children }: any) {
 }
 
 
-function CommentsTab({ doc }: { doc: RepositoryFile }) {
+function CommentsTab({ doc, mode }: { doc: RepositoryFile, mode: string }) {
     const [comments, setComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
@@ -426,22 +424,26 @@ function CommentsTab({ doc }: { doc: RepositoryFile }) {
             {/* Input Area */}
             <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-100 flex flex-col gap-3">
 
-                {/* Blue Banner - Mock Context */}
-                <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex justify-between items-center animate-in fade-in slide-in-from-bottom-2">
-                    <span className="text-xs font-bold text-blue-600">Agregando marcador en Pag 1</span>
-                    <button type="button" className="text-blue-400 hover:text-blue-600 transition-colors">
-                        <X size={14} weight="bold" />
-                    </button>
-                </div>
+                {/* Blue Banner - Mock Context (Only in WORK mode) */}
+                {mode === 'work' && (
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex justify-between items-center animate-in fade-in slide-in-from-bottom-2">
+                        <span className="text-xs font-bold text-blue-600">Agregando marcador en Pag 1</span>
+                        <button type="button" className="text-blue-400 hover:text-blue-600 transition-colors">
+                            <X size={14} weight="bold" />
+                        </button>
+                    </div>
+                )}
 
-                {/* Reference Input */}
-                <div className="w-full">
-                    <input
-                        placeholder="Referencia (automática)"
-                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-500 focus:ring-1 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
-                        readOnly // Giving appearance of auto-filled
-                    />
-                </div>
+                {/* Reference Input (Only in WORK mode) */}
+                {mode === 'work' && (
+                    <div className="w-full">
+                        <input
+                            placeholder="Referencia (automática)"
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-500 focus:ring-1 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
+                            readOnly // Giving appearance of auto-filled
+                        />
+                    </div>
+                )}
 
                 {/* Textarea */}
                 <div className="relative">
@@ -478,7 +480,7 @@ function HistoryTab({ doc, mode }: { doc: RepositoryFile, mode: string }) {
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-sm font-bold text-slate-700">HISTORIAL DE VERSIONES</h3>
-                {mode === 'work' && (
+                {(mode === 'work' || mode === 'repository') && (
                     <button className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
                         Subir nueva versión
                     </button>
