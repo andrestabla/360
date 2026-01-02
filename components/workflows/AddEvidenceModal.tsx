@@ -206,8 +206,13 @@ export function AddEvidenceModal({ isOpen, projectId, onClose, onAdd }: AddEvide
                             <p className="text-xs text-slate-400">PDF, Imágenes, Word, Excel (Max 10MB)</p>
 
                             {selectedFile && (
-                                <button onClick={(e) => { e.stopPropagation(); handleAddFile(); }} className="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm shadow-lg shadow-blue-500/20 z-20 relative animate-in fade-in zoom-in-95">
-                                    Subir Archivo
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleAddFile(); }}
+                                    disabled={isUploading}
+                                    className="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm shadow-lg shadow-blue-500/20 z-20 relative animate-in fade-in zoom-in-95 disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {isUploading ? <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" /> : null}
+                                    {isUploading ? 'Subiendo...' : 'Subir Archivo'}
                                 </button>
                             )}
                         </div>
