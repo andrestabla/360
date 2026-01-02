@@ -117,8 +117,8 @@ export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOv
                 </button>
             </div>
 
-            {/* Tabs */}
-            {mode !== 'view' && (
+            {/* Tabs - Only show in default repository mode, not in 'view' (read-only) or 'work' (toolbar nav) */}
+            {mode === 'repository' && (
                 <div className="px-4 py-2 border-b border-slate-100 bg-white">
                     <div className="flex gap-1 bg-slate-50 p-1 rounded-xl">
                         <TabButton active={activeTab === 'view'} onClick={() => setActiveTab('view')} label="Ver" />
@@ -501,37 +501,38 @@ function CommentsTab({ doc, mode }: { doc: RepositoryFile, mode: string }) {
 function HistoryTab({ doc, mode }: { doc: RepositoryFile, mode: string }) {
     return (
         <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h3 className="text-sm font-bold text-slate-700">HISTORIAL DE VERSIONES</h3>
+            <div className="p-6">
                 {(mode === 'work' || mode === 'repository') && (
-                    <button className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
-                        Subir nueva versión
-                    </button>
+                    <div className="mb-6">
+                        <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm text-sm">
+                            <Plus size={16} weight="bold" /> Cargar Nueva Versión
+                        </button>
+                        <p className="text-center text-xs text-slate-400 mt-2">No hay comentarios aún.</p>
+                    </div>
                 )}
-            </div>
 
-            <div className="space-y-4">
-                {/* Mock current version as the latest */}
-                <div className="flex items-start gap-3 relative pl-4 pb-4 border-l-2 border-slate-100 last:border-0 last:pb-0">
-                    <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 ring-4 ring-white"></div>
-                    <div>
-                        <p className="text-sm font-bold text-slate-800">Versión {doc.version || '1.0'}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">Editado por {(doc as any).owner?.name || 'Usuario'} • {new Date(doc.updatedAt || doc.createdAt || Date.now()).toLocaleDateString()}</p>
-                        <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">
-                            Versión actual del documento.
+                <div className="space-y-4">
+                    {/* Mock current version as the latest */}
+                    <div className="flex items-start gap-3 relative pl-4 pb-4 border-l-2 border-slate-100 last:border-0 last:pb-0">
+                        <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 ring-4 ring-white"></div>
+                        <div>
+                            <p className="text-sm font-bold text-slate-800">Versión {doc.version || '1.0'}</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Editado por {(doc as any).owner?.name || 'Usuario'} • {new Date(doc.updatedAt || doc.createdAt || Date.now()).toLocaleDateString()}</p>
+                            <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">
+                                Versión actual del documento.
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Example of previous version */}
+                    <div className="flex items-start gap-3 relative pl-4 pb-4 border-l-2 border-slate-100 last:border-0 last:pb-0 opacity-60">
+                        <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-300 ring-4 ring-white"></div>
+                        <div>
+                            <p className="text-sm font-bold text-slate-600">Versión inicial</p>
+                            <p className="text-xs text-slate-400 mt-0.5">Creado por {(doc as any).owner?.name || 'Usuario'} • {new Date(doc.createdAt || Date.now()).toLocaleDateString()}</p>
                         </div>
                     </div>
                 </div>
-
-                {/* Example of previous version */}
-                <div className="flex items-start gap-3 relative pl-4 pb-4 border-l-2 border-slate-100 last:border-0 last:pb-0 opacity-60">
-                    <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-300 ring-4 ring-white"></div>
-                    <div>
-                        <p className="text-sm font-bold text-slate-600">Versión inicial</p>
-                        <p className="text-xs text-slate-400 mt-0.5">Creado por {(doc as any).owner?.name || 'Usuario'} • {new Date(doc.createdAt || Date.now()).toLocaleDateString()}</p>
-                    </div>
-                </div>
             </div>
-        </div>
-    );
+            );
 }
