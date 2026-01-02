@@ -69,14 +69,24 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                 } else {
                     // Fallback: If not found in repo (e.g. project evidence), try generic signer
                     const signRes = await getSignedUrlAction(doc.url);
-                    console.log('[DocumentViewer] Signed URL result:', signRes);
+                    console.log('[DocumentViewer] Signed URL result:', JSON.stringify(signRes));
+
                     if (signRes.success && 'url' in signRes && signRes.url) {
                         setPreviewUrl(signRes.url);
+                    } else if (signRes.error) {
+                        // If specific error from signer, display it (mocking as URL to trigger error view or alerting)
+                        console.error("Signer error:", signRes.error);
+                        // If it's a project link that failed signing, don't fallback to the broken link.
+                        // Show simple alert for now to debug
+                        if (doc.url.includes('/projects/')) {
+                            alert(`Error firmando archivo: ${signRes.error}`);
+                        }
+                        setPreviewUrl(doc.url);
                     } else {
                         setPreviewUrl(doc.url);
                     }
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Error fetching preview URL:", error);
                 setPreviewUrl(doc.url);
             } finally {
