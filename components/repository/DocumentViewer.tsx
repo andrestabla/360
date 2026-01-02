@@ -79,44 +79,39 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                 const res = await getDocumentDownloadUrlAction(doc.id);
                 if (res.success && res.url) {
                     setPreviewUrl(res.url);
-                    if (res.success && res.url) {
-                        setPreviewUrl(res.url);
-                    } else {
-                        // Fallback: If not found in repo (e.g. project evidence), try generic signer or proxy
-                        // Note: If docUrl was rewritten to /api/storage/..., getSignedUrlAction might be redundant if we just used it directly,
-                        // but getSignedUrlAction handles the logic to call storageService.download -> signed URL.
+                } else {
+                    // Fallback: If not found in repo (e.g. project evidence), try generic signer or proxy
 
-                        // If it is ALREADY a proxy URL, we can just use it? 
-                        // No, the proxy URL returns a redirect. We can use it directly as the source for iframe/img.
-                        if (docUrl.includes('/api/storage/')) {
-                            console.log('[DocumentViewer] Using proxy URL directly:', docUrl);
-                            setPreviewUrl(docUrl);
-                            setLoadingPreview(false);
-                            return;
-                        }
-
-                        const signRes = await getSignedUrlAction(docUrl);
-                        console.log('[DocumentViewer] Signed URL result:', JSON.stringify(signRes));
-
-                        if (signRes.success && 'url' in signRes && signRes.url) {
-                            setPreviewUrl(signRes.url);
-                        } else if (signRes.error) {
-                            console.error("Signer error:", signRes.error);
-                            // Silent fallback
-                            setPreviewUrl(docUrl);
-                        } else {
-                            setPreviewUrl(docUrl);
-                        }
+                    // If it is ALREADY a proxy URL (rewritten above), we can use it directly as the source for iframe/img.
+                    if (docUrl.includes('/api/storage/')) {
+                        console.log('[DocumentViewer] Using proxy URL directly:', docUrl);
+                        setPreviewUrl(docUrl);
+                        setLoadingPreview(false);
+                        return;
                     }
-                } catch (error: any) {
-                    console.error("Error fetching preview URL:", error);
-                    setPreviewUrl(docUrl);
-                } finally {
-                    setLoadingPreview(false);
+
+                    const signRes = await getSignedUrlAction(docUrl);
+                    console.log('[DocumentViewer] Signed URL result:', JSON.stringify(signRes));
+
+                    if (signRes.success && 'url' in signRes && signRes.url) {
+                        setPreviewUrl(signRes.url);
+                    } else if (signRes.error) {
+                        console.error("Signer error:", signRes.error);
+                        // Silent fallback
+                        setPreviewUrl(docUrl);
+                    } else {
+                        setPreviewUrl(docUrl);
+                    }
                 }
-            };
-            fetchUrl();
-        }, [doc.id, doc.url]);
+            } catch (error: any) {
+                console.error("Error fetching preview URL:", error);
+                setPreviewUrl(docUrl);
+            } finally {
+                setLoadingPreview(false);
+            }
+        };
+        fetchUrl();
+    }, [doc.id, doc.url]);
 
     const handleDownload = async () => {
         if (previewUrl) {
