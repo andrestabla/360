@@ -85,15 +85,29 @@ export async function updateProjectAction(id: string, updates: any) {
         await db.transaction(async (tx) => {
             // 1. Update Project Fields
             if (Object.keys(projectData).length > 0) {
-                // Sanitize folderId: if empty string, set to null (or undefined if not updating)
+                // Sanitize folderId
                 if (projectData.folderId === '') {
                     projectData.folderId = null;
                 }
 
-                console.log('Updating project fields:', projectData);
-                await tx.update(projects)
-                    .set({ ...projectData, updatedAt: new Date() })
-                    .where(eq(projects.id, id));
+                // Fix Date objects if they come as strings
+                if (projectData.startDate && typeof projectData.startDate === 'string') {
+                    projectData.startDate = new Date(projectData.startDate);
+                }
+                if (projectData.endDate && typeof projectData.endDate === 'string') {
+                    projectData.endDate = new Date(projectData.endDate);
+                }
+
+                console.log('Updating project fields (sanitized):', projectData);
+
+                try {
+                    await tx.update(projects)
+                        .set({ ...projectData, updatedAt: new Date() })
+                        .where(eq(projects.id, id));
+                } catch (err) {
+                    console.error("DB Update Failed:", err);
+                    throw err; // Re-throw to abort transaction
+                }
             }
 
             // 2. Sync Phases (if provided)
@@ -112,6 +126,14 @@ export async function updateProjectAction(id: string, updates: any) {
                 // Upsert phases
                 for (const phase of phases) {
                     const { activities, ...phaseFields } = phase;
+
+                    // Fix Phase Dates
+                    if (phaseFields.startDate && typeof phaseFields.startDate === 'string') {
+                        phaseFields.startDate = new Date(phaseFields.startDate);
+                    }
+                    if (phaseFields.endDate && typeof phaseFields.endDate === 'string') {
+                        phaseFields.endDate = new Date(phaseFields.endDate);
+                    }
 
                     await tx.insert(projectPhases)
                         .values({
@@ -138,18 +160,28 @@ export async function updateProjectAction(id: string, updates: any) {
 
                         // Upsert activities
                         for (const act of activities) {
+                            const activityData = { ...act };
+
+                            // Fix Activity Dates
+                            if (activityData.startDate && typeof activityData.startDate === 'string') {
+                                activityData.startDate = new Date(activityData.startDate);
+                            }
+                            if (activityData.endDate && typeof activityData.endDate === 'string') {
+                                activityData.endDate = new Date(activityData.endDate);
+                            }
+
                             await tx.insert(projectActivities)
                                 .values({
-                                    ...act,
+                                    ...activityData,
                                     phaseId: phase.id,
-                                    documents: act.documents || [], // Explicitly map documents
+                                    documents: activityData.documents || [],
                                     updatedAt: new Date()
                                 })
                                 .onConflictDoUpdate({
                                     target: projectActivities.id,
                                     set: {
-                                        ...act,
-                                        documents: act.documents || [], // Explicitly map documents
+                                        ...activityData,
+                                        documents: activityData.documents || [],
                                         updatedAt: new Date()
                                     }
                                 });
