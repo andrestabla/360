@@ -48,7 +48,7 @@ function createS3Client(config: Record<string, any>) {
 
 import { decryptCredentials, getSecretFields } from './storageEncryption';
 
-async function getStorageConfig() {
+export async function getStorageConfig() {
   try {
     const settings = await db.select().from(organizationSettings).where(eq(organizationSettings.id, 1)).limit(1);
     if (!settings || settings.length === 0 || !settings[0].storageConfig) return null;
