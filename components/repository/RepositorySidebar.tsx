@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, DownloadSimple, PencilSimple, ChatCircle, Eye, FloppyDisk, Check, Star, ShareNetwork, ClipboardText, DotsThreeVertical, Trash, FolderMinus, CaretDown, PaperPlaneRight, CaretDoubleRight } from '@phosphor-icons/react';
+import { X, DownloadSimple, PencilSimple, ChatCircle, Eye, FloppyDisk, Check, Star, ShareNetwork, ClipboardText, DotsThreeVertical, Trash, FolderMinus, CaretDown, PaperPlaneRight, CaretDoubleRight, ClockCounterClockwise } from '@phosphor-icons/react';
 import { RepositoryFile, updateDocumentMetadataAction } from '@/app/lib/repositoryActions';
 import { createCommentAction, getCommentsAction } from '@/app/lib/commentActions';
 import { Unit } from '@/shared/schema';
@@ -37,7 +37,7 @@ interface RepositorySidebarProps {
 }
 
 export function RepositorySidebar({ doc, units, mode = 'repository', onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand }: RepositorySidebarProps) {
-    const [activeTab, setActiveTab] = useState<'view' | 'edit' | 'comments'>(mode === 'work' ? 'comments' : 'view');
+    const [activeTab, setActiveTab] = useState<'view' | 'edit' | 'comments' | 'history'>(mode === 'work' ? 'comments' : 'view');
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
 
@@ -106,6 +106,7 @@ export function RepositorySidebar({ doc, units, mode = 'repository', onClose, on
                     <TabButton active={activeTab === 'view'} onClick={() => setActiveTab('view')} label="Ver" />
                     {mode !== 'view' && <TabButton active={activeTab === 'edit'} onClick={() => setActiveTab('edit')} label="Editar" />}
                     <TabButton active={activeTab === 'comments'} onClick={() => setActiveTab('comments')} label="Comentarios" />
+                    <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')} label="Historial" />
                 </div>
             </div>
 
@@ -114,6 +115,7 @@ export function RepositorySidebar({ doc, units, mode = 'repository', onClose, on
                 {activeTab === 'view' && <ViewTab doc={doc} units={units} onDownload={() => onDownload(doc)} />}
                 {activeTab === 'edit' && <EditTab doc={doc} units={units} onUpdate={onUpdate} />}
                 {activeTab === 'comments' && <CommentsTab doc={doc} />}
+                {activeTab === 'history' && <HistoryTab doc={doc} />}
             </div>
         </div>
     );
@@ -391,6 +393,7 @@ function CommentsTab({ doc }: { doc: RepositoryFile }) {
                 <div ref={messagesEndRef} />
             </div>
 
+
             <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-100">
                 <div className="relative">
                     <input
@@ -408,6 +411,42 @@ function CommentsTab({ doc }: { doc: RepositoryFile }) {
                     </button>
                 </div>
             </form>
-        </div>
+        </div >
     )
+}
+
+function HistoryTab({ doc }: { doc: RepositoryFile }) {
+    return (
+        <div className="p-6">
+            <div className="flex justify-between items-center mb-6">
+                <h3 className="text-sm font-bold text-slate-700">HISTORIAL DE VERSIONES</h3>
+                <button className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+                    Subir nueva versión
+                </button>
+            </div>
+
+            <div className="space-y-4">
+                {/* Mock current version as the latest */}
+                <div className="flex items-start gap-3 relative pl-4 pb-4 border-l-2 border-slate-100 last:border-0 last:pb-0">
+                    <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 ring-4 ring-white"></div>
+                    <div>
+                        <p className="text-sm font-bold text-slate-800">Versión {doc.version || '1.0'}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Editado por {(doc as any).owner?.name || 'Usuario'} • {new Date(doc.updatedAt || doc.createdAt || Date.now()).toLocaleDateString()}</p>
+                        <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">
+                            Versión actual del documento.
+                        </div>
+                    </div>
+                </div>
+
+                {/* Example of previous version */}
+                <div className="flex items-start gap-3 relative pl-4 pb-4 border-l-2 border-slate-100 last:border-0 last:pb-0 opacity-60">
+                    <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-300 ring-4 ring-white"></div>
+                    <div>
+                        <p className="text-sm font-bold text-slate-600">Versión inicial</p>
+                        <p className="text-xs text-slate-400 mt-0.5">Creado por {(doc as any).owner?.name || 'Usuario'} • {new Date(doc.createdAt || Date.now()).toLocaleDateString()}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }

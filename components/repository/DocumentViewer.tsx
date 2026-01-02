@@ -186,7 +186,22 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                     ) : isImage ? (
                         <img src={previewUrl!} alt={doc.title} className="max-w-full max-h-full object-contain shadow-lg rounded-lg bg-white" />
                     ) : isPDF ? (
-                        <iframe src={previewUrl!} className="w-full h-full rounded-lg shadow-lg bg-white" title="PDF Preview" />
+                        <div className="w-full h-full bg-white rounded-lg shadow-lg relative group">
+                            <iframe
+                                src={previewUrl!}
+                                className="w-full h-full rounded-lg"
+                                title="PDF Preview"
+                            />
+                            {/* Fallback button if iframe fails or is blocked */}
+                            <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={() => window.open(previewUrl || '', '_blank')}
+                                    className="bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg"
+                                >
+                                    Abrir en nueva pestaña
+                                </button>
+                            </div>
+                        </div>
                     ) : isEmbed && doc.content ? (
                         <div
                             className="w-full h-full bg-white rounded-lg overflow-hidden shadow-lg [&_iframe]:w-full [&_iframe]:h-full [&_iframe]:border-0"
