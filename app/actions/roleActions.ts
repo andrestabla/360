@@ -52,3 +52,33 @@ export async function updateRolePermissionsAction(level: number, permissions: st
         return { success: false, error: 'Failed to update permissions' };
     }
 }
+
+export async function resetRolePermissionsAction(templates: Record<number, string[]>) {
+    try {
+        const settings = await db.query.organizationSettings.findFirst();
+        if (!settings) {
+            await db.insert(organizationSettings).values({
+                id: 1,
+                policies: { roleTemplates: templates }
+            });
+        } else {
+            const currentPolicies = (settings.policies as any) || {};
+
+            const updatedPolicies = {
+                ...currentPolicies,
+                roleTemplates: templates
+            };
+
+            await db.update(organizationSettings)
+                .set({ policies: updatedPolicies })
+                .where(eq(organizationSettings.id, 1));
+        }
+
+        revalidatePath('/dashboard/admin/roles');
+        revalidatePath('/dashboard/admin/users');
+        return { success: true };
+    } catch (error: any) {
+        console.error('resetRolePermissionsAction error:', error);
+        return { success: false, error: 'Failed to reset permissions' };
+    }
+}

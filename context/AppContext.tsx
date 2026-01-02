@@ -663,7 +663,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (currentUser.level === 1) return true;
 
         const templates = platformSettings.roleTemplates || {};
-        const levelPerms = templates[currentUser.level] || [];
+        const levelPerms = templates[currentUser.level];
+
+        if (!Array.isArray(levelPerms)) return false;
+
         return levelPerms.includes(permission);
     }, [currentUser, isSuperAdmin, platformSettings.roleTemplates]);
 

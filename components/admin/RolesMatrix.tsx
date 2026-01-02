@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ShieldCheck, CheckSquare, Square, CaretDown, CaretRight } from '@phosphor-icons/react';
 import { PERMISSIONS, Permission } from '@/lib/data';
-import { getRolePermissionsAction, updateRolePermissionsAction } from '@/app/actions/roleActions';
+import { getRolePermissionsAction, updateRolePermissionsAction, resetRolePermissionsAction } from '@/app/actions/roleActions';
 import { toast } from 'react-hot-toast';
-
 const LEVELS = [
     { level: 1, label: 'Nivel 1 (Admin Tenant)' },
     { level: 2, label: 'Nivel 2 (Jefe Área)' },
@@ -111,15 +110,22 @@ export default function RolesMatrix() {
         setLoading(true);
         const res = await getRolePermissionsAction();
         if (res.success) {
-            // Apply defaults if empty
-            if (Object.keys(res.data).length === 0) {
-                setTemplates(DEFAULT_DEFAULTS);
-                // Also save them silently so they persist next time
-                // We'll rely on the user making a change to save, or we could auto-save here depending on preference.
-                // For now, just showing them is enough.
-            } else {
-                setTemplates(res.data);
+            const serverData = res.data || {};
+            // Merge defaults: Use server data if present, otherwise default
+            const mergedTemplates: Record<number, string[]> = {};
+
+            for (const levelStr of Object.keys(DEFAULT_DEFAULTS)) {
+                const level = parseInt(levelStr);
+                // If server has data for this level (even empty array), use it.
+                // If undefined, use default.
+                if (serverData[level] !== undefined) {
+                    mergedTemplates[level] = serverData[level];
+                } else {
+                    mergedTemplates[level] = DEFAULT_DEFAULTS[level];
+                }
             }
+
+            setTemplates(mergedTemplates);
         }
         setLoading(false);
     };
@@ -169,14 +175,12 @@ export default function RolesMatrix() {
 
         setTemplates(DEFAULT_DEFAULTS);
 
-        // Save all levels
-        // Currently updateRolePermissionsAction handles one level. We might need a batch update or loop.
-        // Looping for now.
-        for (const level of Object.keys(DEFAULT_DEFAULTS)) {
-            const l = parseInt(level);
-            await updateRolePermissionsAction(l, DEFAULT_DEFAULTS[l]);
+        const res = await resetRolePermissionsAction(DEFAULT_DEFAULTS);
+        if (res.success) {
+            toast.success("Permisos restablecidos");
+        } else {
+            toast.error("Error al restablecer permisos");
         }
-        toast.success("Permisos restablecidos");
     };
 
     return (
