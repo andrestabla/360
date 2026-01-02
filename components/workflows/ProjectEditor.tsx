@@ -694,6 +694,7 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
             {showDocPicker.active && (
                 <AddEvidenceModal
                     isOpen={showDocPicker.active}
+                    projectId={project.id} // Pass project ID
                     onClose={() => setShowDocPicker({ active: false })}
                     onAdd={handleAddEvidence}
                 />
