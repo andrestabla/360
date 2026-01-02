@@ -6,7 +6,7 @@ import {
     X, DownloadSimple, ShareNetwork, Eye, DotsThreeVertical,
     PencilSimple, ClipboardText, FolderMinus, Trash,
     FilePdf, FileDoc, FileXls, FilePpt, Image, Link as LinkIcon,
-    Code, FileText, Folder, CaretLeft, Star, CaretDoubleLeft, SidebarSimple, ClockCounterClockwise
+    Code, FileText, Folder, CaretLeft, Star, CaretDoubleLeft, SidebarSimple, ClockCounterClockwise, Camera, Bell, ChatCircle,
 } from '@phosphor-icons/react';
 import { RepositoryFile, updateDocumentMetadataAction, getDocumentDownloadUrlAction, deleteDocumentAction, toggleLikeAction } from '@/app/lib/repositoryActions';
 import { getSignedUrlAction } from '@/app/actions/storageActions';
@@ -38,13 +38,19 @@ interface DocumentViewerProps {
     onClose?: () => void;
 }
 
+import { NotifyChangeModal } from './NotifyChangeModal';
+
 export default function DocumentViewer({ initialDoc, units, initialMode = 'repository', onClose }: DocumentViewerProps) {
     const router = useRouter();
     const [doc, setDoc] = useState(initialDoc);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [loadingPreview, setLoadingPreview] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(initialMode !== 'view');
+    const [sidebarMode, setSidebarMode] = useState<'comments' | 'history' | 'details'>('comments'); // Track what sidebar shows
     const [mode, setMode] = useState(initialMode);
+
+    // Notify Modal State
+    const [showNotifyModal, setShowNotifyModal] = useState(false);
 
     // Refresh doc data logic (could just be revalidating path, but handling local state for speed)
     const refreshDoc = async () => {
@@ -176,55 +182,87 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                                 <p className="text-xs text-slate-500 font-medium">
                                     {(doc.size ? doc.size : '')} • {new Date(doc.createdAt || Date.now()).toLocaleDateString()}
                                     {mode === 'view' && <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">SOLO LECTURA</span>}
+                                    {mode === 'work' && <span className="ml-2 text-slate-400">Editando en línea • v{doc.version || '0'}</span>}
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {/* Always visible: History/Details Toggle */}
-                        <button
-                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            className={`flex items-center gap-2 px-3 py-2 border font-bold rounded-lg text-xs transition-all shadow-sm ${isSidebarOpen ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:text-blue-600 hover:border-blue-200'}`}
-                            title="Ver historial y detalles"
-                        >
-                            {isSidebarOpen ? <SidebarSimple size={18} weight="fill" /> : <ClockCounterClockwise size={18} />}
-                            <span className="hidden sm:inline">Historial</span>
-                        </button>
-
-                        {/* Work Mode Actions */}
-                        {mode === 'work' && (
+                        {/* WORK MODE ACTIONS */}
+                        {mode === 'work' ? (
                             <>
+                                {/* Capture - Purple Outline */}
                                 <button
                                     onClick={handleCapture}
-                                    className="flex items-center gap-2 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg text-xs transition-colors"
+                                    className="flex items-center gap-2 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg text-xs transition-colors border border-purple-200"
                                 >
-                                    <Image size={18} />
+                                    <Camera size={18} weight="bold" />
                                     <span className="hidden sm:inline">Capturar</span>
                                 </button>
-                                <div className="w-px h-6 bg-slate-200 mx-1"></div>
+
+                                {/* Notify - Purple Fill/Light */}
+                                <button
+                                    onClick={() => setShowNotifyModal(true)}
+                                    className="flex items-center gap-2 px-3 py-2 bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold rounded-lg text-xs transition-colors"
+                                >
+                                    <Bell size={18} weight="bold" />
+                                    <span className="hidden sm:inline">Notificar</span>
+                                </button>
+
+                                {/* History - Grey */}
+                                <button
+                                    onClick={() => {
+                                        setSidebarMode('history');
+                                        setIsSidebarOpen(true);
+                                    }}
+                                    className={`flex items-center gap-2 px-3 py-2 font-bold rounded-lg text-xs transition-all ${isSidebarOpen && sidebarMode === 'history' ? 'bg-slate-200 text-slate-800' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                >
+                                    <ClockCounterClockwise size={18} weight="bold" />
+                                    <span className="hidden sm:inline">Historial</span>
+                                </button>
+
+                                {/* Comments - Blue */}
+                                <button
+                                    onClick={() => {
+                                        setSidebarMode('comments');
+                                        setIsSidebarOpen(!isSidebarOpen || sidebarMode !== 'comments'); // Toggle if already open on comments
+                                    }}
+                                    className={`flex items-center gap-2 px-3 py-2 font-bold rounded-lg text-xs transition-all ${isSidebarOpen && sidebarMode === 'comments' ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-blue-50 text-blue-600 border border-transparent hover:bg-blue-100'}`}
+                                >
+                                    <ChatCircle size={18} weight="bold" />
+                                    <span className="hidden sm:inline">Comentarios</span>
+                                </button>
+
+                                {/* Download - Black */}
+                                <button
+                                    onClick={handleDownload}
+                                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg text-xs transition-colors shadow-lg shadow-slate-900/10"
+                                >
+                                    <span className="hidden sm:inline">Descargar</span>
+                                </button>
+                            </>
+                        ) : (
+                            /* VIEW/REPO MODE ACTIONS (Existing simplified) */
+                            <>
+                                <button
+                                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                                    className={`flex items-center gap-2 px-3 py-2 border font-bold rounded-lg text-xs transition-all shadow-sm ${isSidebarOpen ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:text-blue-600 hover:border-blue-200'}`}
+                                    title="Ver historial y detalles"
+                                >
+                                    {isSidebarOpen ? <SidebarSimple size={18} weight="fill" /> : <ClockCounterClockwise size={18} />}
+                                    <span className="hidden sm:inline">Historial</span>
+                                </button>
+
+                                <button
+                                    onClick={() => window.open(previewUrl || doc.url || '', '_blank')}
+                                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition-colors"
+                                >
+                                    <DownloadSimple size={18} />
+                                    <span className="hidden sm:inline">Descargar</span>
+                                </button>
                             </>
                         )}
-
-                        {/* Sidebar Toggle - Only if not View mode or explicitly allowed */}
-                        {mode !== 'view' && !isSidebarOpen && (
-                            <button
-                                onClick={() => setIsSidebarOpen(true)}
-                                className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 font-bold rounded-lg text-xs transition-all shadow-sm"
-                                title="Mostrar detalles"
-                            >
-                                <SidebarSimple size={18} />
-                                <span className="hidden sm:inline">Detalles</span>
-                            </button>
-                        )}
-
-                        <button
-                            onClick={() => window.open(previewUrl || doc.url || '', '_blank')}
-                            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition-colors"
-                        >
-                            <DownloadSimple size={18} />
-                            <span className="hidden sm:inline">Descargar</span>
-                        </button>
                     </div>
                 </div>
 
@@ -293,9 +331,34 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                         onDelete={handleDelete}
                         onMove={() => { /* Implement move logic if needed */ }}
                         onExpand={() => { /* Already expanded */ }}
+                    <RepositorySidebar
+                        doc={doc}
+                        units={units}
+                        mode={mode} // Pass mode
+                        activeTabOverride={sidebarMode === 'history' ? 'history' : (sidebarMode === 'comments' ? 'comments' : undefined)}
+                        onClose={() => setIsSidebarOpen(false)}
+                        onDownload={handleDownload}
+                        onUpdate={refreshDoc}
+                        onAssign={() => { /* Implement if needed or use modal logic */ }}
+                        onToggleLike={async (d) => { await toggleLikeAction(d.id); refreshDoc(); }}
+                        onShare={() => { navigator.clipboard.writeText(doc.url || ''); alert("Link copiado!"); }}
+                        onDelete={handleDelete}
+                        onMove={() => { /* Implement move logic if needed */ }}
+                        onExpand={() => { /* Already expanded */ }}
                     />
                 </div>
             )}
+
+            {/* Notify Modal */}
+            <NotifyChangeModal
+                isOpen={showNotifyModal}
+                onClose={() => setShowNotifyModal(false)}
+                onSend={async (uid, msg) => {
+                    alert(`Simulando envío a usuario ${uid}: ${msg}`);
+                    // Ensure this waits a bit to simulate net
+                    await new Promise(r => setTimeout(r, 1000));
+                }}
+            />
         </div>
     );
 }

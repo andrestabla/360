@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, DownloadSimple, PencilSimple, ChatCircle, Eye, FloppyDisk, Check, Star, ShareNetwork, ClipboardText, DotsThreeVertical, Trash, FolderMinus, CaretDown, PaperPlaneRight, CaretDoubleRight, ClockCounterClockwise } from '@phosphor-icons/react';
+import { X, DownloadSimple, PencilSimple, ChatCircle, Eye, FloppyDisk, Check, Star, ShareNetwork, ClipboardText, DotsThreeVertical, Trash, FolderMinus, CaretDown, PaperPlaneRight, CaretDoubleRight, ClockCounterClockwise, Paperclip } from '@phosphor-icons/react';
 import { RepositoryFile, updateDocumentMetadataAction } from '@/app/lib/repositoryActions';
 import { createCommentAction, getCommentsAction } from '@/app/lib/commentActions';
 import { Unit } from '@/shared/schema';
@@ -34,13 +34,19 @@ interface RepositorySidebarProps {
     onDelete: (doc: RepositoryFile) => void; // New
     onMove: (doc: RepositoryFile) => void; // New
     onExpand: (doc: RepositoryFile) => void; // New
+    activeTabOverride?: 'view' | 'edit' | 'comments' | 'history';
 }
 
-export function RepositorySidebar({ doc, units, mode = 'repository', onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand }: RepositorySidebarProps) {
+export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOverride, onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand }: RepositorySidebarProps) {
     // In 'view' mode, we default to history and show NOTHING else (per user request).
     const [activeTab, setActiveTab] = useState<'view' | 'edit' | 'comments' | 'history'>(
-        mode === 'view' ? 'history' : (mode === 'work' ? 'comments' : 'view')
+        activeTabOverride || (mode === 'view' ? 'history' : (mode === 'work' ? 'comments' : 'view'))
     );
+
+    // Sync override
+    useEffect(() => {
+        if (activeTabOverride) setActiveTab(activeTabOverride);
+    }, [activeTabOverride]);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
 
@@ -409,21 +415,49 @@ function CommentsTab({ doc }: { doc: RepositoryFile }) {
             </div>
 
 
-            <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-100">
+            <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-100 flex flex-col gap-3">
+
+                {/* Reference Input */}
+                <div className="w-full">
+                    <div className="relative">
+                        <input
+                            // In a real implementation this would bind to a page ref
+                            placeholder="Referencia (ej: Pág 2)..."
+                            className="w-full pl-3 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
+                        />
+                        {/* Mocking "Automatic" state if needed, or leave clear */}
+                    </div>
+                </div>
+
                 <div className="relative">
-                    <input
+                    <textarea
                         value={newComment}
                         onChange={e => setNewComment(e.target.value)}
                         placeholder="Escribe un comentario..."
-                        className="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                        rows={3}
+                        className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSend();
+                            }
+                        }}
                     />
-                    <button
-                        type="submit"
-                        disabled={sending || !newComment.trim()}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
-                    >
-                        <PaperPlaneRight weight="bold" size={16} />
-                    </button>
+                    <div className="absolute right-2 bottom-2 flex gap-1">
+                        <button
+                            type="button"
+                            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
+                        >
+                            <Paperclip size={16} />
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={sending || !newComment.trim()}
+                            className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
+                        >
+                            <PaperPlaneRight weight="bold" size={16} />
+                        </button>
+                    </div>
                 </div>
             </form>
         </div >
