@@ -131,6 +131,9 @@ interface AppContextType {
     createRepoFolder: (folder: Partial<import("@/lib/data").RepoFolder>) => void;
     updateRepoFolder: (id: string, updates: Partial<import("@/lib/data").RepoFolder>) => void;
     deleteRepoFolder: (id: string) => void;
+
+    // Permissions Helper
+    hasPermission: (permission: string) => boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -652,6 +655,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const hasPermission = useCallback((permission: string) => {
+        if (isSuperAdmin) return true;
+        if (!currentUser) return false;
+
+        // Admin Tenant (Level 1) fallback override just in case, though Matrix handles it
+        if (currentUser.level === 1) return true;
+
+        const templates = platformSettings.roleTemplates || {};
+        const levelPerms = templates[currentUser.level] || [];
+        return levelPerms.includes(permission);
+    }, [currentUser, isSuperAdmin, platformSettings.roleTemplates]);
+
     return (
         <AppContext.Provider value={{
             currentUser,
@@ -697,7 +712,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             openMobileMenu,
             closeMobileMenu,
             unreadChatCount,
-            refreshUnreadCount
+            refreshUnreadCount,
+            hasPermission
         }}>
             {children}
         </AppContext.Provider>

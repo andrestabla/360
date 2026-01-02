@@ -144,7 +144,8 @@ export default function SurveysPage() {
     // --- HOOKS (DEBEN ESTAR ANTES DE CUALQUIER RETURN) ---
 
     // Permissions
-    const canManage = (currentUser?.level || 6) < 3;
+    const { hasPermission } = useApp();
+    const canManage = hasPermission('MANAGE_SURVEYS');
 
     // Opciones disponibles para filtros (derivadas de encuestas existentes)
     const availableUnits = useMemo(() => {
