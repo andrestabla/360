@@ -283,6 +283,24 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
     };
 
 
+    const handleDeleteDocument = (phaseId: string, activityId: string, docId: string) => {
+        if (!confirm('¿Estás seguro de que quieres eliminar este documento?')) return;
+
+        setPhases(prev => prev.map(p => {
+            if (p.id !== phaseId) return p;
+            return {
+                ...p,
+                activities: p.activities.map(a => {
+                    if (a.id !== activityId) return a;
+                    return {
+                        ...a,
+                        documents: (a.documents || []).filter(d => d.id !== docId)
+                    };
+                })
+            };
+        }));
+    };
+
     return (
         <div className="bg-white min-h-full">
             {/* Header / Toolbar */}
@@ -642,6 +660,13 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
                                                                     className="px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 text-xs font-bold rounded-lg transition-colors"
                                                                 >
                                                                     Trabajar
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteDocument(phase.id, act.id, doc.id)}
+                                                                    className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                    title="Eliminar documento"
+                                                                >
+                                                                    <Trash size={16} weight="bold" />
                                                                 </button>
                                                             </div>
                                                         </div>
