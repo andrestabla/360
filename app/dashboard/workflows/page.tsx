@@ -461,6 +461,88 @@ export default function WorkflowsPage() {
                     </div>
                 </div>
 
+                {/* FILTERS BAR */}
+                {mainView === 'PROJECTS' && (
+                    <div className="px-8 py-4 grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-50 border-b border-slate-200">
+                        {/* Search */}
+                        <div className="relative">
+                            <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                            <input
+                                type="text"
+                                placeholder="Buscar proyecto..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
+                            />
+                        </div>
+
+                        {/* Area Filter */}
+                        <div className="relative">
+                            <select
+                                value={filterArea}
+                                onChange={(e) => setFilterArea(e.target.value)}
+                                className="w-full pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-blue-500 appearance-none shadow-sm"
+                            >
+                                <option value="ALL">Todas las Áreas</option>
+                                {/* Mock Populate - ideally distinct from DB */}
+                                <option value="Operaciones">Operaciones</option>
+                                <option value="Tecnología">Tecnología</option>
+                                <option value="Finanzas">Finanzas</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Recursos Humanos">Recursos Humanos</option>
+                            </select>
+                            <CaretDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                        </div>
+
+                        {/* Process Filter */}
+                        <div className="relative">
+                            <select
+                                value={filterProcess}
+                                onChange={(e) => setFilterProcess(e.target.value)}
+                                className="w-full pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-blue-500 appearance-none shadow-sm"
+                            >
+                                <option value="ALL">Todos los Procesos</option>
+                                <option value="Onboarding">Onboarding</option>
+                                <option value="Desarrollo">Desarrollo</option>
+                                <option value="Auditoría">Auditoría</option>
+                                <option value="Ventas">Ventas</option>
+                            </select>
+                            <CaretDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                        </div>
+
+                        {/* Status Filter */}
+                        <div className="relative">
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                className="w-full pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-blue-500 appearance-none shadow-sm"
+                            >
+                                <option value="ALL">Todos los Estados</option>
+                                <option value="DRAFT">Borrador</option>
+                                <option value="PLANNED">Planeado</option>
+                                <option value="IN_PROGRESS">En Progreso</option>
+                                <option value="COMPLETED">Completado</option>
+                                <option value="ON_HOLD">En Pausa</option>
+                            </select>
+                            <CaretDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                        </div>
+
+                        {/* Date Filter */}
+                        <div className="relative">
+                            <CalendarBlank className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                            <input
+                                type="text"
+                                onFocus={(e) => e.target.type = 'date'}
+                                onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
+                                placeholder="dd/mm/aaaa"
+                                value={filterDate}
+                                onChange={(e) => setFilterDate(e.target.value)}
+                                className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-blue-500 shadow-sm"
+                            />
+                        </div>
+                    </div>
+                )}
+
                 {mainView === 'PROJECTS' ? (
                     <div className="p-8 grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
                         {/* Folders */}
@@ -558,7 +640,7 @@ export default function WorkflowsPage() {
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Ubicación</label>
                                 <select name="folderId" className="w-full border p-2.5 rounded-lg text-sm bg-white" defaultValue={selectedFolderId || ''}>
                                     <option value="">Carpeta Raíz (Primer Nivel)</option>
-                                    {DB.projectFolders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+                                    {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
                                 </select>
                             </div>
                             <div>
