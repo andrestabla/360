@@ -447,9 +447,11 @@ export default function WorkflowsPage() {
                                 </div>
                                 <div className="flex justify-between items-start mb-2 group-actions">
                                     <h3 className="font-bold text-lg text-slate-900 leading-tight">{p.title}</h3>
-                                    {/* Project Actions currently placeholders or limited */}
-                                    <div className="flex gap-1">
-                                        {/* Extend functionality here if needed (edit project etc.) just UI for now based on request */}
+                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={(e) => { e.stopPropagation(); handleDownloadProjectCSV(p.id, p.title); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-green-600 transition-colors" title="Descargar estructura CSV"><DownloadSimple size={18} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); toast.success('Función duplicar pronto disponible'); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-purple-600 transition-colors" title="Duplicar"><Copy size={18} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); toast.success('Función editar completa pronto'); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-500 transition-colors" title="Editar"><PencilSimple size={18} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); toast.success('Función eliminar pronto disponible'); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-red-500 transition-colors" title="Eliminar"><Trash size={18} /></button>
                                     </div>
                                 </div>
                                 <p className="text-sm text-slate-500 line-clamp-2 mb-4">{p.description}</p>
