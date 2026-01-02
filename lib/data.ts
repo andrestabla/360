@@ -148,6 +148,7 @@ export interface Doc {
   title: string;
   type: string;
   size: string;
+  url?: string;
   version: string;
   status: 'active' | 'pending' | 'archived' | 'expired' | 'APPROVED' | 'PENDING' | 'ACTIVE' | 'ARCHIVED';
   authorId: string;
