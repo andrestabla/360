@@ -60,39 +60,63 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                 setLoadingPreview(false);
                 return;
             }
-            console.log('[DocumentViewer] Fetching URL for:', doc.id, 'Original URL:', doc.url);
+
+            let docUrl = doc.url;
+
+            // FIX: If URL is an old "bad" public URL (pointing to app domain or just /projects/), rewrite it to the proxy
+            // This ensures we use the /api/storage/ route which handles R2 signing correctly.
+            if (docUrl && docUrl.includes('/projects/') && !docUrl.includes('/api/storage/')) {
+                const parts = docUrl.split('/projects/');
+                if (parts.length > 1) {
+                    docUrl = `/api/storage/projects/${parts[1]}`;
+                    console.log(`[DocumentViewer] Rewriting legacy URL to proxy: ${docUrl}`);
+                }
+            }
+
+            console.log('[DocumentViewer] Fetching URL for:', doc.id, 'Original URL:', doc.url, 'Effective URL:', docUrl);
             try {
                 // First try standard repo action
                 const res = await getDocumentDownloadUrlAction(doc.id);
                 if (res.success && res.url) {
                     setPreviewUrl(res.url);
-                } else {
-                    // Fallback: If not found in repo (e.g. project evidence), try generic signer
-                    const signRes = await getSignedUrlAction(doc.url);
-                    console.log('[DocumentViewer] Signed URL result:', JSON.stringify(signRes));
-
-                    if (signRes.success && 'url' in signRes && signRes.url) {
-                        setPreviewUrl(signRes.url);
-                    } else if (signRes.error) {
-                        console.error("Signer error:", signRes.error);
-                        if (doc.url.includes('/projects/')) {
-                            // alert(`Error firmando archivo: ${signRes.error}`); // Alert might be too annoying, rely on logs
-                            console.warn("Retrying sign or checking path...");
-                        }
-                        setPreviewUrl(doc.url);
+                    if (res.success && res.url) {
+                        setPreviewUrl(res.url);
                     } else {
-                        setPreviewUrl(doc.url);
+                        // Fallback: If not found in repo (e.g. project evidence), try generic signer or proxy
+                        // Note: If docUrl was rewritten to /api/storage/..., getSignedUrlAction might be redundant if we just used it directly,
+                        // but getSignedUrlAction handles the logic to call storageService.download -> signed URL.
+
+                        // If it is ALREADY a proxy URL, we can just use it? 
+                        // No, the proxy URL returns a redirect. We can use it directly as the source for iframe/img.
+                        if (docUrl.includes('/api/storage/')) {
+                            console.log('[DocumentViewer] Using proxy URL directly:', docUrl);
+                            setPreviewUrl(docUrl);
+                            setLoadingPreview(false);
+                            return;
+                        }
+
+                        const signRes = await getSignedUrlAction(docUrl);
+                        console.log('[DocumentViewer] Signed URL result:', JSON.stringify(signRes));
+
+                        if (signRes.success && 'url' in signRes && signRes.url) {
+                            setPreviewUrl(signRes.url);
+                        } else if (signRes.error) {
+                            console.error("Signer error:", signRes.error);
+                            // Silent fallback
+                            setPreviewUrl(docUrl);
+                        } else {
+                            setPreviewUrl(docUrl);
+                        }
                     }
+                } catch (error: any) {
+                    console.error("Error fetching preview URL:", error);
+                    setPreviewUrl(docUrl);
+                } finally {
+                    setLoadingPreview(false);
                 }
-            } catch (error: any) {
-                console.error("Error fetching preview URL:", error);
-                setPreviewUrl(doc.url);
-            } finally {
-                setLoadingPreview(false);
-            }
-        };
-        fetchUrl();
-    }, [doc.id, doc.url]);
+            };
+            fetchUrl();
+        }, [doc.id, doc.url]);
 
     const handleDownload = async () => {
         if (previewUrl) {
