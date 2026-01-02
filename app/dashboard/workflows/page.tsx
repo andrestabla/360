@@ -485,7 +485,7 @@ export default function WorkflowsPage() {
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button onClick={(e) => { e.stopPropagation(); handleDownloadProjectCSV(p.id, p.title); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-green-600 transition-colors" title="Descargar estructura CSV"><DownloadSimple size={18} /></button>
                                         <button onClick={(e) => { e.stopPropagation(); handleDuplicateProject(p.id); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-purple-600 transition-colors" title="Duplicar"><Copy size={18} /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); toast.success('Función eliminar pronto disponible'); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-red-500 transition-colors" title="Eliminar"><Trash size={18} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteProject(p.id); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-red-500 transition-colors" title="Eliminar"><Trash size={18} /></button>
                                     </div>
                                 </div>
                                 <p className="text-sm text-slate-500 line-clamp-2 mb-4">{p.description}</p>
