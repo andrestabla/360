@@ -108,9 +108,9 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
     // Helper to check extensions
     const checkExt = (str: string | undefined, regex: RegExp) => (str || '').match(regex);
 
-    const isImage = checkExt(doc.type, /(image|jpg|jpeg|png|gif|webp)/i) || checkExt(doc.title, /\.(jpg|jpeg|png|gif|webp)$/i);
-    const isPDF = checkExt(doc.type, /pdf/i) || checkExt(doc.title, /\.pdf$/i);
-    const isOffice = checkExt(doc.type, /(doc|docx|xls|xlsx|ppt|pptx|msword|officedocument)/i) || checkExt(doc.title, /\.(doc|docx|xls|xlsx|ppt|pptx)$/i);
+    const isImage = checkExt(doc.type || undefined, /(image|jpg|jpeg|png|gif|webp)/i) || checkExt(doc.title, /\.(jpg|jpeg|png|gif|webp)$/i);
+    const isPDF = checkExt(doc.type || undefined, /pdf/i) || checkExt(doc.title, /\.pdf$/i);
+    const isOffice = checkExt(doc.type || undefined, /(doc|docx|xls|xlsx|ppt|pptx|msword|officedocument)/i) || checkExt(doc.title, /\.(doc|docx|xls|xlsx|ppt|pptx)$/i);
     const isEmbed = doc.type === 'embed';
 
 
