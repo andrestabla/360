@@ -115,7 +115,7 @@ export function RepositorySidebar({ doc, units, mode = 'repository', onClose, on
                 {activeTab === 'view' && <ViewTab doc={doc} units={units} onDownload={() => onDownload(doc)} />}
                 {activeTab === 'edit' && <EditTab doc={doc} units={units} onUpdate={onUpdate} />}
                 {activeTab === 'comments' && <CommentsTab doc={doc} />}
-                {activeTab === 'history' && <HistoryTab doc={doc} />}
+                {activeTab === 'history' && <HistoryTab doc={doc} mode={mode} />}
             </div>
         </div>
     );
@@ -415,14 +415,16 @@ function CommentsTab({ doc }: { doc: RepositoryFile }) {
     )
 }
 
-function HistoryTab({ doc }: { doc: RepositoryFile }) {
+function HistoryTab({ doc, mode }: { doc: RepositoryFile, mode: string }) {
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-sm font-bold text-slate-700">HISTORIAL DE VERSIONES</h3>
-                <button className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
-                    Subir nueva versión
-                </button>
+                {mode === 'work' && (
+                    <button className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+                        Subir nueva versión
+                    </button>
+                )}
             </div>
 
             <div className="space-y-4">
