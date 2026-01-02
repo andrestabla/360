@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Project, ProjectPhase, ProjectActivity, DB, User, Doc, ProjectFolder } from '@/lib/data';
 import {
     FloppyDisk, Plus, Trash, Calendar, User as UserIcon,
-    FileText, CaretDown, Check, XCircle,
+    FileText, CaretDown, CaretUp, Check, XCircle,
     Paperclip, MagnifyingGlass, Folder, Kanban, PencilSimple, Funnel, Users, X
 } from '@phosphor-icons/react';
 import { sendAssignmentNotification } from '@/app/actions/workflow';
@@ -560,7 +560,7 @@ export default function ProjectEditor({ project, folders, onUpdate, readOnly = f
                                         </div>
                                     )}
 
-                                    {phase.activities?.map((act) => (
+                                    {phase.activities?.map((act, idx) => (
                                         <div key={act.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-blue-300 transition-all">
                                             <div className="flex flex-col md:flex-row gap-4">
                                                 <div className="flex-1 space-y-3">
@@ -652,9 +652,30 @@ export default function ProjectEditor({ project, folders, onUpdate, readOnly = f
                                                         </div>
 
                                                         {isEditing && (
-                                                            <button onClick={() => deleteActivity(phase.id, act.id)} className="ml-2 text-slate-300 hover:text-red-500">
-                                                                <XCircle size={18} weight="fill" />
-                                                            </button>
+                                                            <div className="flex items-center">
+                                                                <div className="flex flex-col mr-2 bg-slate-50 rounded-md border border-slate-100">
+                                                                    <button
+                                                                        onClick={() => moveActivity(phase.id, act.id, 'up')}
+                                                                        disabled={idx === 0}
+                                                                        className="p-0.5 text-slate-400 hover:text-blue-600 disabled:opacity-30 hover:bg-slate-100 rounded-t-md transition-colors"
+                                                                        title="Mover arriba"
+                                                                    >
+                                                                        <CaretUp size={12} weight="bold" />
+                                                                    </button>
+                                                                    <div className="h-px bg-slate-200"></div>
+                                                                    <button
+                                                                        onClick={() => moveActivity(phase.id, act.id, 'down')}
+                                                                        disabled={idx === (phase.activities?.length || 0) - 1}
+                                                                        className="p-0.5 text-slate-400 hover:text-blue-600 disabled:opacity-30 hover:bg-slate-100 rounded-b-md transition-colors"
+                                                                        title="Mover abajo"
+                                                                    >
+                                                                        <CaretDown size={12} weight="bold" />
+                                                                    </button>
+                                                                </div>
+                                                                <button onClick={() => deleteActivity(phase.id, act.id)} className="ml-1 text-slate-300 hover:text-red-500 bg-slate-50 p-1.5 rounded-lg border border-transparent hover:border-red-100 hover:bg-red-50 transition-all">
+                                                                    <Trash size={18} weight="duotone" />
+                                                                </button>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
