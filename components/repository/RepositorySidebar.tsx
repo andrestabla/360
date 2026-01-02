@@ -120,6 +120,7 @@ export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOv
             {/* Tabs */}
             <div className="px-4 py-2 border-b border-slate-100 bg-white">
                 <div className="flex gap-1 bg-slate-50 p-1 rounded-xl">
+                    {/* In 'view' mode, we might want to hide everything except History if user insists on "History only". But let's keep "Ver" (Details) as it's useful. */}
                     <TabButton active={activeTab === 'view'} onClick={() => setActiveTab('view')} label="Ver" />
                     {mode !== 'view' && <TabButton active={activeTab === 'edit'} onClick={() => setActiveTab('edit')} label="Editar" />}
                     {mode !== 'view' && <TabButton active={activeTab === 'comments'} onClick={() => setActiveTab('comments')} label="Comentarios" />}
@@ -131,7 +132,7 @@ export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOv
             <div className="flex-1 overflow-y-auto bg-slate-50/50 relative">
                 {activeTab === 'view' && <ViewTab doc={doc} units={units} onDownload={() => onDownload(doc)} />}
                 {activeTab === 'edit' && <EditTab doc={doc} units={units} onUpdate={onUpdate} />}
-                {activeTab === 'comments' && <CommentsTab doc={doc} mode={mode} />}
+                {activeTab === 'comments' && mode !== 'view' && <CommentsTab doc={doc} mode={mode} />}
                 {activeTab === 'history' && <HistoryTab doc={doc} mode={mode} />}
             </div>
         </div>
