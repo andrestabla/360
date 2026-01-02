@@ -561,3 +561,18 @@ export const projectActivitiesRelations = relations(projectActivities, ({ one })
     references: [projectPhases.id],
   }),
 }));
+
+export const documentsRelations = relations(documents, ({ one }) => ({
+  owner: one(users, {
+    fields: [documents.ownerId],
+    references: [users.id],
+  }),
+  folder: one(folders, {
+    fields: [documents.folderId],
+    references: [folders.id],
+  }),
+  unit: one(units, {
+    fields: [documents.unitId],
+    references: [units.id],
+  }),
+}));
