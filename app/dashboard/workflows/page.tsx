@@ -755,7 +755,7 @@ export default function WorkflowsPage() {
 
                         if (res.success) {
                             toast.success(editingFolder ? 'Carpeta actualizada' : 'Carpeta creada correcta');
-                            loadFolders();
+                            loadData();
                             setShowNewFolderModal(false);
                             setEditingFolder(null);
                         } else {
