@@ -6,7 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
 import toast from 'react-hot-toast';
 import { DB, WorkflowCase, Project, ProjectFolder } from '@/lib/data';
-import { createProjectFolderAction, getProjectFoldersAction, getProjectByIdAction } from '@/app/actions/projectActions';
+import { createProjectFolderAction, getProjectFoldersAction, getProjectByIdAction, getProjectsAction } from '@/app/actions/projectActions';
 import {
     Plus, CheckCircle, Clock, XCircle, CaretRight, FileCsv,
     Briefcase, Folder, CloudArrowUp, FolderPlus, CaretLeft, DownloadSimple, PencilSimple, Trash, Copy,
@@ -66,13 +66,14 @@ export default function WorkflowsPage() {
     const [filterDate, setFilterDate] = useState('');
 
     const [folders, setFolders] = useState<ProjectFolder[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
 
     const handleDeleteFolder = async (folderId: string) => {
         if (!confirm(t('wf_confirm_delete_folder') || '¿Seguro que deseas eliminar esta carpeta?')) return;
         const res = await deleteProjectFolderAction(folderId);
         if (res.success) {
             toast.success('Carpeta eliminada');
-            loadFolders();
+            loadData();
         } else {
             toast.error('Error al eliminar: ' + res.error);
         }
@@ -80,14 +81,18 @@ export default function WorkflowsPage() {
 
     useEffect(() => {
         setIsClient(true);
-        loadFolders();
-    }, []);
+        loadData();
+    }, [version]); // Reload on version change too
 
-    const loadFolders = async () => {
-        const res = await getProjectFoldersAction();
-        if (res.success && res.data) {
+    const loadData = async () => {
+        const [resFolders, resProjects] = await Promise.all([
+            getProjectFoldersAction(),
+            getProjectsAction()
+        ]);
+
+        if (resFolders.success && resFolders.data) {
             // Map DB data to UI type
-            const mapped: ProjectFolder[] = res.data.map(f => ({
+            const mapped: ProjectFolder[] = resFolders.data.map(f => ({
                 id: f.id,
                 name: f.name,
                 description: f.description || '',
@@ -96,6 +101,45 @@ export default function WorkflowsPage() {
                 color: f.color || undefined
             }));
             setFolders(mapped);
+        }
+
+        if (resProjects.success && resProjects.data) {
+            // Map DB Project to UI Project type if necessary, or just cast if compatible
+            // The DB project structure is slightly different (phases relation etc), but should fit
+            const mappedProjs: Project[] = resProjects.data.map(p => ({
+                id: p.id,
+                title: p.title,
+                description: p.description || '',
+                startDate: p.startDate ? p.startDate.toISOString() : undefined,
+                endDate: p.endDate ? p.endDate.toISOString() : undefined,
+                status: p.status,
+                creatorId: p.creatorId,
+                createdAt: p.createdAt.toISOString(),
+                updatedAt: p.updatedAt?.toISOString(),
+                participants: [], // Basic mapping, participants not fetched broadly here usually
+                folderId: p.folderId || undefined,
+                color: p.color || undefined,
+                unit: p.unit || undefined,
+                process: p.process || undefined,
+                phases: p.phases.map((ph: any) => ({
+                    id: ph.id,
+                    name: ph.name,
+                    order: ph.order,
+                    status: ph.status,
+                    activities: ph.activities.map((act: any) => ({
+                        id: act.id,
+                        name: act.name,
+                        status: act.status,
+                        participants: [],
+                        documents: [],
+                        startDate: act.startDate?.toISOString(),
+                        endDate: act.endDate?.toISOString()
+                    })),
+                    startDate: ph.startDate?.toISOString(),
+                    endDate: ph.endDate?.toISOString()
+                }))
+            }));
+            setProjects(mappedProjs);
         }
     };
 
@@ -126,17 +170,17 @@ export default function WorkflowsPage() {
 
     const projectsList = useMemo(() => {
         if (!isClient) return [];
-        return DB.projects.filter(p => {
+        return projects.filter(p => {
             const matchesSearch = !search || p.title.toLowerCase().includes(search.toLowerCase());
             const matchesFolder = selectedFolderId ? p.folderId === selectedFolderId : !p.folderId;
-            const matchesArea = filterArea === 'ALL' || (p.unit === filterArea); // Assuming 'unit' field stores Area
+            const matchesArea = filterArea === 'ALL' || (p.unit === filterArea);
             const matchesProcess = filterProcess === 'ALL' || (p.process === filterProcess);
             const matchesStatus = filterStatus === 'ALL' || (p.status === filterStatus);
             const matchesDate = !filterDate || (p.startDate && p.startDate.startsWith(filterDate)); // Simple string match YYYY-MM-DD
 
             return matchesSearch && matchesFolder && matchesArea && matchesProcess && matchesStatus && matchesDate;
         });
-    }, [isClient, version, search, selectedFolderId, filterArea, filterProcess, filterStatus, filterDate]);
+    }, [isClient, version, search, selectedFolderId, filterArea, filterProcess, filterStatus, filterDate, projects]);
 
     const foldersList = useMemo(() => {
         if (!isClient) return [];
