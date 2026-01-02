@@ -74,7 +74,7 @@ export function AddEvidenceModal({ isOpen, projectId, onClose, onAdd }: AddEvide
 
             const res = await uploadProjectEvidenceAction(projectId, formData);
 
-            if (res.success && res.url) {
+            if (res.success && 'url' in res && res.url) {
                 toast.success('Archivo subido correctamente', { id: toastId });
                 onAdd({
                     type: 'file',
