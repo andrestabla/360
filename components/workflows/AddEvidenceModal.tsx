@@ -62,16 +62,37 @@ export function AddEvidenceModal({ isOpen, projectId, onClose, onAdd }: AddEvide
         onClose();
     };
 
-    const handleAddFile = () => {
+    const handleAddFile = async () => {
         if (!selectedFile) return;
-        onAdd({
-            type: 'file',
-            id: `file-${Date.now()}`,
-            name: selectedFile.name,
-            file: selectedFile,
-            url: URL.createObjectURL(selectedFile) // Temporary preview URL
-        });
-        onClose();
+
+        setIsUploading(true);
+        const toastId = toast.loading('Subiendo archivo...');
+
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const res = await uploadProjectEvidenceAction(projectId, formData);
+
+            if (res.success && res.url) {
+                toast.success('Archivo subido correctamente', { id: toastId });
+                onAdd({
+                    type: 'file',
+                    id: `file-${Date.now()}`,
+                    name: selectedFile.name,
+                    file: selectedFile,
+                    url: res.url // Real URL from R2
+                });
+                onClose();
+            } else {
+                toast.error('Error al subir: ' + (res.error || 'Desconocido'), { id: toastId });
+            }
+        } catch (e) {
+            console.error(e);
+            toast.error('Error de conexión', { id: toastId });
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     return (
