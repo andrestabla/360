@@ -2,6 +2,17 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Project, ProjectPhase, ProjectActivity, DB, User, Doc, ProjectFolder } from '@/lib/data';
+import {
+    FloppyDisk, Plus, Trash, Calendar, User as UserIcon,
+    FileText, CaretDown, Check, XCircle,
+    Paperclip, MagnifyingGlass, Folder, Kanban, PencilSimple, Funnel, Users, X
+} from '@phosphor-icons/react';
+import { sendAssignmentNotification } from '@/app/actions/workflow';
+import { useApp } from '@/context/AppContext';
+import { TeamStructureModal } from './TeamStructureModal';
+import { useRouter } from 'next/navigation';
+import { AddEvidenceModal } from './AddEvidenceModal';
+import DocumentViewer from '@/components/repository/DocumentViewer';
 
 interface ProjectEditorProps {
     project: Project;
