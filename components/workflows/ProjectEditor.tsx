@@ -11,6 +11,7 @@ import { sendAssignmentNotification } from '@/app/actions/workflow';
 import { useApp } from '@/context/AppContext';
 import { TeamStructureModal } from './TeamStructureModal';
 import { useRouter } from 'next/navigation';
+import { AddEvidenceModal } from './AddEvidenceModal';
 
 interface ProjectEditorProps {
     project: Project;
@@ -239,7 +240,7 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
         handleCloseUserPicker();
     };
 
-    const handleAddDoc = (doc: Doc) => {
+    const handleAddEvidence = (evidence: any) => {
         if (!showDocPicker.phaseId || !showDocPicker.activityId) return;
 
         setPhases(prev => prev.map(p => {
@@ -251,11 +252,12 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
 
                     return {
                         ...a,
-                        documents: [...a.documents, {
-                            id: doc.id,
-                            name: doc.title,
-                            type: doc.type,
-                            url: '/dashboard/repository?docId=' + doc.id // Simple link
+                        documents: [...(a.documents || []), {
+                            id: evidence.id || `doc-${Date.now()}`,
+                            name: evidence.name,
+                            type: evidence.type, // 'repository' | 'link' | 'file' | 'embed'
+                            url: evidence.url,
+                            content: evidence.content // for embed
                         }]
                     };
                 })
@@ -549,8 +551,8 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
                                                     value={act.status}
                                                     onChange={(e) => updateActivity(phase.id, act.id, { status: e.target.value })}
                                                     className={`text-xs font-bold px-3 py-1.5 rounded-lg border-2 appearance-none cursor-pointer text-center w-full transition-colors ${act.status === 'VALIDATED' ? 'bg-green-50 text-green-700 border-green-200' :
-                                                            act.status === 'IN_PROGRESS' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                                                'bg-slate-50 text-slate-600 border-slate-200'
+                                                        act.status === 'IN_PROGRESS' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                            'bg-slate-50 text-slate-600 border-slate-200'
                                                         }`}
                                                 >
                                                     {Object.entries(STATUS_LABELS).map(([key, label]) => (
@@ -688,42 +690,13 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
                 />
             )}
 
-            {/* DOC PICKER MODAL */}
+            {/* EVIDENCE MODAL */}
             {showDocPicker.active && (
-                <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 animate-in zoom-in-95">
-                        <div className="p-5 border-b flex justify-between items-center">
-                            <h4 className="font-bold text-lg text-slate-800">Adjuntar Documento</h4>
-                            <button onClick={() => setShowDocPicker({ active: false })} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
-                        </div>
-                        <div className="p-5">
-                            <div className="relative mb-4">
-                                {!docSearch && <MagnifyingGlass className="absolute left-3 top-2.5 text-slate-400" size={16} />}
-                                <input
-                                    autoFocus
-                                    placeholder="Buscar documento..."
-                                    className="w-full pl-9 pr-3 py-2.5 border rounded-xl text-sm focus:outline-none focus:border-blue-400 bg-slate-50 focus:bg-white"
-                                    value={docSearch}
-                                    onChange={e => setDocSearch(e.target.value)}
-                                />
-                            </div>
-                            <div className="max-h-60 overflow-y-auto space-y-1">
-                                {DB.docs.filter(d => !docSearch || d.title.toLowerCase().includes(docSearch.toLowerCase())).map(d => (
-                                    <div key={d.id} onClick={() => handleAddDoc(d)} className="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-xl cursor-pointer group transition-colors">
-                                        <div className="p-2 bg-slate-100 rounded-lg text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600">
-                                            <FileText size={20} weight="duotone" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-bold text-slate-800 truncate">{d.title}</p>
-                                            <p className="text-xs text-slate-500">{new Date(d.date || '').toLocaleDateString()}</p>
-                                        </div>
-                                        <Plus className="text-blue-500 opacity-0 group-hover:opacity-100" weight="bold" />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <AddEvidenceModal
+                    isOpen={showDocPicker.active}
+                    onClose={() => setShowDocPicker({ active: false })}
+                    onAdd={handleAddEvidence}
+                />
             )}
         </div>
     );
