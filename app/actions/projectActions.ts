@@ -261,6 +261,76 @@ export async function updateProjectAction(id: string, updates: any) {
         return { success: false, error: e.message };
     }
 }
+}
+
+export async function duplicateProjectAction(id: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'Unauthorized' };
+
+    const userId = session.user.id;
+
+    try {
+        const result = await db.transaction(async (tx) => {
+            // 1. Fetch original project with full depth
+            const original = await tx.query.projects.findFirst({
+                where: eq(projects.id, id),
+                with: {
+                    phases: {
+                        with: { activities: true },
+                        orderBy: (phases, { asc }) => [asc(phases.order)]
+                    }
+                }
+            });
+
+            if (!original) throw new Error('Project not found');
+
+            // 2. Clone Project
+            const { id: oldId, createdAt, updatedAt, phases, ...projectData } = original;
+            const newProjectData = {
+                ...projectData,
+                title: `${projectData.title} (Copy)`,
+                creatorId: userId, // New copy owned by current user? Or preserve structure? Usually copier becomes owner or manager.
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+
+            const [newProject] = await tx.insert(projects).values(newProjectData).returning();
+
+            // 3. Clone Phases & Activities
+            if (phases && phases.length > 0) {
+                for (const phase of phases) {
+                    const { id: oldPhaseId, projectId, createdAt, updatedAt, activities, ...phaseData } = phase;
+                    const [newPhase] = await tx.insert(projectPhases).values({
+                        ...phaseData,
+                        projectId: newProject.id,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    }).returning();
+
+                    if (activities && activities.length > 0) {
+                        for (const act of activities) {
+                            const { id: oldActId, phaseId, createdAt, updatedAt, ...actData } = act;
+                            await tx.insert(projectActivities).values({
+                                ...actData,
+                                phaseId: newPhase.id,
+                                createdAt: new Date(),
+                                updatedAt: new Date()
+                            });
+                        }
+                    }
+                }
+            }
+            return newProject;
+        });
+
+        revalidatePath('/dashboard/workflows');
+        return { success: true, data: result };
+
+    } catch (e: any) {
+        console.error('Duplicate Project Error:', e);
+        return { success: false, error: e.message };
+    }
+}
 
 export async function deleteProjectAction(id: string) {
     const session = await auth();

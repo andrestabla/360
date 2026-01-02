@@ -11,7 +11,7 @@ import {
     Plus, CheckCircle, Clock, XCircle, CaretRight, FileCsv,
     Briefcase, Folder, CloudArrowUp, FolderPlus, CaretLeft, DownloadSimple, PencilSimple, Trash, Copy
 } from '@phosphor-icons/react';
-import { deleteProjectFolderAction, updateProjectFolderAction } from '@/app/actions/projectActions';
+import { deleteProjectFolderAction, updateProjectFolderAction, duplicateProjectAction } from '@/app/actions/projectActions';
 
 // --- GLOBAL PROGRESS UTILS ---
 const getProjectProgress = (proj: Project) => {
@@ -253,6 +253,22 @@ export default function WorkflowsPage() {
         }
     };
 
+    const handleDuplicateProject = async (projectId: string) => {
+        const toastId = toast.loading('Duplicando proyecto...');
+        try {
+            const res = await duplicateProjectAction(projectId);
+            if (res.success) {
+                toast.success('Proyecto duplicado correctamente', { id: toastId });
+                refreshData();
+            } else {
+                toast.error('Error al duplicar: ' + res.error, { id: toastId });
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Error inesperado al duplicar', { id: toastId });
+        }
+    };
+
     const handleImportCSV = async (file: File) => {
         const text = await file.text();
         const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -449,8 +465,7 @@ export default function WorkflowsPage() {
                                     <h3 className="font-bold text-lg text-slate-900 leading-tight">{p.title}</h3>
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button onClick={(e) => { e.stopPropagation(); handleDownloadProjectCSV(p.id, p.title); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-green-600 transition-colors" title="Descargar estructura CSV"><DownloadSimple size={18} /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); toast.success('Función duplicar pronto disponible'); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-purple-600 transition-colors" title="Duplicar"><Copy size={18} /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); toast.success('Función editar completa pronto'); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-500 transition-colors" title="Editar"><PencilSimple size={18} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleDuplicateProject(p.id); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-purple-600 transition-colors" title="Duplicar"><Copy size={18} /></button>
                                         <button onClick={(e) => { e.stopPropagation(); toast.success('Función eliminar pronto disponible'); }} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-red-500 transition-colors" title="Eliminar"><Trash size={18} /></button>
                                     </div>
                                 </div>
