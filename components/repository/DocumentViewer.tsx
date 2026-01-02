@@ -299,58 +299,78 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                                 </button>
                             </div>
                         </div>
-                    ) : isEmbed && doc.content ? (
-                        <div
-                            className="w-full h-full bg-white rounded-lg overflow-hidden shadow-lg [&_iframe]:w-full [&_iframe]:h-full [&_iframe]:border-0"
-                            dangerouslySetInnerHTML={{ __html: doc.content }}
-                        />
-                    ) : isOffice ? (
-                        <iframe
-                            src={getGoogleDocsUrl(previewUrl!)}
-                            className="w-full h-full rounded-lg shadow-lg bg-white"
-                            title="Office Preview"
-                        />
-                    ) : (
-                        <div className="flex flex-col items-center gap-4">
-                            <FileText size={64} className="text-slate-300" weight="duotone" />
-                            <p className="text-slate-500 font-medium">Este archivo no tiene vista previa directa.</p>
-                            <button onClick={handleDownload} className="text-blue-600 font-bold hover:underline">Descargar para ver</button>
+                    ) : (isEmbed || doc.type === 'link') ? (
+                        <div className="w-full h-full bg-white rounded-lg shadow-lg relative">
+                            <iframe
+                                src={previewUrl || doc.url || ''}
+                                className="w-full h-full rounded-lg"
+                                title="Web Preview"
+                                sandbox="allow-scripts allow-same-origin allow-popups"
+                            />
+                            <div className="absolute top-2 right-2 md:bottom-4 md:right-4 z-10">
+                                <button
+                                    onClick={() => window.open(previewUrl || doc.url || '', '_blank')}
+                                    className="bg-white/90 hover:bg-white text-blue-600 text-xs px-3 py-1.5 rounded-lg shadow-sm border border-slate-200 font-bold backdrop-blur-sm transition-all"
+                                >
+                                    Abrir sitio original ↗
+                                </button>
+                            </div>
                         </div>
+                        </div>
+                ) : isEmbed && doc.content ? (
+                <div
+                    className="w-full h-full bg-white rounded-lg overflow-hidden shadow-lg [&_iframe]:w-full [&_iframe]:h-full [&_iframe]:border-0"
+                    dangerouslySetInnerHTML={{ __html: doc.content }}
+                />
+                ) : isOffice ? (
+                <iframe
+                    src={getGoogleDocsUrl(previewUrl!)}
+                    className="w-full h-full rounded-lg shadow-lg bg-white"
+                    title="Office Preview"
+                />
+                ) : (
+                <div className="flex flex-col items-center gap-4">
+                    <FileText size={64} className="text-slate-300" weight="duotone" />
+                    <p className="text-slate-500 font-medium">Este archivo no tiene vista previa directa.</p>
+                    <button onClick={handleDownload} className="text-blue-600 font-bold hover:underline">Descargar para ver</button>
+                </div>
                     )}
-                </div>
             </div>
-
-            {/* Right Sidebar: Metadata & Comments */}
-            {isSidebarOpen && (
-                <div className="w-[400px] border-l border-slate-200 bg-white flex flex-col z-20 shadow-xl animate-in slide-in-from-right-10 duration-300">
-                    <RepositorySidebar
-                        doc={doc}
-                        units={units}
-                        mode={mode} // Pass mode
-                        activeTabOverride={sidebarMode === 'history' ? 'history' : (sidebarMode === 'comments' ? 'comments' : undefined)}
-                        onClose={() => setIsSidebarOpen(false)}
-                        onDownload={handleDownload}
-                        onUpdate={refreshDoc}
-                        onAssign={() => { /* Implement if needed or use modal logic */ }}
-                        onToggleLike={async (d) => { await toggleLikeAction(d.id); refreshDoc(); }}
-                        onShare={() => { navigator.clipboard.writeText(doc.url || ''); alert("Link copiado!"); }}
-                        onDelete={handleDelete}
-                        onMove={() => { /* Implement move logic if needed */ }}
-                        onExpand={() => { /* Already expanded */ }}
-                    />
-                </div>
-            )}
-
-            {/* Notify Modal */}
-            <NotifyChangeModal
-                isOpen={showNotifyModal}
-                onClose={() => setShowNotifyModal(false)}
-                onSend={async (uid, msg) => {
-                    alert(`Simulando envío a usuario ${uid}: ${msg}`);
-                    // Ensure this waits a bit to simulate net
-                    await new Promise(r => setTimeout(r, 1000));
-                }}
-            />
         </div>
+
+            {/* Right Sidebar: Metadata & Comments */ }
+    {
+        isSidebarOpen && (
+            <div className="w-[400px] border-l border-slate-200 bg-white flex flex-col z-20 shadow-xl animate-in slide-in-from-right-10 duration-300">
+                <RepositorySidebar
+                    doc={doc}
+                    units={units}
+                    mode={mode} // Pass mode
+                    activeTabOverride={sidebarMode === 'history' ? 'history' : (sidebarMode === 'comments' ? 'comments' : undefined)}
+                    onClose={() => setIsSidebarOpen(false)}
+                    onDownload={handleDownload}
+                    onUpdate={refreshDoc}
+                    onAssign={() => { /* Implement if needed or use modal logic */ }}
+                    onToggleLike={async (d) => { await toggleLikeAction(d.id); refreshDoc(); }}
+                    onShare={() => { navigator.clipboard.writeText(doc.url || ''); alert("Link copiado!"); }}
+                    onDelete={handleDelete}
+                    onMove={() => { /* Implement move logic if needed */ }}
+                    onExpand={() => { /* Already expanded */ }}
+                />
+            </div>
+        )
+    }
+
+    {/* Notify Modal */ }
+    <NotifyChangeModal
+        isOpen={showNotifyModal}
+        onClose={() => setShowNotifyModal(false)}
+        onSend={async (uid, msg) => {
+            alert(`Simulando envío a usuario ${uid}: ${msg}`);
+            // Ensure this waits a bit to simulate net
+            await new Promise(r => setTimeout(r, 1000));
+        }}
+    />
+        </div >
     );
 }
