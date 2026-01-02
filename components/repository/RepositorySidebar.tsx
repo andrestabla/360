@@ -385,15 +385,23 @@ function CommentsTab({ doc }: { doc: RepositoryFile }) {
     };
 
     return (
-        <div className="flex flex-col h-full">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex flex-col h-full bg-white">
+            {/* Header with Counter */}
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 className="font-bold text-slate-800 text-lg">Comentarios</h3>
+                <span className="bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full text-xs">
+                    {comments.length}
+                </span>
+            </div>
+
+            {/* Comments List / Empty State */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {loading ? (
                     <div className="flex justify-center py-10"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-300"></div></div>
                 ) : comments.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center text-slate-400 py-10 text-center h-full">
-                        <ChatCircle size={48} className="mb-4 text-slate-200" weight="duotone" />
-                        <p className="font-medium text-slate-600">Sin comentarios</p>
-                        <p className="text-xs">Sé el primero en opinar.</p>
+                    <div className="flex flex-col items-center justify-center text-center h-full text-slate-500 mt-20">
+                        <p className="text-sm font-medium text-slate-400 mb-1">No hay comentarios aún.</p>
+                        <p className="text-xs text-slate-400 max-w-[200px]">Selecciona texto o escribe abajo para comentar.</p>
                     </div>
                 ) : (
                     comments.map((c: any) => (
@@ -401,10 +409,10 @@ function CommentsTab({ doc }: { doc: RepositoryFile }) {
                             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold flex-shrink-0">
                                 {c.user?.initials || c.user?.name?.substring(0, 2).toUpperCase() || '?'}
                             </div>
-                            <div className="bg-white p-3 rounded-tr-xl rounded-br-xl rounded-bl-xl border border-slate-100 shadow-sm flex-1">
+                            <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex-1">
                                 <div className="flex justify-between items-center mb-1">
                                     <span className="text-xs font-bold text-slate-700">{c.user?.name || 'Usuario'}</span>
-                                    <span className="text-[10px] text-slate-400">{new Date(c.createdAt).toLocaleString()}</span>
+                                    <span className="text-[10px] text-slate-400">{new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                 </div>
                                 <p className="text-sm text-slate-600">{c.content}</p>
                             </div>
@@ -415,27 +423,34 @@ function CommentsTab({ doc }: { doc: RepositoryFile }) {
             </div>
 
 
+            {/* Input Area */}
             <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-100 flex flex-col gap-3">
+
+                {/* Blue Banner - Mock Context */}
+                <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex justify-between items-center animate-in fade-in slide-in-from-bottom-2">
+                    <span className="text-xs font-bold text-blue-600">Agregando marcador en Pag 1</span>
+                    <button type="button" className="text-blue-400 hover:text-blue-600 transition-colors">
+                        <X size={14} weight="bold" />
+                    </button>
+                </div>
 
                 {/* Reference Input */}
                 <div className="w-full">
-                    <div className="relative">
-                        <input
-                            // In a real implementation this would bind to a page ref
-                            placeholder="Referencia (ej: Pág 2)..."
-                            className="w-full pl-3 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
-                        />
-                        {/* Mocking "Automatic" state if needed, or leave clear */}
-                    </div>
+                    <input
+                        placeholder="Referencia (automática)"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-500 focus:ring-1 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
+                        readOnly // Giving appearance of auto-filled
+                    />
                 </div>
 
+                {/* Textarea */}
                 <div className="relative">
                     <textarea
                         value={newComment}
                         onChange={e => setNewComment(e.target.value)}
                         placeholder="Escribe un comentario..."
                         rows={3}
-                        className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none"
+                        className="w-full pl-3 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-400"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
@@ -443,19 +458,13 @@ function CommentsTab({ doc }: { doc: RepositoryFile }) {
                             }
                         }}
                     />
-                    <div className="absolute right-2 bottom-2 flex gap-1">
+                    <div className="absolute right-2 bottom-2">
                         <button
                             type="button"
-                            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
+                            className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-500 rounded-full transition-colors"
+                            title="Adjuntar archivo"
                         >
-                            <Paperclip size={16} />
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={sending || !newComment.trim()}
-                            className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
-                        >
-                            <PaperPlaneRight weight="bold" size={16} />
+                            <Paperclip size={16} weight="bold" />
                         </button>
                     </div>
                 </div>
