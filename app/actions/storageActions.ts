@@ -40,14 +40,9 @@ export async function getSignedUrlAction(url: string) {
     key = key.replace(/\/\//g, '/');
     if (key.startsWith('/')) key = key.substring(1); // Ensure no leading slash for S3 keys
 
-    console.log(`[getSignedUrlAction] Input URL: ${url}`);
-    console.log(`[getSignedUrlAction] Extracted Key: ${key}`);
-
     try {
         const storage = getStorageService();
-        const result = await storage.download(key);
-        console.log(`[getSignedUrlAction] Result for key ${key}:`, result);
-        return result;
+        return await storage.download(key);
     } catch (error: any) {
         console.error("Sign URL Error:", error);
         return { success: false, error: error.message };
