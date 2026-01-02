@@ -6,9 +6,10 @@ import {
     X, DownloadSimple, ShareNetwork, Eye, DotsThreeVertical,
     PencilSimple, ClipboardText, FolderMinus, Trash,
     FilePdf, FileDoc, FileXls, FilePpt, Image, Link as LinkIcon,
-    Code, FileText, Folder, CaretLeft, Star, CaretDoubleLeft, SidebarSimple
+    Code, FileText, Folder, CaretLeft, Star, CaretDoubleLeft, SidebarSimple, ClockCounterClockwise
 } from '@phosphor-icons/react';
 import { RepositoryFile, updateDocumentMetadataAction, getDocumentDownloadUrlAction, deleteDocumentAction, toggleLikeAction } from '@/app/lib/repositoryActions';
+import { getSignedUrlAction } from '@/app/actions/storageActions';
 import { createCommentAction, getCommentsAction } from '@/app/lib/commentActions';
 import { Unit } from '@/shared/schema';
 import { RepositorySidebar } from './RepositorySidebar';
@@ -59,11 +60,18 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                 return;
             }
             try {
+                // First try standard repo action
                 const res = await getDocumentDownloadUrlAction(doc.id);
                 if (res.success && res.url) {
                     setPreviewUrl(res.url);
                 } else {
-                    setPreviewUrl(doc.url);
+                    // Fallback: If not found in repo (e.g. project evidence), try generic signer
+                    const signRes = await getSignedUrlAction(doc.url);
+                    if (signRes.success && 'url' in signRes && signRes.url) {
+                        setPreviewUrl(signRes.url);
+                    } else {
+                        setPreviewUrl(doc.url);
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching preview URL:", error);
@@ -147,6 +155,18 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                         {/* Work Mode Actions */}
                         {mode === 'work' && (
                             <>
+                                <button
+                                    onClick={() => {
+                                        setIsSidebarOpen(true);
+                                        // We might need a way to force History tab, but for now just opening sidebar is good step.
+                                        // Ideally RepositorySidebar exposes tab control or we pass it? 
+                                        // Let's assume user finds the tab, or we pass a prop later.
+                                    }}
+                                    className="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-lg text-xs transition-colors"
+                                >
+                                    <ClockCounterClockwise size={18} />
+                                    <span className="hidden sm:inline">Historial</span>
+                                </button>
                                 <button
                                     onClick={handleCapture}
                                     className="flex items-center gap-2 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg text-xs transition-colors"
