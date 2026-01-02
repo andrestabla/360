@@ -256,37 +256,52 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
         handleCloseUserPicker();
     };
 
-    const handleAddEvidence = (evidence: any) => {
+    const handleAddEvidence = async (evidence: any) => {
         if (!showDocPicker.phaseId || !showDocPicker.activityId) return;
 
-        setPhases(prev => prev.map(p => {
+        // Optimistic State Update
+        const newDoc = {
+            id: evidence.id || `doc-${Date.now()}`,
+            name: evidence.name,
+            type: evidence.type,
+            url: evidence.url,
+            content: evidence.content
+        };
+
+        const updatedPhases = phases.map(p => {
             if (p.id !== showDocPicker.phaseId) return p;
             return {
                 ...p,
                 activities: p.activities.map(a => {
                     if (a.id !== showDocPicker.activityId) return a;
-
                     return {
                         ...a,
-                        documents: [...(a.documents || []), {
-                            id: evidence.id || `doc-${Date.now()}`,
-                            name: evidence.name,
-                            type: evidence.type, // 'repository' | 'link' | 'file' | 'embed'
-                            url: evidence.url,
-                            content: evidence.content // for embed
-                        }]
+                        documents: [...(a.documents || []), newDoc]
                     };
                 })
             };
-        }));
+        });
+
+        setPhases(updatedPhases);
         setShowDocPicker({ active: false });
+
+        // Auto Save to Persistent Store
+        try {
+            await updateProject(project.id, { phases: updatedPhases });
+            // Optional: toast success
+        } catch (error) {
+            console.error("Auto-save failed:", error);
+            alert("Error al guardar el documento. Intenta de nuevo.");
+            setPhases(phases); // Revert on failure
+        }
     };
 
 
-    const handleDeleteDocument = (phaseId: string, activityId: string, docId: string) => {
+    const handleDeleteDocument = async (phaseId: string, activityId: string, docId: string) => {
         if (!confirm('¿Estás seguro de que quieres eliminar este documento?')) return;
 
-        setPhases(prev => prev.map(p => {
+        // Optimistic Update
+        const updatedPhases = phases.map(p => {
             if (p.id !== phaseId) return p;
             return {
                 ...p,
@@ -298,7 +313,18 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
                     };
                 })
             };
-        }));
+        });
+
+        setPhases(updatedPhases);
+
+        // Auto Save
+        try {
+            await updateProject(project.id, { phases: updatedPhases });
+        } catch (error) {
+            console.error("Auto-save deletion failed:", error);
+            alert("Error al eliminar el documento. Intenta de nuevo.");
+            setPhases(phases); // Revert
+        }
     };
 
     return (
