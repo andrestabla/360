@@ -24,6 +24,9 @@ export async function getSignedUrlAction(url: string) {
     // Extract Key
     if (url.includes('files.maturity360.co/')) {
         key = url.split('files.maturity360.co/')[1];
+    } else if (url.includes('/projects/')) {
+        // Handle project evidence paths regardless of domain
+        key = url.substring(url.indexOf('projects/'));
     } else if (url.includes('/api/storage/')) {
         key = url.split('/api/storage/')[1];
     } else if (url.includes('/repository/')) {
