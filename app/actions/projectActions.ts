@@ -263,11 +263,10 @@ export async function updateProjectAction(id: string, updates: any) {
 }
 
 
-import { v4 as uuidv4 } from 'uuid'; // Standard uuid if available, or custom
 import { randomUUID } from 'crypto';
 
 // Helper if crypto not available in edge (though likely Node env for actions)
-const generateId = () => crypto.randomUUID();
+const generateId = () => randomUUID();
 
 export async function duplicateProjectAction(id: string) {
     const session = await auth();
