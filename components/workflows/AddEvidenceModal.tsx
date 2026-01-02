@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, MagnifyingGlass, FileText, UploadSimple, Link as LinkIcon, Code } from '@phosphor-icons/react';
 import { DB, Doc } from '@/lib/data';
 import { uploadProjectEvidenceAction } from '@/app/actions/uploadActions';
+import { searchDocumentsAction } from '@/app/actions/repositoryActions';
 import toast from 'react-hot-toast';
 
 interface AddEvidenceModalProps {
@@ -26,6 +27,31 @@ export function AddEvidenceModal({ isOpen, projectId, onClose, onAdd }: AddEvide
     // Upload State
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+
+    // Search State
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    // Load initial docs or search on change
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            setIsSearching(true);
+            try {
+                const res = await searchDocumentsAction(search);
+                if (res.success && res.data) {
+                    setSearchResults(res.data);
+                }
+            } catch (error) {
+                console.error("Search error:", error);
+            } finally {
+                setIsSearching(false);
+            }
+        }, 300); // 300ms debounce
+
+        return () => clearTimeout(timer);
+    }, [search]);
+
+
 
     if (!isOpen) return null;
 
@@ -136,26 +162,35 @@ export function AddEvidenceModal({ isOpen, projectId, onClose, onAdd }: AddEvide
                             </div>
 
                             <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                                {DB.docs.filter(d => !search || d.title.toLowerCase().includes(search.toLowerCase())).map(doc => (
-                                    <div key={doc.id} onClick={() => handleAddRepo(doc)} className="flex items-center justify-between p-3 border border-slate-100 rounded-xl hover:border-blue-300 hover:bg-blue-50 cursor-pointer group transition-all">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-slate-100 text-slate-500 rounded-lg group-hover:bg-white group-hover:text-blue-600">
-                                                <FileText size={20} weight="duotone" />
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-sm text-slate-800">{doc.title}</p>
-                                                <p className="text-xs text-slate-400">{doc.type} • {new Date(doc.date || Date.now()).toLocaleDateString()}</p>
-                                            </div>
-                                        </div>
-                                        <div className="opacity-0 group-hover:opacity-100 text-blue-600 font-bold text-xs bg-white px-3 py-1.5 rounded-lg shadow-sm border border-blue-100">
-                                            Seleccionar
-                                        </div>
+                                {isSearching ? (
+                                    <div className="text-center py-10 text-slate-400">
+                                        <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-2"></div>
+                                        Buscando...
                                     </div>
-                                ))}
-                                {DB.docs.length === 0 && (
-                                    <div className="text-center py-10">
-                                        <p className="text-slate-400">No se encontraron documentos</p>
-                                    </div>
+                                ) : (
+                                    <>
+                                        {searchResults.map(doc => (
+                                            <div key={doc.id} onClick={() => handleAddRepo(doc)} className="flex items-center justify-between p-3 border border-slate-100 rounded-xl hover:border-blue-300 hover:bg-blue-50 cursor-pointer group transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-slate-100 text-slate-500 rounded-lg group-hover:bg-white group-hover:text-blue-600">
+                                                        <FileText size={20} weight="duotone" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-sm text-slate-800">{doc.title}</p>
+                                                        <p className="text-xs text-slate-400">{doc.type || 'file'} • {new Date(doc.createdAt || Date.now()).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="opacity-0 group-hover:opacity-100 text-blue-600 font-bold text-xs bg-white px-3 py-1.5 rounded-lg shadow-sm border border-blue-100">
+                                                    Seleccionar
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {searchResults.length === 0 && !isSearching && (
+                                            <div className="text-center py-10">
+                                                <p className="text-slate-400">No se encontraron documentos aprobados</p>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
