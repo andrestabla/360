@@ -1,10 +1,46 @@
 'use server';
 
 import { db } from '@/server/db';
-import { projects, projectPhases, projectActivities, users } from '@/shared/schema';
+import { projects, projectPhases, projectActivities, users, projectFolders, InsertProjectFolder } from '@/shared/schema';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
+
+// --- FOLDERS ---
+
+export async function createProjectFolderAction(data: InsertProjectFolder) {
+    try {
+        await db.insert(projectFolders).values(data);
+        revalidatePath('/dashboard/workflows');
+        return { success: true, data };
+    } catch (error: any) {
+        console.error('createProjectFolderAction error:', error);
+        return { success: false, error: 'Failed to create folder' };
+    }
+}
+
+export async function getProjectFoldersAction() {
+    try {
+        const folders = await db.query.projectFolders.findMany({
+            orderBy: [desc(projectFolders.createdAt)]
+        });
+        return { success: true, data: folders };
+    } catch (error: any) {
+        console.error('getProjectFoldersAction error:', error);
+        return { success: false, error: 'Failed to fetch folders' };
+    }
+}
+
+export async function deleteProjectFolderAction(id: string) {
+    try {
+        await db.delete(projectFolders).where(eq(projectFolders.id, id));
+        revalidatePath('/dashboard/workflows');
+        return { success: true };
+    } catch (error: any) {
+        console.error('deleteProjectFolderAction error:', error);
+        return { success: false, error: 'Failed to delete folder' };
+    }
+}
 
 // --- PROJECTS ---
 

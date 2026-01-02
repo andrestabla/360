@@ -468,6 +468,18 @@ export const tasksRelations = relations(tasks, ({ one }) => ({
 // 5. PROJECTS & HIERARCHY
 // =========================================================================
 
+export const projectFolders = pgTable("project_folders", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  name: text("name").notNull(),
+  parentId: varchar("parent_id", { length: 255 }), // Self-reference
+  description: text("description"),
+  color: varchar("color", { length: 50 }),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
+}, (table) => [
+  index("idx_project_folders_parent").on(table.parentId),
+]);
+
 export const projects = pgTable("projects", {
   id: varchar("id", { length: 255 }).primaryKey(),
   title: text("title").notNull(),
@@ -528,6 +540,8 @@ export type ProjectPhase = typeof projectPhases.$inferSelect;
 export type InsertProjectPhase = typeof projectPhases.$inferInsert;
 export type ProjectActivity = typeof projectActivities.$inferSelect;
 export type InsertProjectActivity = typeof projectActivities.$inferInsert;
+export type ProjectFolder = typeof projectFolders.$inferSelect;
+export type InsertProjectFolder = typeof projectFolders.$inferInsert;
 
 export const projectsRelations = relations(projects, ({ many }) => ({
   phases: many(projectPhases),

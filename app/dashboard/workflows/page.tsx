@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
 import { DB, WorkflowCase, Project, ProjectFolder } from '@/lib/data';
+import { createProjectFolderAction, getProjectFoldersAction } from '@/app/actions/projectActions';
 import {
     Plus, CheckCircle, Clock, XCircle, CaretRight, FileCsv,
     Briefcase, Folder, CloudArrowUp, FolderPlus, CaretLeft, DownloadSimple
@@ -56,7 +57,28 @@ export default function WorkflowsPage() {
     // Filters
     const [search, setSearch] = useState('');
 
-    useEffect(() => { setIsClient(true); }, []);
+    const [folders, setFolders] = useState<ProjectFolder[]>([]);
+
+    useEffect(() => {
+        setIsClient(true);
+        loadFolders();
+    }, []);
+
+    const loadFolders = async () => {
+        const res = await getProjectFoldersAction();
+        if (res.success && res.data) {
+            // Map DB data to UI type
+            const mapped: ProjectFolder[] = res.data.map(f => ({
+                id: f.id,
+                name: f.name,
+                description: f.description || '',
+                parentId: f.parentId || undefined,
+                createdAt: f.createdAt ? f.createdAt.toISOString() : new Date().toISOString(),
+                color: f.color || undefined
+            }));
+            setFolders(mapped);
+        }
+    };
 
     // Filter Logic
     const searchParams = useSearchParams();
@@ -94,18 +116,18 @@ export default function WorkflowsPage() {
 
     const foldersList = useMemo(() => {
         if (!isClient) return [];
-        return DB.projectFolders.filter(f => {
+        return folders.filter(f => {
             const matchesSearch = !search || f.name.toLowerCase().includes(search.toLowerCase());
             const matchesParent = selectedFolderId ? f.parentId === selectedFolderId : !f.parentId;
             return matchesSearch && matchesParent;
         });
-    }, [isClient, version, search, selectedFolderId]);
+    }, [isClient, version, search, selectedFolderId, folders]);
 
     const breadcrumbs = useMemo(() => {
         const path = [];
         let curr = selectedFolderId;
         while (curr) {
-            const f = DB.projectFolders.find(folder => folder.id === curr);
+            const f = folders.find(folder => folder.id === curr);
             if (f) {
                 path.unshift(f);
                 curr = f.parentId || null;
@@ -114,7 +136,7 @@ export default function WorkflowsPage() {
             }
         }
         return path;
-    }, [selectedFolderId, version]);
+    }, [selectedFolderId, version, folders]);
 
     const handleImportCSV = async (file: File) => {
         const text = await file.text();
@@ -400,19 +422,25 @@ export default function WorkflowsPage() {
             {/* NEW FOLDER MODAL */}
             {showNewFolderModal && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center animate-in fade-in">
-                    <form onSubmit={(e) => {
+                    <form onSubmit={async (e) => {
                         e.preventDefault();
                         const fd = new FormData(e.currentTarget);
-                        const newFolder: ProjectFolder = {
+
+                        const newFolderData = {
                             id: `pf-${Date.now()}`,
                             name: fd.get('name') as string,
                             description: fd.get('desc') as string,
                             parentId: (fd.get('parentId') as string) || undefined,
-                            createdAt: new Date().toISOString(),
-                            color: fd.get('color') as string,
+                            color: fd.get('color') as string
                         };
-                        DB.projectFolders.push(newFolder);
-                        refreshData();
+
+                        const res = await createProjectFolderAction({
+                            ...newFolderData,
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        });
+
+                        loadFolders();
                         setShowNewFolderModal(false);
                     }} className="bg-white rounded-xl w-full max-w-lg shadow-2xl">
                         <div className="p-5 border-b flex justify-between items-center">
@@ -432,7 +460,7 @@ export default function WorkflowsPage() {
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Ubicación</label>
                                 <select name="parentId" className="w-full border p-2.5 rounded-lg text-sm bg-white" defaultValue={selectedFolderId || ''}>
                                     <option value="">Nivel Principal (Raíz)</option>
-                                    {DB.projectFolders.map(f => (
+                                    {folders.map(f => (
                                         <option key={f.id} value={f.id}>{f.name}</option>
                                     ))}
                                 </select>
