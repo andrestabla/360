@@ -9,7 +9,8 @@ import { DB, WorkflowCase, Project, ProjectFolder } from '@/lib/data';
 import { createProjectFolderAction, getProjectFoldersAction, getProjectByIdAction } from '@/app/actions/projectActions';
 import {
     Plus, CheckCircle, Clock, XCircle, CaretRight, FileCsv,
-    Briefcase, Folder, CloudArrowUp, FolderPlus, CaretLeft, DownloadSimple, PencilSimple, Trash, Copy
+    Briefcase, Folder, CloudArrowUp, FolderPlus, CaretLeft, DownloadSimple, PencilSimple, Trash, Copy,
+    MagnifyingGlass, Funnel, CalendarBlank, CaretDown
 } from '@phosphor-icons/react';
 import { deleteProjectFolderAction, updateProjectFolderAction, duplicateProjectAction, deleteProjectAction } from '@/app/actions/projectActions';
 
@@ -59,6 +60,10 @@ export default function WorkflowsPage() {
 
     // Filters
     const [search, setSearch] = useState('');
+    const [filterArea, setFilterArea] = useState('ALL');
+    const [filterProcess, setFilterProcess] = useState('ALL');
+    const [filterStatus, setFilterStatus] = useState('ALL');
+    const [filterDate, setFilterDate] = useState('');
 
     const [folders, setFolders] = useState<ProjectFolder[]>([]);
 
@@ -124,9 +129,14 @@ export default function WorkflowsPage() {
         return DB.projects.filter(p => {
             const matchesSearch = !search || p.title.toLowerCase().includes(search.toLowerCase());
             const matchesFolder = selectedFolderId ? p.folderId === selectedFolderId : !p.folderId;
-            return matchesSearch && matchesFolder;
+            const matchesArea = filterArea === 'ALL' || (p.unit === filterArea); // Assuming 'unit' field stores Area
+            const matchesProcess = filterProcess === 'ALL' || (p.process === filterProcess);
+            const matchesStatus = filterStatus === 'ALL' || (p.status === filterStatus);
+            const matchesDate = !filterDate || (p.startDate && p.startDate.startsWith(filterDate)); // Simple string match YYYY-MM-DD
+
+            return matchesSearch && matchesFolder && matchesArea && matchesProcess && matchesStatus && matchesDate;
         });
-    }, [isClient, version, search, selectedFolderId]);
+    }, [isClient, version, search, selectedFolderId, filterArea, filterProcess, filterStatus, filterDate]);
 
     const foldersList = useMemo(() => {
         if (!isClient) return [];
