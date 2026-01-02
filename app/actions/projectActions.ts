@@ -261,7 +261,7 @@ export async function updateProjectAction(id: string, updates: any) {
         return { success: false, error: e.message };
     }
 }
-}
+
 
 export async function duplicateProjectAction(id: string) {
     const session = await auth();
