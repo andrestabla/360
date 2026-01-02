@@ -6,7 +6,7 @@ import {
     X, DownloadSimple, ShareNetwork, Eye, DotsThreeVertical,
     PencilSimple, ClipboardText, FolderMinus, Trash,
     FilePdf, FileDoc, FileXls, FilePpt, Image, Link as LinkIcon,
-    Code, FileText, Folder, CaretLeft, Star
+    Code, FileText, Folder, CaretLeft, Star, CaretDoubleLeft, SidebarSimple
 } from '@phosphor-icons/react';
 import { RepositoryFile, updateDocumentMetadataAction, getDocumentDownloadUrlAction, deleteDocumentAction, toggleLikeAction } from '@/app/lib/repositoryActions';
 import { createCommentAction, getCommentsAction } from '@/app/lib/commentActions';
@@ -37,6 +37,7 @@ export default function DocumentViewer({ initialDoc, units }: DocumentViewerProp
     const [doc, setDoc] = useState(initialDoc);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [loadingPreview, setLoadingPreview] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     // Refresh doc data logic (could just be revalidating path, but handling local state for speed)
     const refreshDoc = async () => {
@@ -123,6 +124,16 @@ export default function DocumentViewer({ initialDoc, units }: DocumentViewerProp
                     </div>
 
                     <div className="flex items-center gap-2">
+                        {!isSidebarOpen && (
+                            <button
+                                onClick={() => setIsSidebarOpen(true)}
+                                className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 font-bold rounded-lg text-xs transition-all shadow-sm"
+                                title="Mostrar detalles"
+                            >
+                                <SidebarSimple size={18} />
+                                <span className="hidden sm:inline">Detalles</span>
+                            </button>
+                        )}
                         <button
                             onClick={() => window.open(previewUrl || doc.url || '', '_blank')}
                             className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition-colors"
@@ -168,21 +179,23 @@ export default function DocumentViewer({ initialDoc, units }: DocumentViewerProp
             </div>
 
             {/* Right Sidebar: Metadata & Comments */}
-            <div className="w-[400px] border-l border-slate-200 bg-white flex flex-col z-20 shadow-xl">
-                <RepositorySidebar
-                    doc={doc}
-                    units={units}
-                    onClose={() => { /* Sidebar is permanent here, or maybe toggleable? For now permanent. */ }}
-                    onDownload={handleDownload}
-                    onUpdate={refreshDoc}
-                    onAssign={() => { /* Implement if needed or use modal logic */ }}
-                    onToggleLike={async (d) => { await toggleLikeAction(d.id); refreshDoc(); }}
-                    onShare={() => { navigator.clipboard.writeText(doc.url || ''); alert("Link copiado!"); }}
-                    onDelete={handleDelete}
-                    onMove={() => { /* Implement move logic if needed */ }}
-                    onExpand={() => { /* Already expanded */ }}
-                />
-            </div>
+            {isSidebarOpen && (
+                <div className="w-[400px] border-l border-slate-200 bg-white flex flex-col z-20 shadow-xl animate-in slide-in-from-right-10 duration-300">
+                    <RepositorySidebar
+                        doc={doc}
+                        units={units}
+                        onClose={() => setIsSidebarOpen(false)}
+                        onDownload={handleDownload}
+                        onUpdate={refreshDoc}
+                        onAssign={() => { /* Implement if needed or use modal logic */ }}
+                        onToggleLike={async (d) => { await toggleLikeAction(d.id); refreshDoc(); }}
+                        onShare={() => { navigator.clipboard.writeText(doc.url || ''); alert("Link copiado!"); }}
+                        onDelete={handleDelete}
+                        onMove={() => { /* Implement move logic if needed */ }}
+                        onExpand={() => { /* Already expanded */ }}
+                    />
+                </div>
+            )}
         </div>
     );
 }

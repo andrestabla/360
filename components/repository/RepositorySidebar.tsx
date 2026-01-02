@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, DownloadSimple, PencilSimple, ChatCircle, Eye, FloppyDisk, Check, Star, ShareNetwork, ClipboardText, DotsThreeVertical, Trash, FolderMinus, CaretDown, PaperPlaneRight } from '@phosphor-icons/react';
+import { X, DownloadSimple, PencilSimple, ChatCircle, Eye, FloppyDisk, Check, Star, ShareNetwork, ClipboardText, DotsThreeVertical, Trash, FolderMinus, CaretDown, PaperPlaneRight, CaretDoubleRight } from '@phosphor-icons/react';
 import { RepositoryFile, updateDocumentMetadataAction } from '@/app/lib/repositoryActions';
 import { createCommentAction, getCommentsAction } from '@/app/lib/commentActions';
 import { Unit } from '@/shared/schema';
@@ -77,7 +77,7 @@ export function RepositorySidebar({ doc, units, onClose, onDownload, onUpdate, o
                         {showMoreMenu && (
                             <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-50 origin-top-left animate-in fade-in zoom-in-95 duration-200">
                                 <button onClick={() => { setShowMoreMenu(false); onClose(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
-                                    <X size={16} /> Contraer Panel
+                                    <CaretDoubleRight size={16} /> Contraer Panel
                                 </button>
                                 <button onClick={() => { setShowMoreMenu(false); setActiveTab('edit'); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
                                     <PencilSimple size={16} /> Editar Metadatos
@@ -97,8 +97,8 @@ export function RepositorySidebar({ doc, units, onClose, onDownload, onUpdate, o
                     </div>
                 </div>
 
-                <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 ml-auto">
-                    <X size={24} />
+                <button onClick={onClose} title="Contraer panel" className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 ml-auto">
+                    <CaretDoubleRight size={24} />
                 </button>
             </div>
 

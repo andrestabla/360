@@ -8,6 +8,7 @@ import { getUnitsAction } from '@/app/lib/unitActions';
 import { Unit } from '@/shared/schema';
 import { RepositoryFile, RepositoryFolder, getFoldersAction, createFolderAction, deleteFolderAction, updateFolderAction, getDocumentsAction, getDocumentByIdAction, uploadDocumentAction, deleteDocumentAction, toggleLikeAction } from '@/app/lib/repositoryActions';
 import { UploadSimple, Folder, FilePdf, FileDoc, FileXls, Image, Link as LinkIcon, Code, DotsThree, Trash, DownloadSimple, Eye, CloudArrowUp, CaretRight, FolderPlus, Check, MagnifyingGlass, Funnel, X, ListBullets, SquaresFour, PencilSimple, ClipboardText, FilePpt, FileText, ShareNetwork, CaretDown, Star } from '@phosphor-icons/react';
+import toast from 'react-hot-toast';
 import { AssignTaskModal } from '@/components/repository/AssignTaskModal';
 import { MoveDocumentModal } from '@/components/repository/MoveDocumentModal';
 // Sidebar/Preview components removed in favor of dynamic routing
@@ -117,14 +118,17 @@ export default function RepositoryPage() {
         const loadData = async () => {
             setLoading(true);
             try {
-                const [f, d] = await Promise.all([
+                const [fRes, dRes] = await Promise.all([
                     getFoldersAction(currentFolderId, currentUser?.unit),
                     getDocumentsAction(currentFolderId, currentUser?.unit, filters.search)
                 ]);
-                setFolders(f);
-                setDocs(d);
+
+                // Handle standardized responses
+                setFolders(fRes.success && fRes.data ? fRes.data : []);
+                setDocs(Array.isArray(dRes) ? dRes : (dRes && dRes.data ? dRes.data : [])); // getDocs might need update too, handling both for safety
             } catch (error) {
                 console.error("Failed to load repo data", error);
+                toast.error("Error al cargar datos");
             } finally {
                 setLoading(false);
             }
@@ -501,21 +505,30 @@ export default function RepositoryPage() {
                             const payload = {
                                 name: formData.get('name') as string,
                                 description: formData.get('description') as string,
-                                unitId: (formData.get('unitId') as string) || currentUser?.unit,
+                                unitId: (formData.get('unitId') as string) || undefined,
                                 process: formData.get('process') as string,
                                 color: formData.get('color') as string
                             };
-                            try {
-                                if (editingFolder) await updateFolderAction(editingFolder.id, payload);
-                                else await createFolderAction({ ...payload, parentId: currentFolderId });
+
+                            let res;
+                            if (editingFolder) {
+                                res = await updateFolderAction(editingFolder.id, payload);
+                            } else {
+                                res = await createFolderAction({ ...payload, parentId: currentFolderId });
+                            }
+
+                            if (res.success) {
+                                toast.success(editingFolder ? 'Carpeta actualizada' : 'Carpeta creada');
                                 refresh();
                                 setShowNewFolderModal(false);
                                 setEditingFolder(null);
-                            } catch (e: any) { alert(e.message); }
+                            } else {
+                                toast.error('Error: ' + (res.error || 'Desconocido'));
+                            }
                         }} className="space-y-4">
-                            <input name="name" defaultValue={editingFolder?.name} placeholder="Nombre..." className="w-full border p-2.5 rounded-lg text-sm" required />
+                            <input name="name" defaultValue={editingFolder?.name} placeholder="Nombre..." className="w-full border p-2.5 rounded-lg text-sm" required autoFocus />
                             <textarea name="description" defaultValue={editingFolder?.description || ''} placeholder="Descripción..." rows={2} className="w-full border p-2.5 rounded-lg text-sm" />
-                            <select name="unitId" className="w-full border p-2.5 rounded-lg text-sm bg-white">
+                            <select name="unitId" className="w-full border p-2.5 rounded-lg text-sm bg-white" defaultValue={editingFolder?.unitId || ''}>
                                 <option value="">Seleccionar Unidad...</option>
                                 {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                             </select>

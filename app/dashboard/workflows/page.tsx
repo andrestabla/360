@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
+import toast from 'react-hot-toast';
 import { DB, WorkflowCase, Project, ProjectFolder } from '@/lib/data';
 import { createProjectFolderAction, getProjectFoldersAction } from '@/app/actions/projectActions';
 import {
@@ -434,14 +435,23 @@ export default function WorkflowsPage() {
                             color: fd.get('color') as string
                         };
 
+                        import toast from 'react-hot-toast';
+
+                        // ...
+
                         const res = await createProjectFolderAction({
                             ...newFolderData,
                             createdAt: new Date(),
                             updatedAt: new Date()
                         });
 
-                        loadFolders();
-                        setShowNewFolderModal(false);
+                        if (res.success) {
+                            toast.success('Carpeta creada correctamente');
+                            loadFolders();
+                            setShowNewFolderModal(false);
+                        } else {
+                            toast.error('Error al crear carpeta: ' + (res.error || 'Desconocido'));
+                        }
                     }} className="bg-white rounded-xl w-full max-w-lg shadow-2xl">
                         <div className="p-5 border-b flex justify-between items-center">
                             <h3 className="font-bold text-lg">Nueva Carpeta</h3>

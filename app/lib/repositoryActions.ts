@@ -30,52 +30,65 @@ export async function getFoldersAction(parentId: string | null, unitId?: string)
             .where(and(...conditions))
             .orderBy(desc(folders.createdAt));
 
-        return serialize(res);
+        return { success: true, data: serialize(res) };
     } catch (error) {
         console.error("Error in getFoldersAction:", error);
-        return [];
+        return { success: false, error: 'Error al obtener carpetas' };
     }
 }
 
 export async function createFolderAction(data: { name: string; parentId?: string | null; unitId?: string; description?: string; process?: string; color?: string }) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error("Unauthorized");
+    try {
+        const session = await auth();
+        if (!session?.user?.id) return { success: false, error: "No autorizado" };
 
-    const [newFolder] = await db.insert(folders).values({
-        id: `fod-${Date.now()}`,
-        name: data.name,
-        parentId: data.parentId || null,
-        unitId: data.unitId,
-        creatorId: session.user.id,
-        description: data.description,
-        process: data.process,
-        color: data.color || '#fbbf24'
-    }).returning();
+        const [newFolder] = await db.insert(folders).values({
+            id: `fod-${Date.now()}`,
+            name: data.name,
+            parentId: data.parentId || null,
+            unitId: data.unitId,
+            creatorId: session.user.id,
+            description: data.description,
+            process: data.process,
+            color: data.color || '#fbbf24'
+        }).returning();
 
-    revalidatePath('/dashboard/repository');
-    return serialize(newFolder);
+        revalidatePath('/dashboard/repository');
+        return { success: true, data: serialize(newFolder) };
+    } catch (error: any) {
+        console.error("Error creating folder:", error);
+        return { success: false, error: error.message || 'Error al crear carpeta' };
+    }
 }
 
 export async function updateFolderAction(folderId: string, data: Partial<RepositoryFolder>) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error("Unauthorized");
+    try {
+        const session = await auth();
+        if (!session?.user?.id) return { success: false, error: "No autorizado" };
 
-    const [updated] = await db.update(folders)
-        .set(data)
-        .where(eq(folders.id, folderId))
-        .returning();
+        const [updated] = await db.update(folders)
+            .set(data)
+            .where(eq(folders.id, folderId))
+            .returning();
 
-    revalidatePath('/dashboard/repository');
-    return serialize(updated);
+        revalidatePath('/dashboard/repository');
+        return { success: true, data: serialize(updated) };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
 }
 
 export async function deleteFolderAction(folderId: string) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error("Unauthorized");
+    try {
+        const session = await auth();
+        if (!session?.user?.id) return { success: false, error: "No autorizado" };
 
-    await db.delete(folders).where(eq(folders.id, folderId));
-    revalidatePath('/dashboard/repository');
-    return { success: true };
+        await db.delete(folders).where(eq(folders.id, folderId));
+        revalidatePath('/dashboard/repository');
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
 }
 
 
