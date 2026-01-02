@@ -85,6 +85,11 @@ export async function updateProjectAction(id: string, updates: any) {
         await db.transaction(async (tx) => {
             // 1. Update Project Fields
             if (Object.keys(projectData).length > 0) {
+                // Sanitize folderId: if empty string, set to null (or undefined if not updating)
+                if (projectData.folderId === '') {
+                    projectData.folderId = null;
+                }
+
                 console.log('Updating project fields:', projectData);
                 await tx.update(projects)
                     .set({ ...projectData, updatedAt: new Date() })
@@ -279,6 +284,31 @@ export async function deleteActivityAction(id: string) {
         revalidatePath('/dashboard/workflows');
         return { success: true };
     } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+// --- SINGLE PROJECT FETCH ---
+export async function getProjectByIdAction(id: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'Unauthorized' };
+
+    try {
+        const project = await db.query.projects.findFirst({
+            where: eq(projects.id, id),
+            with: {
+                phases: {
+                    with: {
+                        activities: true
+                    },
+                    orderBy: (phases, { asc }) => [asc(phases.order)]
+                }
+            }
+        });
+        if (!project) return { success: false, error: 'Project not found' };
+        return { success: true, data: project };
+    } catch (e: any) {
+        console.error('Get Project Error:', e);
         return { success: false, error: e.message };
     }
 }

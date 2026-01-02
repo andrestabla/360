@@ -1,38 +1,42 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation'; // Added
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { useTranslation } from '@/lib/i18n';
-import { DB, WorkflowCase, WorkflowDefinition, Project, ProjectPhase, ProjectDocument, ProjectActivity, ProjectFolder, User as ProjectUser } from '@/lib/data';
-import ProjectDetailDrawer from '@/components/workflows/ProjectDetailDrawer';
+import { DB, WorkflowCase, Project, ProjectFolder } from '@/lib/data';
 import {
-    Plus, Kanban, CheckCircle, Clock, XCircle, User, Calendar,
-    Tray, ArrowRight, CaretRight, ChatCircle, Paperclip, Funnel, UserSwitch, MagnifyingGlass,
-    Briefcase, Folder, Trash, Upload, FileText, YoutubeLogo, Link as LinkIcon, Camera, PencilSimple, Bell, Copy, FileCsv,
-    FilePpt, FileDoc, FileXls, Presentation, Minus, MagnifyingGlassPlus, DownloadSimple, CloudArrowUp, ChartPie, FolderPlus, CaretLeft
+    Plus, CheckCircle, Clock, XCircle, CaretRight, FileCsv,
+    Briefcase, Folder, CloudArrowUp, FolderPlus, CaretLeft, DownloadSimple
 } from '@phosphor-icons/react';
 
 // --- GLOBAL PROGRESS UTILS ---
-const getStatusValue = (status: string) => {
-    switch (status) {
-        case 'VALIDATED': return 100;
-        case 'DELIVERED': return 90;
-        case 'IN_REVIEW': return 80;
-        case 'COMPLETED': return 60;
-        case 'IN_PROGRESS': return 20;
-        default: return 0;
-    }
-};
-
 const getProjectProgress = (proj: Project) => {
     if (!proj.phases || proj.phases.length === 0) return 0;
-    // Simple mock calculation
-    return 45;
+    // Simple mock calculation or real one if phases have status
+    // Reusing the same calculation logic would be good, but for the card view a simplified one is fine.
+    // Let's iterate if phases exist
+    let totalWeight = 0;
+    let count = 0;
+    const weights: Record<string, number> = {
+        'PENDING': 0, 'IN_PROGRESS': 50, 'COMPLETED': 80,
+        'IN_REVIEW': 90, 'DELIVERED': 95, 'VALIDATED': 100
+    };
+
+    proj.phases.forEach(p => {
+        if (p.activities) {
+            p.activities.forEach(a => {
+                count++;
+                totalWeight += weights[a.status] || 0;
+            });
+        }
+    });
+
+    return count === 0 ? 0 : Math.round(totalWeight / count);
 };
 
 export default function WorkflowsPage() {
-    const { currentUser, createProject, updateProject, deleteProjectFolder, version, isSuperAdmin, refreshData, createWorkflowCase } = useApp();
+    const { currentUser, createProject, updateProject, deleteProjectFolder, version, refreshData, createWorkflowCase } = useApp();
     const { t } = useTranslation();
     const [mainView, setMainView] = useState<'WORKFLOWS' | 'PROJECTS'>('PROJECTS');
     const [activeTab, setActiveTab] = useState<'REQUESTS' | 'TASKS'>('REQUESTS');
@@ -40,38 +44,26 @@ export default function WorkflowsPage() {
     const [showNewModal, setShowNewModal] = useState(false);
 
     // PROJECT STATES
-    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+    // Removed selectedProject state as we now navigate
     const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
     const [showNewProjectModal, setShowNewProjectModal] = useState(false);
     const [showNewFolderModal, setShowNewFolderModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
 
     const router = useRouter();
-
     const [isClient, setIsClient] = useState(false);
 
     // Filters
     const [search, setSearch] = useState('');
-    const [filterUnit, setFilterUnit] = useState('ALL');
 
     useEffect(() => { setIsClient(true); }, []);
 
-
     // Filter Logic
-    const searchParams = useSearchParams(); // Needs import
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         if (isClient && searchParams) {
-            const pid = searchParams.get('projectId');
-            if (pid) {
-                const targetProject = DB.projects.find(p => p.id === pid);
-                if (targetProject) {
-                    setMainView('PROJECTS');
-                    setSelectedProject(targetProject);
-                    // Clear param to avoid re-opening on refresh? Optional, but better UX usually to keep it or replace it.
-                    // For now, jus open it.
-                }
-            }
+            // We might want to handle initial folder selection via params later
         }
     }, [isClient, searchParams]);
 
@@ -203,7 +195,7 @@ export default function WorkflowsPage() {
     return (
         <div className="flex h-full bg-slate-50 overflow-hidden">
             {/* Main Content */}
-            <div className={`flex-1 flex flex-col min-w-0 transition-all ${selectedCase || selectedProject ? 'mr-0' : ''}`}>
+            <div className={`flex-1 flex flex-col min-w-0 transition-all`}>
 
                 {/* Header */}
                 <div className="bg-white border-b border-slate-200 px-8 py-6 flex flex-col md:flex-row justify-between items-center shadow-sm z-10 gap-4">
@@ -304,7 +296,7 @@ export default function WorkflowsPage() {
 
                         {/* Projects */}
                         {projectsList.map(p => (
-                            <div key={p.id} onClick={() => setSelectedProject(p)} className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md cursor-pointer hover:border-purple-300 transition-all">
+                            <div key={p.id} onClick={() => router.push(`/dashboard/workflows/${p.id}`)} className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md cursor-pointer hover:border-purple-300 transition-all">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="p-3 rounded-lg bg-purple-50 text-purple-600" style={{ backgroundColor: p.color ? `${p.color}20` : undefined, color: p.color }}>
                                         <Briefcase size={24} weight="duotone" />
@@ -338,22 +330,6 @@ export default function WorkflowsPage() {
                     </div>
                 )}
             </div>
-
-            {/* Detail Drawer - Projects */}
-            {selectedProject && (
-                <ProjectDetailDrawer
-                    project={selectedProject}
-                    onClose={() => setSelectedProject(null)}
-                    onUpdate={(id, updates) => {
-                        updateProject(id, updates);
-                        // Update local state to reflect changes immediately in the drawer if needed, 
-                        // though context update triggers re-render of page, we might need to update selectedProject ref
-                        setSelectedProject(prev => prev ? { ...prev, ...updates } : null);
-                    }}
-                />
-            )}
-
-            {/* New Project Modal */}
 
             {/* NEW PROJECT MODAL */}
             {showNewProjectModal && (
