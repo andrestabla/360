@@ -61,7 +61,7 @@ export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOv
 
     return (
         <div className="flex flex-col h-full bg-white font-sans">
-            {/* Top Toolbar */}
+            {/* Top Toolbar - Updated for new UI requirements */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
                 <div className="flex items-center gap-1">
                     {/* In View/History mode, maybe hide actions except close? User said "no debe desplegar más opciones". 
