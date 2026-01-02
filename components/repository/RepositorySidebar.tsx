@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, DownloadSimple, PencilSimple, ChatCircle, Eye, FloppyDisk, Check, Star, ShareNetwork, ClipboardText, DotsThreeVertical, Trash, FolderMinus, CaretDown, PaperPlaneRight, CaretDoubleRight, ClockCounterClockwise, Paperclip } from '@phosphor-icons/react';
+import { X, DownloadSimple, PencilSimple, ChatCircle, Eye, FloppyDisk, Check, Star, ShareNetwork, ClipboardText, DotsThreeVertical, Trash, FolderMinus, CaretDown, PaperPlaneRight, CaretDoubleRight, ClockCounterClockwise, Smiley } from '@phosphor-icons/react';
 import { RepositoryFile, updateDocumentMetadataAction } from '@/app/lib/repositoryActions';
 import { createCommentAction, getCommentsAction } from '@/app/lib/commentActions';
 import { Unit } from '@/shared/schema';
@@ -334,6 +334,7 @@ function CommentsTab({ doc, mode }: { doc: RepositoryFile, mode: string }) {
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const loadComments = async () => {
@@ -460,13 +461,45 @@ function CommentsTab({ doc, mode }: { doc: RepositoryFile, mode: string }) {
                             }
                         }}
                     />
-                    <div className="absolute right-2 bottom-2">
+                    <div className="absolute right-2 bottom-2 flex gap-1">
+                        {/* Emoji Picker Trigger */}
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
+                            >
+                                <Smiley size={20} weight="bold" />
+                            </button>
+
+                            {/* Simple Custom Emoji Picker */}
+                            {showEmojiPicker && (
+                                <div className="absolute bottom-full right-0 mb-2 p-2 bg-white rounded-xl shadow-xl border border-slate-100 grid grid-cols-5 gap-1 z-50 w-48 animate-in fade-in zoom-in-95">
+                                    {['👍', '👎', '🎉', '🔥', '❤️', '👀', '✅', '❌', '😊', '🤔', '🚀', '⚠️', '📝', '👏', '🙌'].map(emoji => (
+                                        <button
+                                            key={emoji}
+                                            type="button"
+                                            onClick={() => {
+                                                setNewComment(prev => prev + emoji);
+                                                setShowEmojiPicker(false);
+                                            }}
+                                            className="w-8 h-8 flex items-center justify-center text-lg hover:bg-slate-50 rounded-lg transition-colors"
+                                        >
+                                            {emoji}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Send Button */}
                         <button
                             type="button"
-                            className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-500 rounded-full transition-colors"
-                            title="Adjuntar archivo"
+                            onClick={() => handleSend()}
+                            disabled={!newComment.trim()}
+                            className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                         >
-                            <Paperclip size={16} weight="bold" />
+                            <PaperPlaneRight size={16} weight="bold" />
                         </button>
                     </div>
                 </div>
