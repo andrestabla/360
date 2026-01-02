@@ -10,8 +10,7 @@ import { RepositoryFile, RepositoryFolder, getFoldersAction, createFolderAction,
 import { UploadSimple, Folder, FilePdf, FileDoc, FileXls, Image, Link as LinkIcon, Code, DotsThree, Trash, DownloadSimple, Eye, CloudArrowUp, CaretRight, FolderPlus, Check, MagnifyingGlass, Funnel, X, ListBullets, SquaresFour, PencilSimple, ClipboardText, FilePpt, FileText, ShareNetwork, CaretDown, Star } from '@phosphor-icons/react';
 import { AssignTaskModal } from '@/components/repository/AssignTaskModal';
 import { MoveDocumentModal } from '@/components/repository/MoveDocumentModal';
-import { FullScreenPreview } from '@/components/repository/FullScreenPreview';
-import { RepositorySidebar } from '@/components/repository/RepositorySidebar';
+// Sidebar/Preview components removed in favor of dynamic routing
 
 // Tipos para Filtros Avanzados
 type FilterState = {
@@ -40,6 +39,7 @@ const getFileIcon = (type: string, size: number) => {
 export default function RepositoryPage() {
     const { currentUser } = useApp();
     const { t } = useTranslation();
+    const router = useRouter();
 
     // --- Estado Global ---
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
@@ -60,7 +60,7 @@ export default function RepositoryPage() {
     });
     const [isSidebarMaximized, setIsSidebarMaximized] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [selectedDoc, setSelectedDoc] = useState<RepositoryFile | null>(null);
+    const [selectedDoc, setSelectedDoc] = useState<RepositoryFile | null>(null); // Kept for deletion logic/highlighting if needed, or remove if unused.
     const [isDragging, setIsDragging] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [fullScreenDoc, setFullScreenDoc] = useState<RepositoryFile | null>(null);
@@ -374,8 +374,8 @@ export default function RepositoryPage() {
                                 <GridCard
                                     key={doc.id}
                                     doc={doc}
-                                    isSelected={selectedDoc?.id === doc.id}
-                                    onClick={() => setSelectedDoc(doc)}
+                                    isSelected={false}
+                                    onClick={() => router.push(`/dashboard/repository/${doc.id}`)}
                                     onMenu={(e: any) => toggleDropdown(doc.id, e)}
                                     isMenuOpen={activeDropdown === doc.id}
                                     onCloseMenu={() => setActiveDropdown(null)}
@@ -387,7 +387,7 @@ export default function RepositoryPage() {
                                         } else alert('No hay URL');
                                     }}
                                     onAssign={() => { setSelectedDocForAction(doc); setShowAssignTaskModal(true); setActiveDropdown(null); }}
-                                    onEdit={() => { setSelectedDoc(doc); setActiveDropdown(null); }}
+                                    onEdit={() => { router.push(`/dashboard/repository/${doc.id}`); setActiveDropdown(null); }}
                                     onDelete={() => handleDeleteDoc(doc.id)}
                                 />
                             ))}
@@ -400,33 +400,7 @@ export default function RepositoryPage() {
                 </div>
             </div>
 
-            {selectedDoc && (
-                <div className={`${isSidebarMaximized ? 'w-[750px]' : 'w-[400px]'} flex-shrink-0 bg-white border-l border-slate-200 h-full overflow-hidden flex flex-col shadow-2xl z-20 transition-all duration-300 animate-slideLeft`}>
-                    <RepositorySidebar
-                        doc={selectedDoc}
-                        units={units}
-                        onClose={() => { setSelectedDoc(null); setIsSidebarMaximized(false); }}
-                        onDownload={handleDownload}
-                        onUpdate={refresh}
-                        onAssign={(doc) => { setSelectedDocForAction(doc); setShowAssignTaskModal(true); }}
-                        onToggleLike={async (doc) => {
-                            try {
-                                await toggleLikeAction(doc.id);
-                                refresh();
-                            } catch (e: any) { alert(e.message); }
-                        }}
-                        onShare={(doc) => {
-                            if (doc.url) {
-                                navigator.clipboard.writeText(doc.url);
-                                alert('Enlace copiado al portapapeles');
-                            } else alert('Este documento no tiene una URL pública.');
-                        }}
-                        onDelete={(doc) => handleDeleteDoc(doc.id)}
-                        onMove={(doc) => { setDocToMove(doc); setShowMoveModal(true); }}
-                        onExpand={(doc) => setFullScreenDoc(doc)}
-                    />
-                </div>
-            )}
+            {/* Sidebar removed */}
 
             {/* Modals */}
             {showUploadModal && (
@@ -583,12 +557,7 @@ export default function RepositoryPage() {
                 />
             )}
 
-            {fullScreenDoc && (
-                <FullScreenPreview
-                    doc={fullScreenDoc}
-                    onClose={() => setFullScreenDoc(null)}
-                />
-            )}
+            {/* FullScreenPreview removed */}
         </div>
     );
 }
