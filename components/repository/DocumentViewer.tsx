@@ -6,7 +6,7 @@ import {
     X, DownloadSimple, ShareNetwork, Eye, DotsThreeVertical,
     PencilSimple, ClipboardText, FolderMinus, Trash,
     FilePdf, FileDoc, FileXls, FilePpt, Image, Link as LinkIcon,
-    Code, FileText, Folder, CaretLeft, Star, CaretDoubleLeft, SidebarSimple
+    Code, FileText, Folder, CaretLeft, Star, CaretDoubleLeft, SidebarSimple, Camera
 } from '@phosphor-icons/react';
 import { RepositoryFile, updateDocumentMetadataAction, getDocumentDownloadUrlAction, deleteDocumentAction, toggleLikeAction } from '@/app/lib/repositoryActions';
 import { createCommentAction, getCommentsAction } from '@/app/lib/commentActions';
@@ -30,14 +30,16 @@ const getFileIcon = (type: string, size: number) => {
 interface DocumentViewerProps {
     initialDoc: RepositoryFile;
     units: Unit[];
+    initialMode?: 'repository' | 'view' | 'work';
 }
 
-export default function DocumentViewer({ initialDoc, units }: DocumentViewerProps) {
+export default function DocumentViewer({ initialDoc, units, initialMode = 'repository' }: DocumentViewerProps) {
     const router = useRouter();
     const [doc, setDoc] = useState(initialDoc);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [loadingPreview, setLoadingPreview] = useState(true);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(initialMode !== 'view');
+    const [mode, setMode] = useState(initialMode);
 
     // Refresh doc data logic (could just be revalidating path, but handling local state for speed)
     const refreshDoc = async () => {
@@ -93,6 +95,11 @@ export default function DocumentViewer({ initialDoc, units }: DocumentViewerProp
         return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
     };
 
+    // Mock capture for "Trabajar" mode
+    const handleCapture = () => {
+        alert("Captura de pantalla simulada: Se ha tomado una instantánea de la vista actual.");
+    };
+
     const isImage = doc.type?.match(/(image|jpg|jpeg|png|gif|webp)/i);
     const isPDF = doc.type?.match(/pdf/i);
     const isOffice = doc.type?.match(/(doc|docx|xls|xlsx|ppt|pptx|msword|officedocument)/i);
@@ -106,8 +113,11 @@ export default function DocumentViewer({ initialDoc, units }: DocumentViewerProp
                 {/* Header */}
                 <div className="bg-white border-b border-slate-200 px-6 py-3 flex justify-between items-center shadow-sm z-10">
                     <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => router.back()}
+                        <button // Disable back in standalone mode? Or close window?
+                            onClick={() => {
+                                if (window.history.length > 2) router.back();
+                                else window.close();
+                            }}
                             className="p-2 -ml-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
                         >
                             <CaretLeft size={20} weight="bold" />
@@ -118,13 +128,29 @@ export default function DocumentViewer({ initialDoc, units }: DocumentViewerProp
                                 <h1 className="text-lg font-bold text-slate-800 leading-tight truncate max-w-md">{doc.title}</h1>
                                 <p className="text-xs text-slate-500 font-medium">
                                     {(doc.size ? doc.size : '')} • {new Date(doc.createdAt || Date.now()).toLocaleDateString()}
+                                    {mode === 'view' && <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">SOLO LECTURA</span>}
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {!isSidebarOpen && (
+                        {/* Work Mode Actions */}
+                        {mode === 'work' && (
+                            <>
+                                <button
+                                    onClick={handleCapture}
+                                    className="flex items-center gap-2 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg text-xs transition-colors"
+                                >
+                                    <Camera size={18} />
+                                    <span className="hidden sm:inline">Capturar</span>
+                                </button>
+                                <div className="w-px h-6 bg-slate-200 mx-1"></div>
+                            </>
+                        )}
+
+                        {/* Sidebar Toggle - Only if not View mode or explicitly allowed */}
+                        {mode !== 'view' && !isSidebarOpen && (
                             <button
                                 onClick={() => setIsSidebarOpen(true)}
                                 className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 font-bold rounded-lg text-xs transition-all shadow-sm"
@@ -134,6 +160,7 @@ export default function DocumentViewer({ initialDoc, units }: DocumentViewerProp
                                 <span className="hidden sm:inline">Detalles</span>
                             </button>
                         )}
+
                         <button
                             onClick={() => window.open(previewUrl || doc.url || '', '_blank')}
                             className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition-colors"
@@ -184,6 +211,7 @@ export default function DocumentViewer({ initialDoc, units }: DocumentViewerProp
                     <RepositorySidebar
                         doc={doc}
                         units={units}
+                        mode={mode} // Pass mode
                         onClose={() => setIsSidebarOpen(false)}
                         onDownload={handleDownload}
                         onUpdate={refreshDoc}

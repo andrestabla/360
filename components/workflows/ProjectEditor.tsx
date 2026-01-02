@@ -500,102 +500,138 @@ export default function ProjectEditor({ project, onUpdate, readOnly = false }: P
                                     )}
 
                                     {phase.activities?.map((act) => (
-                                        <div key={act.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-blue-300 flex flex-col md:flex-row gap-4 transition-all">
-                                            <div className="flex-1 space-y-3">
-                                                <div className="flex items-start justify-between gap-4">
-                                                    {isEditing ? (
-                                                        <input
-                                                            className="font-bold text-slate-700 text-sm border border-transparent hover:border-slate-200 focus:border-blue-300 focus:bg-slate-50 rounded px-2 py-1 -ml-2 w-full transition-all"
-                                                            value={act.name}
-                                                            onChange={(e) => updateActivity(phase.id, act.id, { name: e.target.value })}
-                                                        />
-                                                    ) : (
-                                                        <h5 className="font-bold text-slate-700 text-sm">{act.name}</h5>
-                                                    )}
-                                                </div>
-
-                                                <div className="flex gap-4">
-                                                    <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
-                                                        <Calendar weight="duotone" className="text-blue-500" />
+                                        <div key={act.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-blue-300 transition-all">
+                                            <div className="flex flex-col md:flex-row gap-4">
+                                                <div className="flex-1 space-y-3">
+                                                    <div className="flex items-start justify-between gap-4">
                                                         {isEditing ? (
                                                             <input
-                                                                type="date"
-                                                                className="bg-transparent border-none p-0 text-xs w-24 focus:ring-0"
-                                                                value={formatDateForInput(act.startDate)}
-                                                                onChange={e => updateActivity(phase.id, act.id, { startDate: e.target.value })}
+                                                                className="font-bold text-slate-700 text-sm border border-transparent hover:border-slate-200 focus:border-blue-300 focus:bg-slate-50 rounded px-2 py-1 -ml-2 w-full transition-all"
+                                                                value={act.name}
+                                                                onChange={(e) => updateActivity(phase.id, act.id, { name: e.target.value })}
                                                             />
                                                         ) : (
-                                                            <span>{formatDateForInput(act.startDate) || 'Fecha Inicio'}</span>
+                                                            <h5 className="font-bold text-slate-700 text-sm">{act.name}</h5>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
-                                                        {isEditing ? (
-                                                            <input
-                                                                type="date"
-                                                                className="bg-transparent border-none p-0 text-xs w-24 focus:ring-0"
-                                                                value={formatDateForInput(act.endDate)}
-                                                                onChange={e => updateActivity(phase.id, act.id, { endDate: e.target.value })}
-                                                            />
-                                                        ) : (
-                                                            <>
-                                                                <span className="text-slate-300">→</span>
-                                                                <span>{formatDateForInput(act.endDate) || 'Fecha Fin'}</span>
-                                                            </>
-                                                        )}
+
+                                                    <div className="flex gap-4">
+                                                        <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+                                                            <Calendar weight="duotone" className="text-blue-500" />
+                                                            {isEditing ? (
+                                                                <input
+                                                                    type="date"
+                                                                    className="bg-transparent border-none p-0 text-xs w-24 focus:ring-0"
+                                                                    value={formatDateForInput(act.startDate)}
+                                                                    onChange={e => updateActivity(phase.id, act.id, { startDate: e.target.value })}
+                                                                />
+                                                            ) : (
+                                                                <span>{formatDateForInput(act.startDate) || 'Fecha Inicio'}</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+                                                            {isEditing ? (
+                                                                <input
+                                                                    type="date"
+                                                                    className="bg-transparent border-none p-0 text-xs w-24 focus:ring-0"
+                                                                    value={formatDateForInput(act.endDate)}
+                                                                    onChange={e => updateActivity(phase.id, act.id, { endDate: e.target.value })}
+                                                                />
+                                                            ) : (
+                                                                <>
+                                                                    <span className="text-slate-300">→</span>
+                                                                    <span>{formatDateForInput(act.endDate) || 'Fecha Fin'}</span>
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="flex flex-row md:flex-col items-end justify-between gap-3 min-w-[200px] border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-4">
-                                                <select
-                                                    value={act.status}
-                                                    onChange={(e) => updateActivity(phase.id, act.id, { status: e.target.value })}
-                                                    className={`text-xs font-bold px-3 py-1.5 rounded-lg border-2 appearance-none cursor-pointer text-center w-full transition-colors ${act.status === 'VALIDATED' ? 'bg-green-50 text-green-700 border-green-200' :
-                                                        act.status === 'IN_PROGRESS' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                                            'bg-slate-50 text-slate-600 border-slate-200'
-                                                        }`}
-                                                >
-                                                    {Object.entries(STATUS_LABELS).map(([key, label]) => (
-                                                        <option key={key} value={key}>{label}</option>
-                                                    ))}
-                                                </select>
-
-                                                <div className="flex items-center gap-2">
-                                                    {/* Avatars */}
-                                                    <div className="flex -space-x-2">
-                                                        {act.participants?.map((p, i) => (
-                                                            <div key={i} className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 border-2 border-white flex items-center justify-center text-[10px] font-bold" title={typeof p === 'object' ? p.userId : p}>
-                                                                U
-                                                            </div>
+                                                <div className="flex flex-row md:flex-col items-end justify-between gap-3 min-w-[200px] border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-4">
+                                                    <select
+                                                        value={act.status}
+                                                        onChange={(e) => updateActivity(phase.id, act.id, { status: e.target.value })}
+                                                        className={`text-xs font-bold px-3 py-1.5 rounded-lg border-2 appearance-none cursor-pointer text-center w-full transition-colors ${act.status === 'VALIDATED' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                            act.status === 'IN_PROGRESS' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                                'bg-slate-50 text-slate-600 border-slate-200'
+                                                            }`}
+                                                    >
+                                                        {Object.entries(STATUS_LABELS).map(([key, label]) => (
+                                                            <option key={key} value={key}>{label}</option>
                                                         ))}
-                                                        <button
-                                                            onClick={() => setShowUserPicker({ active: true, phaseId: phase.id, activityId: act.id })}
-                                                            className="w-6 h-6 rounded-full bg-slate-100 text-slate-400 border-2 border-white flex items-center justify-center hover:bg-blue-50 hover:text-blue-500 transition-colors"
-                                                        >
-                                                            <Users size={12} weight="bold" />
-                                                        </button>
+                                                    </select>
+
+                                                    <div className="flex items-center gap-2">
+                                                        {/* Avatars */}
+                                                        <div className="flex -space-x-2">
+                                                            {act.participants?.map((p, i) => (
+                                                                <div key={i} className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 border-2 border-white flex items-center justify-center text-[10px] font-bold" title={typeof p === 'object' ? p.userId : p}>
+                                                                    U
+                                                                </div>
+                                                            ))}
+                                                            <button
+                                                                onClick={() => setShowUserPicker({ active: true, phaseId: phase.id, activityId: act.id })}
+                                                                className="w-6 h-6 rounded-full bg-slate-100 text-slate-400 border-2 border-white flex items-center justify-center hover:bg-blue-50 hover:text-blue-500 transition-colors"
+                                                            >
+                                                                <Users size={12} weight="bold" />
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="w-px h-4 bg-slate-200 mx-1"></div>
+
+                                                        {/* Docs Button (counter only) */}
+                                                        <div className="flex items-center gap-1">
+                                                            {act.documents?.length > 0 && <span className="text-xs font-bold text-slate-600">{act.documents.length}</span>}
+                                                            <button
+                                                                onClick={() => setShowDocPicker({ active: true, phaseId: phase.id, activityId: act.id })}
+                                                                className={`p-1 rounded-md ${act.documents?.length > 0 ? 'text-blue-500 bg-blue-50' : 'text-slate-300 hover:text-slate-500'}`}
+                                                            >
+                                                                <Paperclip size={16} weight="duotone" />
+                                                            </button>
+                                                        </div>
+
+                                                        {isEditing && (
+                                                            <button onClick={() => deleteActivity(phase.id, act.id)} className="ml-2 text-slate-300 hover:text-red-500">
+                                                                <XCircle size={18} weight="fill" />
+                                                            </button>
+                                                        )}
                                                     </div>
-
-                                                    <div className="w-px h-4 bg-slate-200 mx-1"></div>
-
-                                                    {/* Docs */}
-                                                    <div className="flex items-center gap-1">
-                                                        {act.documents?.length > 0 && <span className="text-xs font-bold text-slate-600">{act.documents.length}</span>}
-                                                        <button
-                                                            onClick={() => setShowDocPicker({ active: true, phaseId: phase.id, activityId: act.id })}
-                                                            className={`p-1 rounded-md ${act.documents?.length > 0 ? 'text-blue-500 bg-blue-50' : 'text-slate-300 hover:text-slate-500'}`}
-                                                        >
-                                                            <Paperclip size={16} weight="duotone" />
-                                                        </button>
-                                                    </div>
-
-                                                    {isEditing && (
-                                                        <button onClick={() => deleteActivity(phase.id, act.id)} className="ml-2 text-slate-300 hover:text-red-500">
-                                                            <XCircle size={18} weight="fill" />
-                                                        </button>
-                                                    )}
                                                 </div>
                                             </div>
+
+                                            {/* Document List Inside Card */}
+                                            {act.documents && act.documents.length > 0 && (
+                                                <div className="mt-4 border-t border-slate-100 pt-3 space-y-2">
+                                                    {act.documents.map((doc: any) => (
+                                                        <div key={doc.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100 gap-3 group">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="bg-white p-2 rounded-lg border border-slate-100 text-pink-500">
+                                                                    <FileText size={20} weight="duotone" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-bold text-slate-700 truncate max-w-[200px]">{doc.name || 'Documento sin nombre'}</p>
+                                                                    <p className="text-[10px] text-slate-400 uppercase font-bold">{doc.type || 'Archivo'}</p>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-2 self-end sm:self-auto">
+                                                                <button
+                                                                    onClick={() => window.open(`/dashboard/project-document/${doc.id}?mode=view`, '_blank')}
+                                                                    className="px-3 py-1.5 bg-white text-blue-600 border border-blue-200 hover:bg-blue-50 text-xs font-bold rounded-lg transition-colors"
+                                                                >
+                                                                    Ver
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => window.open(`/dashboard/project-document/${doc.id}?mode=work`, '_blank')}
+                                                                    className="px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 text-xs font-bold rounded-lg transition-colors"
+                                                                >
+                                                                    Trabajar
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
 

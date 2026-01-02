@@ -24,6 +24,7 @@ const getFileIcon = (type: string, size: number) => {
 interface RepositorySidebarProps {
     doc: RepositoryFile;
     units: Unit[];
+    mode?: 'repository' | 'view' | 'work'; // Add mode
     onClose: () => void;
     onDownload: (doc: RepositoryFile) => void;
     onUpdate: () => void; // Trigger refresh
@@ -35,7 +36,7 @@ interface RepositorySidebarProps {
     onExpand: (doc: RepositoryFile) => void; // New
 }
 
-export function RepositorySidebar({ doc, units, onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand }: RepositorySidebarProps) {
+export function RepositorySidebar({ doc, units, mode = 'repository', onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand }: RepositorySidebarProps) {
     const [activeTab, setActiveTab] = useState<'view' | 'edit' | 'comments'>('view');
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
@@ -46,6 +47,11 @@ export function RepositorySidebar({ doc, units, onClose, onDownload, onUpdate, o
     useEffect(() => {
         // Here we could fetch if user favorites this doc
     }, [doc.id]);
+
+    // Force tab based on mode if needed, or set default
+    useEffect(() => {
+        if (mode === 'work') setActiveTab('comments');
+    }, [mode]);
 
     const handleToggleFavorite = () => {
         setIsFavorite(!isFavorite);
@@ -106,7 +112,7 @@ export function RepositorySidebar({ doc, units, onClose, onDownload, onUpdate, o
             <div className="px-4 py-2 border-b border-slate-100 bg-white">
                 <div className="flex gap-1 bg-slate-50 p-1 rounded-xl">
                     <TabButton active={activeTab === 'view'} onClick={() => setActiveTab('view')} label="Ver" />
-                    <TabButton active={activeTab === 'edit'} onClick={() => setActiveTab('edit')} label="Editar" />
+                    {mode !== 'view' && <TabButton active={activeTab === 'edit'} onClick={() => setActiveTab('edit')} label="Editar" />}
                     <TabButton active={activeTab === 'comments'} onClick={() => setActiveTab('comments')} label="Comentarios" />
                 </div>
             </div>
