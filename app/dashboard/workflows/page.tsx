@@ -11,7 +11,7 @@ import {
     Plus, CheckCircle, Clock, XCircle, CaretRight, FileCsv,
     Briefcase, Folder, CloudArrowUp, FolderPlus, CaretLeft, DownloadSimple, PencilSimple, Trash, Copy
 } from '@phosphor-icons/react';
-import { deleteProjectFolderAction, updateProjectFolderAction, duplicateProjectAction } from '@/app/actions/projectActions';
+import { deleteProjectFolderAction, updateProjectFolderAction, duplicateProjectAction, deleteProjectAction } from '@/app/actions/projectActions';
 
 // --- GLOBAL PROGRESS UTILS ---
 const getProjectProgress = (proj: Project) => {
@@ -266,6 +266,25 @@ export default function WorkflowsPage() {
         } catch (error) {
             console.error(error);
             toast.error('Error inesperado al duplicar', { id: toastId });
+        }
+    };
+
+
+    const handleDeleteProject = async (projectId: string) => {
+        if (!confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.')) return;
+
+        const toastId = toast.loading('Eliminando proyecto...');
+        try {
+            const res = await deleteProjectAction(projectId);
+            if (res.success) {
+                toast.success('Proyecto eliminado', { id: toastId });
+                refreshData();
+            } else {
+                toast.error('Error al eliminar: ' + res.error, { id: toastId });
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Error inesperado al eliminar', { id: toastId });
         }
     };
 
