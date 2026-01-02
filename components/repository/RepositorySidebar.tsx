@@ -425,23 +425,14 @@ function CommentsTab({ doc, mode }: { doc: RepositoryFile, mode: string }) {
             {/* Input Area */}
             <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-100 flex flex-col gap-3">
 
-                {/* Blue Banner - Mock Context (Only in WORK mode) */}
-                {mode === 'work' && (
-                    <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex justify-between items-center animate-in fade-in slide-in-from-bottom-2">
-                        <span className="text-xs font-bold text-blue-600">Agregando marcador en Pag 1</span>
-                        <button type="button" className="text-blue-400 hover:text-blue-600 transition-colors">
-                            <X size={14} weight="bold" />
-                        </button>
-                    </div>
-                )}
+
 
                 {/* Reference Input (Only in WORK mode) */}
                 {mode === 'work' && (
                     <div className="w-full">
                         <input
-                            placeholder="Referencia (automática)"
+                            placeholder="Referencia (ej: Pág 2)..."
                             className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-500 focus:ring-1 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
-                            readOnly // Giving appearance of auto-filled
                         />
                     </div>
                 )}
@@ -466,10 +457,9 @@ function CommentsTab({ doc, mode }: { doc: RepositoryFile, mode: string }) {
                         <div className="relative">
                             <button
                                 type="button"
-                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                                 className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
                             >
-                                <Smiley size={20} weight="bold" />
+                                <Paperclip size={20} weight="bold" />
                             </button>
 
                             {/* Simple Custom Emoji Picker */}
