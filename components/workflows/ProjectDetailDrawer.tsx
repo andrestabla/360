@@ -13,6 +13,7 @@ interface ProjectDetailDrawerProps {
     project: Project;
     onClose: () => void;
     onUpdate: (id: string, updates: Partial<Project>) => void;
+    folders: ProjectFolder[];
 }
 
 const STATUS_WEIGHTS: Record<string, number> = {
@@ -33,7 +34,7 @@ const STATUS_LABELS: Record<string, string> = {
     'VALIDATED': 'Validado'
 };
 
-export default function ProjectDetailDrawer({ project, onClose, onUpdate }: ProjectDetailDrawerProps) {
+export default function ProjectDetailDrawer({ project, onClose, onUpdate, folders }: ProjectDetailDrawerProps) {
     const { currentUser } = useApp();
 
     // Toggle Edit Mode
@@ -332,7 +333,7 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                                         className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 appearance-none focus:outline-none focus:border-blue-400"
                                     >
                                         <option value="">-- Sin Carpeta (Raíz) --</option>
-                                        {DB.projectFolders.map(f => (
+                                        {folders.map(f => (
                                             <option key={f.id} value={f.id}>{f.name} {f.parentId ? '(Sub-carpeta)' : ''}</option>
                                         ))}
                                     </select>
@@ -340,7 +341,7 @@ export default function ProjectDetailDrawer({ project, onClose, onUpdate }: Proj
                             ) : (
                                 <div className="flex items-center gap-2 text-sm text-slate-700 font-medium">
                                     <Folder size={18} className="text-slate-400" />
-                                    {DB.projectFolders.find(f => f.id === folderId)?.name || 'Raíz'}
+                                    {folders.find(f => f.id === folderId)?.name || 'Raíz'}
                                 </div>
                             )}
                         </div>
