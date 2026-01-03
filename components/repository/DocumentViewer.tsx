@@ -147,7 +147,14 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
     };
 
     const getGoogleDocsUrl = (url: string) => {
-        return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+        let fullUrl = url;
+        // Ensure absolute URL for Google Docs Viewer
+        if (url && url.startsWith('/')) {
+            if (typeof window !== 'undefined') {
+                fullUrl = `${window.location.origin}${url}`;
+            }
+        }
+        return `https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}&embedded=true`;
     };
 
     // Capture State
