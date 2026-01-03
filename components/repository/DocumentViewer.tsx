@@ -189,6 +189,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
 
     const isImage = checkExt(doc.type, /(image|jpg|jpeg|png|gif|webp)/i) || checkExt(doc.title, /\.(jpg|jpeg|png|gif|webp)$/i) || checkExt(doc.url, /\.(jpg|jpeg|png|gif|webp)(\?|$)/i);
     const isPDF = checkExt(doc.type, /pdf/i) || checkExt(doc.title, /\.pdf$/i) || checkExt(doc.url, /\.pdf(\?|$)/i);
+    const isVideo = checkExt(doc.type, /(video|mp4|webm|mov)/i) || checkExt(doc.title, /\.(mp4|webm|mov)$/i) || checkExt(doc.url, /\.(mp4|webm|mov)(\?|$)/i);
     const isOffice = checkExt(doc.type, /(doc|docx|xls|xlsx|ppt|pptx|msword|officedocument)/i) || checkExt(doc.title, /\.(doc|docx|xls|xlsx|ppt|pptx)$/i) || checkExt(doc.url, /\.(doc|docx|xls|xlsx|ppt|pptx)(\?|$)/i);
     const isEmbed = doc.type === 'embed';
 
@@ -345,6 +346,16 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                                     Abrir en nueva pestaña
                                 </button>
                             </div>
+                        </div>
+                    ) : isVideo ? (
+                        <div className="w-full max-w-4xl bg-black rounded-lg shadow-lg overflow-hidden flex items-center justify-center">
+                            <video
+                                src={previewUrl!}
+                                controls
+                                className="max-w-full max-h-[80vh]"
+                            >
+                                Tu navegador no soporta el elemento de video.
+                            </video>
                         </div>
                     ) : (isEmbed || doc.type === 'link') ? (
                         <div className="w-full h-full bg-white rounded-lg shadow-lg relative">
