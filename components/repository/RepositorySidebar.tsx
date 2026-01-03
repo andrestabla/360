@@ -78,35 +78,52 @@ export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOv
                             >
                                 <Star size={20} weight={isFavorite ? "fill" : "regular"} />
                             </button>
-                            <button onClick={() => onShare(doc)} title="Compartir enlace" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-blue-500 transition-colors">
-                                <ShareNetwork size={20} />
-                            </button>
 
-                            <div className="relative">
-                                <button onClick={() => setShowMoreMenu(!showMoreMenu)} className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
-                                    <DotsThreeVertical size={20} weight="bold" />
-                                </button>
-                                {showMoreMenu && (
-                                    <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-50 origin-top-left animate-in fade-in zoom-in-95 duration-200">
-                                        <button onClick={() => { setShowMoreMenu(false); onClose(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
-                                            <CaretDoubleRight size={16} /> Contraer Panel
+                            {/* Show Share and Menu ONLY in repository mode (not in work mode) */}
+                            {mode !== 'work' && (
+                                <>
+                                    <button onClick={() => onShare(doc)} title="Compartir enlace" className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-blue-500 transition-colors">
+                                        <ShareNetwork size={20} />
+                                    </button>
+
+                                    <div className="relative">
+                                        <button onClick={() => setShowMoreMenu(!showMoreMenu)} className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                                            <DotsThreeVertical size={20} weight="bold" />
                                         </button>
-                                        <button onClick={() => { setShowMoreMenu(false); setActiveTab('edit'); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
-                                            <PencilSimple size={16} /> Editar Metadatos
-                                        </button>
-                                        <button onClick={() => { setShowMoreMenu(false); onAssign(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-blue-600">
-                                            <ClipboardText size={16} /> Asignar Tarea
-                                        </button>
-                                        <hr className="border-slate-100 my-1" />
-                                        <button onClick={() => { setShowMoreMenu(false); onMove(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
-                                            <FolderMinus size={16} /> Mover a Carpeta
-                                        </button>
-                                        <button onClick={() => { setShowMoreMenu(false); onDelete(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-red-50 text-red-600 flex items-center gap-2">
-                                            <Trash size={16} /> Eliminar
-                                        </button>
+                                        {showMoreMenu && (
+                                            <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-50 origin-top-left animate-in fade-in zoom-in-95 duration-200">
+                                                <button onClick={() => { setShowMoreMenu(false); onClose(); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
+                                                    <CaretDoubleRight size={16} /> Contraer Panel
+                                                </button>
+                                                <button onClick={() => { setShowMoreMenu(false); setActiveTab('edit'); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
+                                                    <PencilSimple size={16} /> Editar Metadatos
+                                                </button>
+                                                <button onClick={() => { setShowMoreMenu(false); onAssign(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-blue-600">
+                                                    <ClipboardText size={16} /> Asignar Tarea
+                                                </button>
+                                                <hr className="border-slate-100 my-1" />
+                                                <button onClick={() => { setShowMoreMenu(false); onMove(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2 text-slate-600">
+                                                    <FolderMinus size={16} /> Mover a Carpeta
+                                                </button>
+                                                <button onClick={() => { setShowMoreMenu(false); onDelete(doc); }} className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-red-50 text-red-600 flex items-center gap-2">
+                                                    <Trash size={16} /> Eliminar
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                </>
+                            )}
+
+                            {/* Show Edit Pencil ONLY in work mode */}
+                            {mode === 'work' && (
+                                <button
+                                    onClick={() => setActiveTab('edit')}
+                                    title="Editar Metadatos"
+                                    className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-blue-600 transition-colors"
+                                >
+                                    <PencilSimple size={20} weight="bold" />
+                                </button>
+                            )}
                         </>
                     )}
                     {mode === 'view' && <span className="text-sm font-bold text-slate-500 px-2">Historial de Versiones</span>}
