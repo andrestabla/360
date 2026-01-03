@@ -6,7 +6,7 @@ import { auth } from '@/lib/auth';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-export async function createCommentAction(documentId: string, content: string) {
+export async function createCommentAction(documentId: string, content: string, rest: { x?: number, y?: number, page?: number, version?: string } = {}) {
     const session = await auth();
     if (!session?.user?.id) throw new Error('Unauthorized');
 
@@ -20,6 +20,11 @@ export async function createCommentAction(documentId: string, content: string) {
                 documentId,
                 userId: session.user!.id,
                 content,
+                // Optional fields for contextual comments
+                x: (rest as any).x,
+                y: (rest as any).y,
+                page: (rest as any).page,
+                version: (rest as any).version,
             });
 
             // Increment comment count on doc

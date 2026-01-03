@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/server/db';
-import { documents, folders, units, favorite_documents } from '@/shared/schema';
+import { documents, folders, units, favorite_documents, documentVersions, users } from '@/shared/schema';
 import { eq, and, like, desc, isNull, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
@@ -370,4 +370,87 @@ export async function getDocumentDownloadUrlAction(docId: string) {
     console.log(`[DownloadAction] Storage result:`, result.success, result.url ? 'URL_PRESENT' : 'NO_URL');
 
     return result;
+}
+
+// --- VERSIONS ---
+
+export async function getDocumentVersionsAction(docId: string) {
+    try {
+        const res = await db.select({
+            id: documentVersions.id,
+            version: documentVersions.version,
+            url: documentVersions.url,
+            size: documentVersions.size,
+            changeLog: documentVersions.changeLog,
+            createdAt: documentVersions.createdAt,
+            creator: {
+                name: users.name
+            }
+        })
+            .from(documentVersions)
+            .leftJoin(users, eq(documentVersions.creatorId, users.id))
+            .where(eq(documentVersions.documentId, docId))
+            .orderBy(desc(documentVersions.createdAt)); // Newest first
+
+        return { success: true, data: res };
+    } catch (error: any) {
+        console.error("Error fetching versions:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function uploadNewVersionAction(formData: FormData) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+        const docId = formData.get('docId') as string;
+        const changeLog = formData.get('changeLog') as string;
+        const file = formData.get('file') as File;
+
+        if (!docId || !file) return { success: false, error: "Missing data" };
+
+        const [currentDoc] = await db.select().from(documents).where(eq(documents.id, docId));
+        if (!currentDoc) return { success: false, error: "Doc not found" };
+
+        // Archive current (OLD) state
+        await db.insert(documentVersions).values({
+            id: `ver-${Date.now()}`,
+            documentId: docId,
+            version: currentDoc.version || '1.0',
+            url: currentDoc.url || '',
+            size: currentDoc.size,
+            changeLog: changeLog || 'Versión previa',
+            creatorId: currentDoc.ownerId,
+            createdAt: currentDoc.updatedAt || new Date()
+        });
+
+        // Upload NEW file
+        const storage = getStorageService();
+        const path = `repository/versions/${docId}/${Date.now()}_${file.name}`;
+        const uploadRes = await storage.upload(file, path);
+
+        if (!uploadRes.success || !uploadRes.url) return { success: false, error: "Upload failed" };
+
+        // Calculate new version number
+        let newVer = '1.1';
+        const oldVerNum = parseFloat(currentDoc.version || '1.0');
+        if (!isNaN(oldVerNum)) {
+            newVer = (oldVerNum + 0.1).toFixed(1);
+        }
+
+        // Update Main Doc
+        await db.update(documents).set({
+            version: newVer,
+            url: uploadRes.url,
+            size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+            updatedAt: new Date(),
+        }).where(eq(documents.id, docId));
+
+        revalidatePath('/dashboard/repository');
+        return { success: true, version: newVer };
+    } catch (error: any) {
+        console.error("Error uploading version:", error);
+        return { success: false, error: error.message };
+    }
 }

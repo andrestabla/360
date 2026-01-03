@@ -400,11 +400,28 @@ export const comments = pgTable("comments", {
   documentId: varchar("document_id", { length: 255 }).references(() => documents.id, { onDelete: 'cascade' }),
   userId: varchar("user_id", { length: 255 }).references(() => users.id, { onDelete: 'cascade' }),
   content: text("content").notNull(),
+  x: integer("x"), // Relative percentage X (0-100)
+  y: integer("y"), // Relative percentage Y (0-100)
+  page: integer("page").default(1),
+  version: varchar("version", { length: 20 }), // Linked to document version
   createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
   updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
 }, (table) => [
   index("idx_comments_document").on(table.documentId),
   index("idx_comments_user").on(table.userId),
+]);
+
+export const documentVersions = pgTable("document_versions", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  documentId: varchar("document_id", { length: 255 }).notNull().references(() => documents.id, { onDelete: 'cascade' }),
+  version: varchar("version", { length: 20 }).notNull(),
+  url: text("url").notNull(),
+  size: varchar("size", { length: 50 }),
+  changeLog: text("change_log"),
+  creatorId: varchar("creator_id", { length: 255 }).references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp("created_at", { mode: 'date' }).defaultNow(),
+}, (table) => [
+  index("idx_versions_document").on(table.documentId),
 ]);
 
 export const favorite_documents = pgTable("favorite_documents", {
@@ -419,6 +436,8 @@ export type Task = typeof tasks.$inferSelect;
 export type InsertTask = typeof tasks.$inferInsert;
 export type Comment = typeof comments.$inferSelect;
 export type InsertComment = typeof comments.$inferInsert;
+export type DocumentVersion = typeof documentVersions.$inferSelect;
+export type InsertDocumentVersion = typeof documentVersions.$inferInsert;
 export type FavoriteDocument = typeof favorite_documents.$inferSelect;
 
 // TYPES
@@ -562,7 +581,7 @@ export const projectActivitiesRelations = relations(projectActivities, ({ one })
   }),
 }));
 
-export const documentsRelations = relations(documents, ({ one }) => ({
+export const documentsRelations = relations(documents, ({ one, many }) => ({
   owner: one(users, {
     fields: [documents.ownerId],
     references: [users.id],
@@ -574,5 +593,17 @@ export const documentsRelations = relations(documents, ({ one }) => ({
   unit: one(units, {
     fields: [documents.unitId],
     references: [units.id],
+  }),
+  versions: many(documentVersions), // Add versions relation
+}));
+
+export const documentVersionsRelations = relations(documentVersions, ({ one }) => ({
+  document: one(documents, {
+    fields: [documentVersions.documentId],
+    references: [documents.id],
+  }),
+  creator: one(users, {
+    fields: [documentVersions.creatorId],
+    references: [users.id],
   }),
 }));

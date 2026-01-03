@@ -13,6 +13,7 @@ import { getSignedUrlAction } from '@/app/actions/storageActions';
 import { createCommentAction, getCommentsAction } from '@/app/lib/commentActions';
 import { Unit } from '@/shared/schema';
 import { RepositorySidebar } from './RepositorySidebar';
+import html2canvas from 'html2canvas'; // Import html2canvas
 
 // Reusing helper from sidebar/page (should be in utils)
 // Reusing helper from sidebar/page (should be in utils)
@@ -149,9 +150,38 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
         return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
     };
 
-    // Mock capture for "Trabajar" mode
-    const handleCapture = () => {
-        alert("Captura de pantalla simulada: Se ha tomado una instantánea de la vista actual.");
+    // Capture State
+    const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    const [pendingCommentLocation, setPendingCommentLocation] = useState<{ x: number, y: number, page: number } | null>(null);
+
+    const handleCapture = async () => {
+        const element = document.getElementById('document-preview-container');
+        if (!element) return;
+
+        try {
+            const canvas = await html2canvas(element, { useCORS: true, logging: false });
+            const image = canvas.toDataURL("image/png");
+            setCapturedImage(image);
+            setSidebarMode('comments');
+            setIsSidebarOpen(true);
+            // In a real app, we would upload this image immediately to storage and get a URL.
+            // For this version, we pass the dataURL to the sidebar to "attach" or upload when sending.
+        } catch (err) {
+            console.error("Capture failed:", err);
+            alert("No se pudo capturar la vista previa (posible restricción de seguridad del navegador para contenido externo).");
+        }
+    };
+
+    const handlePreviewClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        // Only allow placing comments if we are in 'comments' mode and sidebar is open
+        if (mode === 'work' && isSidebarOpen && sidebarMode === 'comments') {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100; // Percentage
+            const y = ((e.clientY - rect.top) / rect.height) * 100; // Percentage
+
+            setPendingCommentLocation({ x, y, page: 1 }); // Default page 1 for now
+            console.log("Comment location set:", { x, y });
+        }
     };
 
     // Helper to check extensions
@@ -272,7 +302,24 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
             {/* Main Content: Preview + Sidebar */}
             <div className="flex-1 flex min-h-0">
                 {/* Left: Preview Area */}
-                <div className="flex-1 overflow-auto p-6 flex items-center justify-center bg-slate-100/50 relative">
+                <div
+                    id="document-preview-container"
+                    onClick={handlePreviewClick}
+                    className={`flex-1 overflow-auto p-6 flex items-center justify-center bg-slate-100/50 relative ${mode === 'work' && isSidebarOpen && sidebarMode === 'comments' ? 'cursor-crosshair' : ''}`}
+                >
+                    {/* Render Pending Marker */}
+                    {pendingCommentLocation && (
+                        <div
+                            className="absolute z-50 w-6 h-6 bg-blue-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-[10px] font-bold animate-bounce"
+                            style={{
+                                left: `${pendingCommentLocation.x}%`,
+                                top: `${pendingCommentLocation.y}%`,
+                                transform: 'translate(-50%, -50%)'
+                            }}
+                        >
+                            +
+                        </div>
+                    )}
                     {loadingPreview ? (
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                     ) : !previewUrl && !doc.content ? (
@@ -354,6 +401,11 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                                 onDelete={handleDelete}
                                 onMove={() => { /* Implement move logic if needed */ }}
                                 onExpand={() => { /* Already expanded */ }}
+                                /* Propagated props for features */
+                                capturedImage={capturedImage}
+                                onClearCapture={() => setCapturedImage(null)}
+                                pendingLocation={pendingCommentLocation}
+                                onClearLocation={() => setPendingCommentLocation(null)}
                             />
                         </div>
                     )
@@ -364,11 +416,8 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
             <NotifyChangeModal
                 isOpen={showNotifyModal}
                 onClose={() => setShowNotifyModal(false)}
-                onSend={async (uid, msg) => {
-                    alert(`Simulando envío a usuario ${uid}: ${msg}`);
-                    // Ensure this waits a bit to simulate net
-                    await new Promise(r => setTimeout(r, 1000));
-                }}
+                documentId={doc.id}
+                teamMembers={[]} // Pass real team members if available, or fetch in modal
             />
         </div>
     );

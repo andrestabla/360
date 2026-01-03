@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { X, PaperPlaneRight, Bell } from '@phosphor-icons/react';
-import { User } from '@/lib/data'; // Assuming User type is here
+import { User } from '@/lib/data'; // Legacy type, maybe replace with schema type
+import { sendDocumentNotificationAction } from '@/app/actions/notificationActions';
 
 interface NotifyChangeModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSend: (userId: string, message: string) => Promise<void>;
-    teamMembers?: User[]; // Optional list of team members to select from
+    documentId: string;
+    teamMembers?: any[]; // Allow flexibility for now
 }
 
-export function NotifyChangeModal({ isOpen, onClose, onSend, teamMembers = [] }: NotifyChangeModalProps) {
+export function NotifyChangeModal({ isOpen, onClose, documentId, teamMembers = [] }: NotifyChangeModalProps) {
     const [selectedUser, setSelectedUser] = useState('');
     const [message, setMessage] = useState('');
     const [sending, setSending] = useState(false);
@@ -20,11 +21,16 @@ export function NotifyChangeModal({ isOpen, onClose, onSend, teamMembers = [] }:
         if (!selectedUser || !message.trim()) return;
         setSending(true);
         try {
-            await onSend(selectedUser, message);
-            onClose();
+            const res = await sendDocumentNotificationAction(documentId, [selectedUser], message);
+            if (res.success) {
+                alert("Notificación enviada correctamente");
+                onClose();
+            } else {
+                alert(res.error || "Error al enviar notificación");
+            }
         } catch (error) {
             console.error(error);
-            alert("Error al enviar notificación");
+            alert("Error de conexión");
         } finally {
             setSending(false);
         }
@@ -57,10 +63,10 @@ export function NotifyChangeModal({ isOpen, onClose, onSend, teamMembers = [] }:
                                 <option value="" disabled>Seleccionar miembro...</option>
                                 {teamMembers.length > 0 ? (
                                     teamMembers.map(u => (
-                                        <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
+                                        <option key={u.id} value={u.id}>{u.name} ({u.role || 'Miembro'})</option>
                                     ))
                                 ) : (
-                                    <option value="demo">Miembro de Ejemplo (Demo)</option>
+                                    <option value="demo" disabled>No se encontraron miembros</option>
                                 )}
                             </select>
                             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
@@ -94,6 +100,7 @@ export function NotifyChangeModal({ isOpen, onClose, onSend, teamMembers = [] }:
                         disabled={sending || !selectedUser || !message}
                         className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm rounded-lg transition-all shadow-lg shadow-purple-600/20 disabled:opacity-50 disabled:shadow-none flex items-center gap-2"
                     >
+                        <PaperPlaneRight size={16} weight="bold" />
                         {sending ? 'Enviando...' : 'Enviar'}
                     </button>
                 </div>
