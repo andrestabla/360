@@ -10,8 +10,19 @@ interface TeamStructureModalProps {
     onClose: () => void;
 }
 
+import { getUsersAction } from '@/app/lib/repositoryActions';
+
 export function TeamStructureModal({ project, phases, onClose }: TeamStructureModalProps) {
     const [expandedPhases, setExpandedPhases] = useState<string[]>(phases.map(p => p.id));
+    const [users, setUsers] = useState<any[]>(DB.users || []);
+
+    React.useEffect(() => {
+        getUsersAction().then(res => {
+            if (res.success && res.data) {
+                setUsers(res.data);
+            }
+        });
+    }, []);
 
     const togglePhase = (phaseId: string) => {
         setExpandedPhases(prev =>
@@ -21,7 +32,9 @@ export function TeamStructureModal({ project, phases, onClose }: TeamStructureMo
 
     const getUser = (userId: string | { userId: string, role?: string }): User | undefined => {
         const id = typeof userId === 'string' ? userId : userId.userId;
-        return DB.users.find(u => u.id === id);
+        const u = users.find(u => u.id === id);
+        // Fallback to mock DB if not found in real DB (hybrid mode during migration)
+        return u || DB.users.find(u => u.id === id);
     };
 
     const getRole = (userId: string | { userId: string, role?: string }): string => {
@@ -98,8 +111,8 @@ export function TeamStructureModal({ project, phases, onClose }: TeamStructureMo
                                                         </p>
                                                     </div>
                                                     <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${activity.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
-                                                            activity.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' :
-                                                                'bg-slate-100 text-slate-500'
+                                                        activity.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' :
+                                                            'bg-slate-100 text-slate-500'
                                                         }`}>
                                                         {activity.status === 'IN_PROGRESS' ? 'En Progreso' :
                                                             activity.status === 'COMPLETED' ? 'Completada' : 'Sin Iniciar'}

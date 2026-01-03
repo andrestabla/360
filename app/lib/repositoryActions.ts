@@ -454,3 +454,24 @@ export async function uploadNewVersionAction(formData: FormData) {
         return { success: false, error: error.message };
     }
 }
+
+// --- USERS ---
+export async function getUsersAction() {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) return { success: false, error: "No autorizado" };
+
+        const activeUsers = await db.select({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            role: users.role,
+            avatar: users.avatar
+        }).from(users).where(eq(users.status, 'ACTIVE'));
+
+        return { success: true, data: serialize(activeUsers) };
+    } catch (error: any) {
+        console.error("Error fetching users:", error);
+        return { success: false, error: error.message };
+    }
+}

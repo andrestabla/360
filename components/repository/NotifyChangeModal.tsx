@@ -10,10 +10,28 @@ interface NotifyChangeModalProps {
     teamMembers?: any[]; // Allow flexibility for now
 }
 
+import { getUsersAction } from '@/app/lib/repositoryActions';
+
 export function NotifyChangeModal({ isOpen, onClose, documentId, teamMembers = [] }: NotifyChangeModalProps) {
     const [selectedUser, setSelectedUser] = useState('');
     const [message, setMessage] = useState('');
     const [sending, setSending] = useState(false);
+    const [fetchedMembers, setFetchedMembers] = useState<any[]>([]);
+    const [loadingMembers, setLoadingMembers] = useState(false);
+
+    const effectiveMembers = teamMembers.length > 0 ? teamMembers : fetchedMembers;
+
+    React.useEffect(() => {
+        if (isOpen && teamMembers.length === 0 && fetchedMembers.length === 0) {
+            setLoadingMembers(true);
+            getUsersAction().then(res => {
+                if (res.success && res.data) {
+                    setFetchedMembers(res.data);
+                }
+                setLoadingMembers(false);
+            });
+        }
+    }, [isOpen, teamMembers]);
 
     if (!isOpen) return null;
 
@@ -61,8 +79,10 @@ export function NotifyChangeModal({ isOpen, onClose, documentId, teamMembers = [
                                 className="w-full pl-3 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none appearance-none transition-all text-slate-700 font-medium"
                             >
                                 <option value="" disabled>Seleccionar miembro...</option>
-                                {teamMembers.length > 0 ? (
-                                    teamMembers.map(u => (
+                                {loadingMembers ? (
+                                    <option disabled>Cargando miembros...</option>
+                                ) : effectiveMembers.length > 0 ? (
+                                    effectiveMembers.map((u: any) => (
                                         <option key={u.id} value={u.id}>{u.name} ({u.role || 'Miembro'})</option>
                                     ))
                                 ) : (

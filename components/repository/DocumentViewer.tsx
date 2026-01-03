@@ -166,16 +166,28 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
         if (!element) return;
 
         try {
-            const canvas = await html2canvas(element, { useCORS: true, logging: false });
+            // Attempt to use html2canvas with forced sRGB to avoid oklab issues if possible, 
+            // though html2canvas doesn't strictly support color profiles options, we just catch the error.
+            const canvas = await html2canvas(element, {
+                useCORS: true,
+                logging: false,
+                backgroundColor: null, // Transparent
+                ignoreElements: (el) => {
+                    // Ignore video elements as they crash or show blank
+                    return el.tagName === 'VIDEO' || el.tagName === 'IFRAME';
+                }
+            });
             const image = canvas.toDataURL("image/png");
             setCapturedImage(image);
             setSidebarMode('comments');
             setIsSidebarOpen(true);
-            // In a real app, we would upload this image immediately to storage and get a URL.
-            // For this version, we pass the dataURL to the sidebar to "attach" or upload when sending.
         } catch (err) {
             console.error("Capture failed:", err);
-            alert("No se pudo capturar la vista previa (posible restricción de seguridad del navegador para contenido externo).");
+            // Fallback: Proceed without image, just open comments
+            alert("No se pudo generar la imagen de vista previa (contenido protegido o no compatible), pero puedes dejar tu comentario en la ubicación marcada.");
+            setCapturedImage(null); // Ensure null
+            setSidebarMode('comments');
+            setIsSidebarOpen(true);
         }
     };
 
