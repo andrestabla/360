@@ -10,6 +10,15 @@ export async function createCommentAction(documentId: string, content: string, r
     const session = await auth();
     if (!session?.user?.id) throw new Error('Unauthorized');
 
+    // Validate user exists in DB to prevent FK errors (stale sessions)
+    const userExists = await db.query.users.findFirst({
+        where: eq(users.id, session.user.id)
+    });
+
+    if (!userExists) {
+        throw new Error('USER_NOT_FOUND'); // Specific error code for frontend to handle
+    }
+
     try {
         const id = `comment-${Date.now()}`;
 

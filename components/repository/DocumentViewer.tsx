@@ -6,7 +6,7 @@ import {
     X, DownloadSimple, ShareNetwork, Eye, DotsThreeVertical,
     PencilSimple, ClipboardText, FolderMinus, Trash,
     FilePdf, FileDoc, FileXls, FilePpt, Image, Link as LinkIcon,
-    Code, FileText, Folder, CaretLeft, Star, CaretDoubleLeft, SidebarSimple, ClockCounterClockwise, Camera, Bell, ChatCircle,
+    Code, FileText, Folder, CaretLeft, Star, CaretDoubleLeft, SidebarSimple, ClockCounterClockwise, Camera, Bell, ChatCircle, Crosshair
 } from '@phosphor-icons/react';
 import { RepositoryFile, updateDocumentMetadataAction, getDocumentDownloadUrlAction, deleteDocumentAction, toggleLikeAction } from '@/app/lib/repositoryActions';
 import { getSignedUrlAction } from '@/app/actions/storageActions';
@@ -259,6 +259,23 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                             >
                                 <Camera size={18} weight="bold" />
                                 <span className="hidden sm:inline">Capturar</span>
+                            </button>
+
+                            {/* Reference Mode - Toggle */}
+                            <button
+                                onClick={() => {
+                                    if (isMarking) setIsMarking(false);
+                                    else {
+                                        setIsMarking(true);
+                                        // Ensure sidebar is open on comments
+                                        setSidebarMode('comments');
+                                        setIsSidebarOpen(true);
+                                    }
+                                }}
+                                className={`flex items-center gap-2 px-3 py-2 font-bold rounded-lg text-xs transition-colors border ${isMarking ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600 hover:border-indigo-200'}`}
+                            >
+                                <Crosshair size={18} weight="bold" />
+                                <span className="hidden sm:inline">Referencia</span>
                             </button>
 
                             {/* Notify - Purple Fill/Light */}

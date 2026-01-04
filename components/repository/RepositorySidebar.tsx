@@ -415,11 +415,12 @@ function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation
             loadComments(); // Refresh for real data
         } catch (e: any) {
             console.error(e);
+            if (e.message?.includes('USER_NOT_FOUND')) {
+                alert('Tu sesión ha expirado o es inválida. Por favor, inicia sesión nuevamente.');
+                window.location.reload(); // Force reload to clear client state/trigger auth flow
+                return;
+            }
             alert('Error al enviar comentario: ' + (e.message || 'Error desconocido'));
-            // Revert optimistic update? Or just let user retry.
-            // Since we setComments with optimistic one, we might want to remove it or mark it failed.
-            // For now, reloading comments will revert it next time loadComments runs (which is not called here on error).
-            // But we SHOULD reload to clear the optimistic one if it failed.
             loadComments();
         } finally {
             setSending(false);
@@ -473,25 +474,9 @@ function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation
             <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-100 flex flex-col gap-3">
 
                 {/* Reference Input (Only in WORK mode) */}
+                {/* Reference Input (Only in WORK mode) */}
                 {mode === 'work' && (
                     <div className="w-full space-y-2">
-                        <div className="flex gap-2 items-center">
-                            {/* Mark Button */}
-                            {onToggleMarking && (
-                                <button
-                                    type="button"
-                                    onClick={onToggleMarking}
-                                    className={`p-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 flex-1 justify-center border ${isMarking
-                                        ? 'bg-blue-600 text-white border-blue-600 shadow-md animate-pulse'
-                                        : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-600'
-                                        }`}
-                                >
-                                    <MapPin size={16} weight={isMarking ? 'fill' : 'bold'} />
-                                    {isMarking ? 'Haz clic en el documento...' : 'Marcar Referencia'}
-                                </button>
-                            )}
-                        </div>
-
                         {/* Location Indicator */}
                         {pendingLocation && (
                             <div className="text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-lg flex justify-between items-center animate-in fade-in slide-in-from-top-1">
