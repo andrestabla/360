@@ -161,6 +161,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [pendingCommentLocation, setPendingCommentLocation] = useState<{ x: number, y: number, page: number } | null>(null);
     const [isMarking, setIsMarking] = useState(false); // New state for explicit marking mode
+    const [savedComments, setSavedComments] = useState<any[]>([]); // Saved comments for markers
 
     const handleCapture = async () => {
         const element = document.getElementById('document-preview-container');
@@ -358,6 +359,29 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                         ></div>
                     )}
 
+                    {/* Render SAVED Markers */}
+                    {savedComments.map((c) => (
+                        (c.x !== undefined && c.y !== undefined) && (
+                            <div
+                                key={c.id}
+                                className="absolute z-40 w-6 h-6 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[10px] font-bold cursor-pointer transition-transform hover:scale-110"
+                                style={{
+                                    left: `${c.x}%`,
+                                    top: `${c.y}%`,
+                                    transform: 'translate(-50%, -50%)'
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSidebarMode('comments');
+                                    setIsSidebarOpen(true);
+                                }}
+                                title={`${c.user?.name || 'Usuario'}: ${c.content}`}
+                            >
+                                {c.user?.initials || '?'}
+                            </div>
+                        )
+                    ))}
+
                     {/* Render Pending Marker */}
                     {pendingCommentLocation && (
                         <div
@@ -478,6 +502,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                                         setIsSidebarOpen(true);
                                     }
                                 }}
+                                onCommentsLoaded={setSavedComments}
                             />
                         </div>
                     )

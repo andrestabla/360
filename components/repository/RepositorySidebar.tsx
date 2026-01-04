@@ -43,9 +43,10 @@ interface RepositorySidebarProps {
     // New Marking Props
     isMarking?: boolean;
     onToggleMarking?: () => void;
+    onCommentsLoaded?: (comments: any[]) => void;
 }
 
-export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOverride, onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand, capturedImage, onClearCapture, pendingLocation, onClearLocation, isMarking, onToggleMarking }: RepositorySidebarProps) {
+export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOverride, onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand, capturedImage, onClearCapture, pendingLocation, onClearLocation, isMarking, onToggleMarking, onCommentsLoaded }: RepositorySidebarProps) {
     // In 'view' mode, we default to history and show NOTHING else (per user request).
     const [activeTab, setActiveTab] = useState<'view' | 'edit' | 'comments' | 'history'>(
         activeTabOverride || (mode === 'view' ? 'history' : (mode === 'work' ? 'comments' : 'view'))
@@ -158,7 +159,7 @@ export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOv
             <div className="flex-1 overflow-y-auto bg-slate-50/50 relative">
                 {activeTab === 'view' && <ViewTab doc={doc} units={units} onDownload={() => onDownload(doc)} />}
                 {activeTab === 'edit' && <EditTab doc={doc} units={units} onUpdate={onUpdate} />}
-                {activeTab === 'comments' && mode !== 'view' && <CommentsTab doc={doc} mode={mode} capturedImage={capturedImage} onClearCapture={onClearCapture} pendingLocation={pendingLocation} onClearLocation={onClearLocation} isMarking={isMarking} onToggleMarking={onToggleMarking} />}
+                {activeTab === 'comments' && mode !== 'view' && <CommentsTab doc={doc} mode={mode} capturedImage={capturedImage} onClearCapture={onClearCapture} pendingLocation={pendingLocation} onClearLocation={onClearLocation} isMarking={isMarking} onToggleMarking={onToggleMarking} onCommentsLoaded={onCommentsLoaded} />}
                 {activeTab === 'history' && <HistoryTab doc={doc} mode={mode} onUpdate={onUpdate} />}
             </div>
         </div>
@@ -354,7 +355,7 @@ function InputGroup({ label, children }: any) {
 }
 
 
-function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation, onClearLocation, isMarking, onToggleMarking }: { doc: RepositoryFile, mode: string, capturedImage?: string | null, onClearCapture?: () => void, pendingLocation?: any, onClearLocation?: () => void, isMarking?: boolean, onToggleMarking?: () => void }) {
+function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation, onClearLocation, isMarking, onToggleMarking, onCommentsLoaded }: { doc: RepositoryFile, mode: string, capturedImage?: string | null, onClearCapture?: () => void, pendingLocation?: any, onClearLocation?: () => void, isMarking?: boolean, onToggleMarking?: () => void, onCommentsLoaded?: (c: any[]) => void }) {
     const [comments, setComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
@@ -365,7 +366,10 @@ function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation
     const loadComments = async () => {
         try {
             const res = await getCommentsAction(doc.id);
-            if (res.success && res.data) setComments(res.data);
+            if (res.success && res.data) {
+                setComments(res.data);
+                if (onCommentsLoaded) onCommentsLoaded(res.data);
+            }
         } catch (e) { console.error(e); }
         setLoading(false);
     };
