@@ -160,6 +160,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
     // Capture State
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [pendingCommentLocation, setPendingCommentLocation] = useState<{ x: number, y: number, page: number } | null>(null);
+    const [isMarking, setIsMarking] = useState(false); // New state for explicit marking mode
 
     const handleCapture = async () => {
         const element = document.getElementById('document-preview-container');
@@ -191,16 +192,22 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
         }
     };
 
-    const handlePreviewClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        // Only allow placing comments if we are in 'comments' mode and sidebar is open
-        if (mode === 'work' && isSidebarOpen && sidebarMode === 'comments') {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 100; // Percentage
-            const y = ((e.clientY - rect.top) / rect.height) * 100; // Percentage
+    const handleMarkingClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!isMarking) return;
 
-            setPendingCommentLocation({ x, y, page: 1 }); // Default page 1 for now
-            console.log("Comment location set:", { x, y });
-        }
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100; // Percentage
+        const y = ((e.clientY - rect.top) / rect.height) * 100; // Percentage
+
+        setPendingCommentLocation({ x, y, page: 1 }); // Default page 1 for now
+        console.log("Comment location set:", { x, y });
+
+        // Disable marking mode after valid click
+        setIsMarking(false);
+
+        // Open comments sidebar if not open
+        setSidebarMode('comments');
+        setIsSidebarOpen(true);
     };
 
     // Helper to check extensions
@@ -324,13 +331,20 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                 {/* Left: Preview Area */}
                 <div
                     id="document-preview-container"
-                    onClick={handlePreviewClick}
-                    className={`flex-1 overflow-auto p-6 flex items-center justify-center bg-slate-100/50 relative ${mode === 'work' && isSidebarOpen && sidebarMode === 'comments' ? 'cursor-crosshair' : ''}`}
+                    className={`flex-1 overflow-auto p-6 flex items-center justify-center bg-slate-100/50 relative ${mode === 'work' && isMarking ? 'cursor-crosshair' : ''}`}
                 >
+                    {/* CLICK OVERLAY FOR MARKING - Active only when isMarking is true */}
+                    {mode === 'work' && isMarking && (
+                        <div
+                            className="absolute inset-0 z-[60] cursor-crosshair bg-transparent"
+                            onClick={handleMarkingClick}
+                        ></div>
+                    )}
+
                     {/* Render Pending Marker */}
                     {pendingCommentLocation && (
                         <div
-                            className="absolute z-50 w-6 h-6 bg-blue-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-[10px] font-bold animate-bounce"
+                            className="absolute z-50 w-6 h-6 bg-blue-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-[10px] font-bold animate-bounce pointer-events-none"
                             style={{
                                 left: `${pendingCommentLocation.x}%`,
                                 top: `${pendingCommentLocation.y}%`,
@@ -436,6 +450,17 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                                 onClearCapture={() => setCapturedImage(null)}
                                 pendingLocation={pendingCommentLocation}
                                 onClearLocation={() => setPendingCommentLocation(null)}
+                                /* Marking Props */
+                                isMarking={isMarking}
+                                onToggleMarking={() => {
+                                    if (isMarking) setIsMarking(false);
+                                    else {
+                                        setIsMarking(true);
+                                        // Ensure sidebar is open on comments if not already? Maybe or maybe wait for click.
+                                        setSidebarMode('comments');
+                                        setIsSidebarOpen(true);
+                                    }
+                                }}
                             />
                         </div>
                     )
