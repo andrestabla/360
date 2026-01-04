@@ -104,7 +104,7 @@ export function AddEvidenceModal({ isOpen, projectId, onClose, onAdd }: AddEvide
                 toast.success('Archivo subido correctamente', { id: toastId });
                 onAdd({
                     type: 'file',
-                    id: `file-${Date.now()}`,
+                    id: (res as any).id || `file-${Date.now()}`, // Use DB ID if available
                     name: selectedFile.name,
                     file: selectedFile,
                     url: res.url // Real URL from R2
