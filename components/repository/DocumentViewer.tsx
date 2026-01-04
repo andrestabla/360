@@ -196,8 +196,8 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
         if (!isMarking) return;
 
         const rect = e.currentTarget.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100; // Percentage
-        const y = ((e.clientY - rect.top) / rect.height) * 100; // Percentage
+        const x = Math.round(((e.clientX - rect.left) / rect.width) * 100); // Percentage integer
+        const y = Math.round(((e.clientY - rect.top) / rect.height) * 100); // Percentage integer
 
         setPendingCommentLocation({ x, y, page: 1 }); // Default page 1 for now
         console.log("Comment location set:", { x, y });

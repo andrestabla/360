@@ -401,19 +401,26 @@ function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation
                 if (onClearCapture) onClearCapture();
             }
 
-            await createCommentAction(doc.id, finalContent, {
+            const res = await createCommentAction(doc.id, finalContent, {
                 x: pendingLocation?.x,
                 y: pendingLocation?.y,
                 page: pendingLocation?.page,
                 version: doc.version || undefined
             });
 
+            if (!res.success) throw new Error(res.error || 'Unknown error');
+
             if (onClearLocation) onClearLocation();
             setNewComment('');
             loadComments(); // Refresh for real data
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            alert('Error al enviar comentario');
+            alert('Error al enviar comentario: ' + (e.message || 'Error desconocido'));
+            // Revert optimistic update? Or just let user retry.
+            // Since we setComments with optimistic one, we might want to remove it or mark it failed.
+            // For now, reloading comments will revert it next time loadComments runs (which is not called here on error).
+            // But we SHOULD reload to clear the optimistic one if it failed.
+            loadComments();
         } finally {
             setSending(false);
         }
