@@ -209,8 +209,7 @@ export async function updateProjectAction(id: string, updates: any) {
                             }
                         }
 
-                        // Map for diffing
-                        const existingActMap = new Map(existingActivities.map(a => [a.id, a]));
+
 
                         // Upsert activities
                         for (const act of activities) {
