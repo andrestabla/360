@@ -107,7 +107,7 @@ export function TeamStructureModal({ project, phases, onClose }: TeamStructureMo
                                                     <div>
                                                         <p className="text-sm font-bold text-slate-800">{activity.name}</p>
                                                         <p className="text-xs text-slate-500">
-                                                            {activity.startDate || 'Sin inicio'} - {activity.endDate || 'Sin fin'}
+                                                            {activity.startDate ? new Date(activity.startDate).toLocaleDateString() : 'Sin inicio'} - {activity.endDate ? new Date(activity.endDate).toLocaleDateString() : 'Sin fin'}
                                                         </p>
                                                     </div>
                                                     <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${activity.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
@@ -119,26 +119,28 @@ export function TeamStructureModal({ project, phases, onClose }: TeamStructureMo
                                                     </span>
                                                 </div>
 
-                                                {activity.participants && activity.participants.length > 0 ? (
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {activity.participants.map((p, idx) => {
-                                                            const user = getUser(p);
-                                                            if (!user) return null;
-                                                            return (
-                                                                <div key={idx} className="flex items-center gap-2 bg-blue-50 pl-1 pr-3 py-1 rounded-full border border-blue-100">
-                                                                    <div className="w-5 h-5 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center text-[10px] font-bold">
-                                                                        {user.initials}
+                                                {
+                                                    activity.participants && activity.participants.length > 0 ? (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {activity.participants.map((p, idx) => {
+                                                                const user = getUser(p);
+                                                                if (!user) return null;
+                                                                return (
+                                                                    <div key={idx} className="flex items-center gap-2 bg-blue-50 pl-1 pr-3 py-1 rounded-full border border-blue-100">
+                                                                        <div className="w-5 h-5 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center text-[10px] font-bold">
+                                                                            {user.initials}
+                                                                        </div>
+                                                                        <span className="text-xs font-medium text-blue-900">{user.name}</span>
                                                                     </div>
-                                                                    <span className="text-xs font-medium text-blue-900">{user.name}</span>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-xs text-slate-400 italic flex items-center gap-1">
-                                                        <UserIcon size={14} /> Sin asignaciones
-                                                    </p>
-                                                )}
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-xs text-slate-400 italic flex items-center gap-1">
+                                                            <UserIcon size={14} /> Sin asignaciones
+                                                        </p>
+                                                    )
+                                                }
                                             </div>
                                         ))}
                                         {phase.activities.length === 0 && (
@@ -160,6 +162,6 @@ export function TeamStructureModal({ project, phases, onClose }: TeamStructureMo
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
