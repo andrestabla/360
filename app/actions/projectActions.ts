@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/server/db';
-import { projects, projectPhases, projectActivities, users, projectFolders, InsertProjectFolder } from '@/shared/schema';
+import { projects, projectPhases, projectActivities, users, projectFolders, InsertProjectFolder, tasks } from '@/shared/schema';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
@@ -200,6 +200,7 @@ export async function updateProjectAction(id: string, updates: any) {
                     if (activities && Array.isArray(activities)) {
                         const existingActivities = await tx.select().from(projectActivities).where(eq(projectActivities.phaseId, phase.id));
                         const incomingActivityIds = new Set(activities.map((a: any) => a.id));
+                        const existingActMap = new Map(existingActivities.map(a => [a.id, a]));
 
                         // Delete removed activities
                         for (const existingAct of existingActivities) {
@@ -207,6 +208,9 @@ export async function updateProjectAction(id: string, updates: any) {
                                 await tx.delete(projectActivities).where(eq(projectActivities.id, existingAct.id));
                             }
                         }
+
+                        // Map for diffing
+                        const existingActMap = new Map(existingActivities.map(a => [a.id, a]));
 
                         // Upsert activities
                         for (const act of activities) {
@@ -218,6 +222,80 @@ export async function updateProjectAction(id: string, updates: any) {
                             }
                             if (activityData.endDate && typeof activityData.endDate === 'string') {
                                 activityData.endDate = new Date(activityData.endDate);
+                            }
+
+                            // Detect New Assignments
+                            const existingAct = existingActMap.get(act.id);
+                            const existingParticipants = (existingAct?.participants as any[]) || [];
+                            const newParticipants = (activityData.participants as any[]) || [];
+
+                            const getUserId = (p: any) => typeof p === 'string' ? p : p.userId;
+                            const existingUserIds = new Set(existingParticipants.map(getUserId));
+                            const newUserIds = newParticipants.map(getUserId);
+
+                            const addedUserIds = newUserIds.filter(uid => !existingUserIds.has(uid));
+
+                            for (const userId of addedUserIds) {
+                                if (userId && session?.user?.id) {
+                                    /* console.log(`Creating inbox task for user ${userId}`); */
+                                    await tx.insert(tasks).values({
+                                        id: crypto.randomUUID(),
+                                        type: 'PROJECT_ACTIVITY',
+                                        projectId: id,
+                                        activityId: act.id,
+                                        assigneeId: userId,
+                                        creatorId: session.user.id,
+                                        status: 'PENDING',
+                                        priority: 'MEDIUM',
+                                        dueDate: activityData.endDate || null,
+                                        instructions: `Se te ha asignado la actividad: "${activityData.name}" en el proyecto "${projectData.title || 'Proyecto'}"`,
+                                        createdAt: new Date(),
+                                        updatedAt: new Date()
+                                    });
+                                }
+                            }
+
+                            // Detect New Assignments
+                            // We need to compare existing vs new participants
+                            const existingAct = existingActMap.get(act.id);
+                            const existingParticipants = (existingAct?.participants as any[]) || [];
+                            const newParticipants = (activityData.participants as any[]) || [];
+
+                            // Extract user IDs from participants array (handles both string and object formats)
+                            const getUserId = (p: anyway) => typeof p === 'string' ? p : p.userId;
+                            const existingUserIds = new Set(existingParticipants.map(getUserId));
+                            const newUserIds = newParticipants.map(getUserId);
+
+                            // Find users who are in new list but NOT in old list
+                            const addedUserIds = newUserIds.filter(uid => !existingUserIds.has(uid));
+
+                            // Create Task for each new assignee
+                            for (const userId of addedUserIds) {
+                                if (userId) { // Safety check
+                                    console.log(`Creating inbox task for user ${userId} on activity ${act.name}`);
+                                    // Generate a unique ID for the task (simple random for now or let DB handle if serial, but schema says varchar)
+                                    // We'll use crypto.randomUUID() or similar if available, or a simple timestamp hack if imports tricky.
+                                    // But wait, generateId is defined at bottom of file... let's move it up or duplicate if scope issue.
+                                    // Actually `generateId` is NOT in scope here, it is defined later.
+                                    // I'll grab it via function call if I move it, or just use `crypto.randomUUID()` here if I import it.
+                                    // `randomUUID` is in 'crypto' which is node standard. I'll use `globalThis.crypto.randomUUID()` if env supports or import it.
+                                    // Since this is 'use server', usually node crypto is available.
+
+                                    await tx.insert(tasks).values({
+                                        id: crypto.randomUUID(),
+                                        type: 'PROJECT_ACTIVITY',
+                                        projectId: id,
+                                        activityId: act.id,
+                                        assigneeId: userId,
+                                        creatorId: session.user.id,
+                                        status: 'PENDING',
+                                        priority: 'MEDIUM',
+                                        dueDate: activityData.endDate || null,
+                                        instructions: `Se te ha asignado la actividad: "${activityData.name}" en el proyecto "${projectData.title || 'Proyecto'}"`,
+                                        createdAt: new Date(),
+                                        updatedAt: new Date()
+                                    });
+                                }
                             }
 
                             await tx.insert(projectActivities)

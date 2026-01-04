@@ -57,6 +57,9 @@ export async function getCommentsAction(documentId: string) {
                 id: comments.id,
                 content: comments.content,
                 createdAt: comments.createdAt,
+                x: comments.x,
+                y: comments.y,
+                page: comments.page,
                 user: {
                     id: users.id,
                     name: users.name,

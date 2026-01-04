@@ -475,8 +475,8 @@ function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation
                                     type="button"
                                     onClick={onToggleMarking}
                                     className={`p-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 flex-1 justify-center border ${isMarking
-                                            ? 'bg-blue-600 text-white border-blue-600 shadow-md animate-pulse'
-                                            : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-600'
+                                        ? 'bg-blue-600 text-white border-blue-600 shadow-md animate-pulse'
+                                        : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-600'
                                         }`}
                                 >
                                     <MapPin size={16} weight={isMarking ? 'fill' : 'bold'} />

@@ -81,7 +81,9 @@ export default function TaskInboxWidget({ tasks }: { tasks: any[] }) {
                         <h4 className="text-sm font-bold text-slate-800 mb-1 group-hover:text-indigo-600 transition-colors leading-tight">{task.title}</h4>
                         <div className="flex items-center justify-between mt-3">
                             <span className="text-xs text-slate-400 group-hover:text-indigo-500 transition-colors">
-                                {task.source === 'DOCUMENT' ? 'Revisar Documento' : 'Resolver ahora'}
+                                {task.source === 'DOCUMENT' ? 'Revisar Documento' :
+                                    task.source === 'PROJECT' ? 'Ver Proyecto' :
+                                        'Resolver ahora'}
                             </span>
                             <CaretRight size={14} className="text-slate-300 group-hover:text-indigo-600 transform group-hover:translate-x-1 transition-all" />
                         </div>

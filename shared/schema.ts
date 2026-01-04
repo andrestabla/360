@@ -379,8 +379,16 @@ export const systemEnvironment = pgTable("system_environment", {
 
 export const tasks = pgTable("tasks", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  type: varchar("type", { length: 50 }).notNull(), // REVIEW, APPROVE, VERSION, CREATE
+  type: varchar("type", { length: 50 }).notNull(), // REVIEW, APPROVE, VERSION, CREATE, PROJECT_ACTIVITY
   documentId: varchar("document_id", { length: 255 }).references(() => documents.id, { onDelete: 'cascade' }),
+  projectId: varchar("project_id", { length: 255 }).references(() => projects.id, { onDelete: 'cascade' }), // Added
+  activityId: varchar("activity_id", { length: 255 }), // Loose coupling or strict? Let's keep loose for now or strict if table exists. 
+  // It references projectActivities. But circular refs might be issue if defined below. 
+  // projectActivities is defined AFTER tasks in this file? No, let's check.
+  // projectActivities is defined at line 539. tasks is at 380.
+  // So I cannot strictly reference projectActivities here unless I move definition or use loose reference.
+  // I will use loose varchar for activityId for now to avoid reordering half the file.
+
   assigneeId: varchar("assignee_id", { length: 255 }).references(() => users.id, { onDelete: 'set null' }),
   creatorId: varchar("creator_id", { length: 255 }).references(() => users.id, { onDelete: 'set null' }),
   status: varchar("status", { length: 50 }).default("PENDING"), // PENDING, COMPLETED, REJECTED
@@ -391,6 +399,7 @@ export const tasks = pgTable("tasks", {
   updatedAt: timestamp("updated_at", { mode: 'date' }).defaultNow(),
 }, (table) => [
   index("idx_tasks_document").on(table.documentId),
+  index("idx_tasks_project").on(table.projectId),
   index("idx_tasks_assignee").on(table.assigneeId),
   index("idx_tasks_status").on(table.status),
 ]);

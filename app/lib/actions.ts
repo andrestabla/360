@@ -466,17 +466,34 @@ export async function getPendingTasks(userId: string) {
         };
     });
 
-    const unifiedDocTasks = docTasks.map(t => ({
-        id: t.id,
-        title: t.document?.title ? `${t.type}: ${t.document.title}` : `Tarea: ${t.type}`,
-        priority: t.priority || 'MEDIUM',
-        dueDate: t.dueDate,
-        source: 'DOCUMENT',
-        // Link to repository with the doc selected or a specific task view
-        // For now, open repository with the doc
-        link: `/dashboard/repository?docId=${t.documentId}`,
-        createdAt: t.createdAt
-    }));
+    const unifiedDocTasks = docTasks.map(t => {
+        let source = 'DOCUMENT';
+        let link = `/dashboard/repository?docId=${t.documentId}`;
+        // Use document title if available, otherwise type or instructions
+        let title = t.document?.title ? `${t.type}: ${t.document.title}` : `Tarea: ${t.type}`;
+
+        if (t.type === 'PROJECT_ACTIVITY' && t.projectId) {
+            source = 'PROJECT';
+            link = `/dashboard/projects/${t.projectId}`; // Direct to project
+            // Use instructions as best proxy for title since we don't join project yet
+            title = t.instructions && t.instructions.length < 50 ? t.instructions : 'Actividad de Proyecto';
+            if (t.instructions && t.instructions.includes('asignado la actividad:')) {
+                // Try to extract activity name for cleaner title
+                const match = t.instructions.match(/actividad: "([^"]+)"/);
+                if (match) title = `Actividad: ${match[1]}`;
+            }
+        }
+
+        return {
+            id: t.id,
+            title,
+            priority: t.priority || 'MEDIUM',
+            dueDate: t.dueDate,
+            source,
+            link,
+            createdAt: t.createdAt
+        };
+    });
 
     // 4. Merge and Sort
     const all = [...unifiedCases, ...unifiedDocTasks].sort((a, b) => {
