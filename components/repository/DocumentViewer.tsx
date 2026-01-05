@@ -15,8 +15,8 @@ import { Unit } from '@/shared/schema';
 import { RepositorySidebar } from './RepositorySidebar';
 import html2canvas from 'html2canvas'; // Import html2canvas
 import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+import './AnnotationLayer.css';
+import './TextLayer.css';
 
 // Configure dynamic worker as requested
 if (typeof window !== 'undefined') {
