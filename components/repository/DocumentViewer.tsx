@@ -19,8 +19,9 @@ import './AnnotationLayer.css';
 import './TextLayer.css';
 
 // Configure dynamic worker as requested
+// Configure local worker to avoid CORS issues from CDN
 if (typeof window !== 'undefined') {
-    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
 
 const pdfOptions = {
