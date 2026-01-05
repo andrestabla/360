@@ -14,6 +14,19 @@ import { createCommentAction, getCommentsAction } from '@/app/lib/commentActions
 import { Unit } from '@/shared/schema';
 import { RepositorySidebar } from './RepositorySidebar';
 import html2canvas from 'html2canvas'; // Import html2canvas
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+// Configure dynamic worker as requested
+if (typeof window !== 'undefined') {
+    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+}
+
+const pdfOptions = {
+    cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+    cMapPacked: true,
+};
 
 // Reusing helper from sidebar/page (should be in utils)
 // Reusing helper from sidebar/page (should be in utils)
@@ -405,22 +418,90 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                     ) : isImage ? (
                         <img src={previewUrl!} alt={doc.title} className="max-w-full max-h-full object-contain shadow-lg rounded-lg bg-white" />
                     ) : isPDF ? (
-                        <div className="w-full h-full bg-white rounded-lg shadow-lg relative group">
-                            <iframe
-                                src={previewUrl!}
-                                className="w-full h-full rounded-lg"
-                                title="PDF Preview"
-                            />
-                            {/* Fallback button if iframe fails or is blocked */}
-                            <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                    onClick={() => window.open(previewUrl || '', '_blank')}
-                                    className="bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg"
+                        /* SCOPED PDF VIEWER: Workflows uses React-PDF, Repository uses Iframe */
+                        mode === 'work' ? (
+                            <div className="flex flex-col items-center w-full min-h-full pb-20 relative bg-slate-500/10">
+                                <Document
+                                    key={previewUrl} // Strict remount
+                                    file={previewUrl}
+                                    options={pdfOptions}
+                                    className="flex flex-col items-center p-4"
+                                    loading={<div className="animate-pulse text-slate-400 mt-10">Cargando motor PDF...</div>}
+                                    error={<div className="text-red-400 mt-10">Error al cargar PDF</div>}
                                 >
-                                    Abrir en nueva pestaña
-                                </button>
+                                    <div className="relative shadow-xl">
+                                        <Page
+                                            pageNumber={1}
+                                            scale={1.2}
+                                            onClick={handleMarkingClick}
+                                            renderTextLayer={true}
+                                            renderAnnotationLayer={true}
+                                        >
+                                            {/* MARKERS INSIDE PAGE (Sticky) */}
+                                            {savedComments.map((c) => (
+                                                (c.x !== undefined && c.y !== undefined) && (
+                                                    <div
+                                                        key={c.id}
+                                                        className="absolute z-40 w-6 h-6 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[10px] font-bold cursor-pointer transition-transform hover:scale-110"
+                                                        style={{
+                                                            left: `${c.x}%`,
+                                                            top: `${c.y}%`,
+                                                            transform: 'translate(-50%, -50%)' // Center anchor
+                                                        }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSidebarMode('comments');
+                                                            setIsSidebarOpen(true);
+                                                        }}
+                                                        title={`${c.user?.name || 'Usuario'}: ${c.content}`}
+                                                    >
+                                                        {c.user?.initials || '?'}
+                                                    </div>
+                                                )
+                                            ))}
+                                            {/* PENDING MARKER INSIDE PAGE */}
+                                            {pendingCommentLocation && (
+                                                <div
+                                                    className="absolute z-50 w-6 h-6 bg-blue-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-[10px] font-bold animate-bounce pointer-events-none"
+                                                    style={{
+                                                        left: `${pendingCommentLocation.x}%`,
+                                                        top: `${pendingCommentLocation.y}%`,
+                                                        transform: 'translate(-50%, -50%)'
+                                                    }}
+                                                >
+                                                    +
+                                                </div>
+                                            )}
+                                        </Page>
+
+                                        {/* CLICK OVERLAY FOR MARKING (Only if mode=work & isMarking) - Inside Page Wrapper */}
+                                        {isMarking && (
+                                            <div
+                                                className="absolute inset-0 z-[60] cursor-crosshair bg-transparent"
+                                                onClick={handleMarkingClick}
+                                            ></div>
+                                        )}
+                                    </div>
+                                </Document>
                             </div>
-                        </div>
+                        ) : (
+                            /* REPOSITORY MODE: Standard Iframe (Stable) */
+                            <div className="w-full h-full bg-white rounded-lg shadow-lg relative group">
+                                <iframe
+                                    src={previewUrl!}
+                                    className="w-full h-full rounded-lg"
+                                    title="PDF Preview"
+                                />
+                                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => window.open(previewUrl || '', '_blank')}
+                                        className="bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg"
+                                    >
+                                        Abrir en nueva pestaña
+                                    </button>
+                                </div>
+                            </div>
+                        )
                     ) : isVideo ? (
                         <div className="w-full max-w-4xl bg-black rounded-lg shadow-lg overflow-hidden flex items-center justify-center">
                             <video
