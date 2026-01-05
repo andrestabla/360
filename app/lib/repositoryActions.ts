@@ -112,6 +112,8 @@ export async function getDocumentsAction(folderId: string | null, unitId?: strin
         conditions.push(like(documents.title, `%${search}%`));
     } else {
         conditions.push(folderId ? eq(documents.folderId, folderId) : isNull(documents.folderId));
+        // Strict filter: Hide octet-stream system files from public repo
+        conditions.push(sql`${documents.type} NOT LIKE '%octet-stream%'`);
     }
 
     if (unitId) conditions.push(eq(documents.unitId, unitId));
