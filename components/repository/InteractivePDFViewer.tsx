@@ -4,8 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { RepositoryFile } from '@/app/lib/repositoryActions';
 import { User } from '@/lib/data';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+import './AnnotationLayer.css';
+import './TextLayer.css';
 
 // Ensure worker is configured (Redundant safety check)
 if (typeof window !== 'undefined' && !pdfjs.GlobalWorkerOptions.workerSrc) {
