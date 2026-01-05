@@ -38,9 +38,14 @@ export async function GET(
                     }
 
                     const headers = new Headers();
-                    headers.set('Content-Type', upstream.headers.get('Content-Type') || 'application/octet-stream');
+                    headers.set('Content-Type', upstream.headers.get('Content-Type') || 'application/pdf');
                     headers.set('Cache-Control', 'public, max-age=3600');
-                    headers.set('Access-Control-Allow-Origin', '*');
+
+                    // CORS for Credentials (Required for withCredentials: true)
+                    const origin = request.headers.get('origin') || '*';
+                    headers.set('Access-Control-Allow-Origin', origin);
+                    headers.set('Access-Control-Allow-Credentials', 'true');
+                    headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
                     // Helper to clone/pass body
                     // @ts-ignore
