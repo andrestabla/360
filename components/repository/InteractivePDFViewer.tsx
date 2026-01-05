@@ -106,8 +106,21 @@ export default function InteractivePDFViewer({
                 options={pdfOptions}
                 className="flex flex-col items-center p-4 gap-4"
                 loading={<div className="animate-pulse text-slate-400 mt-10">Cargando documento...</div>}
-                error={<div className="text-red-400 mt-10 p-4 bg-white rounded-xl shadow-sm">Error al cargar PDF. Verifica que el archivo no esté corrupto.</div>}
                 onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={(e) => console.error("PDF LOAD ERROR:", e)}
+                error={
+                    <div className="flex flex-col items-center justify-center w-full h-full min-h-[50vh] gap-4 p-8">
+                        <div className="text-red-500 bg-red-50 px-4 py-2 rounded-lg text-sm border border-red-100 flex items-center gap-2">
+                            ⚠️ Error cargando motor interactivo
+                        </div>
+                        <p className="text-xs text-slate-400">Mostrando vista clásica (iframe) por seguridad.</p>
+                        <iframe
+                            src={url}
+                            className="w-full h-[800px] border border-slate-200 rounded-lg shadow-sm bg-white"
+                            title="PDF Fallback"
+                        />
+                    </div>
+                }
             >
                 {Array.from(new Array(numPages), (el, index) => (
                     <div key={`page_${index + 1}`} className="relative shadow-xl">
