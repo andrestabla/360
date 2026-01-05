@@ -92,6 +92,15 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
     const isEmbed = doc.type === 'embed';
 
 
+
+    // Helper to ensure absolute URL for proxy consumption
+    const toAbsolute = (u: string) => {
+        if (!u) return '';
+        if (u.startsWith('http')) return u;
+        if (typeof window !== 'undefined') return `${window.location.origin}${u.startsWith('/') ? '' : '/'}${u}`;
+        return u;
+    };
+
     // Fetch secure URL for preview
     useEffect(() => {
         const fetchUrl = async () => {
@@ -128,13 +137,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                 return;
             }
 
-            // Helper to ensure absolute URL for proxy consumption
-            const toAbsolute = (u: string) => {
-                if (!u) return '';
-                if (u.startsWith('http')) return u;
-                if (typeof window !== 'undefined') return `${window.location.origin}${u.startsWith('/') ? '' : '/'}${u}`;
-                return u;
-            };
+
 
             console.log('[DocumentViewer] Fetching URL for:', doc.id, 'Original URL:', doc.url, 'Effective URL:', docUrl);
             try {
