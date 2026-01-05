@@ -18,10 +18,9 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import './AnnotationLayer.css';
 import './TextLayer.css';
 
-// Configure worker to use Proxied CDN (Guarantees version match + No CORS)
+// Configure worker to use Local File (Copied via postinstall - Guarantees version match + No CORS)
 if (typeof window !== 'undefined') {
-    const workerUrl = `https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs`;
-    pdfjs.GlobalWorkerOptions.workerSrc = `/api/proxy?url=${encodeURIComponent(workerUrl)}`;
+    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
 
 const pdfOptions = {
