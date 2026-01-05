@@ -78,6 +78,20 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
         router.refresh();
     };
 
+    // Helper to check extensions
+    const checkExt = (str: string | undefined | null, regex: RegExp) => (str || '').match(regex);
+    const urlExt = doc.url?.split('?')[0].split('.').pop()?.toLowerCase();
+    const isStrictOffice = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'msword'].includes(urlExt || '');
+
+    // Priority: If URL says it's Office, trust it over metadata (to prevent PDF viewer crashing on PPTX)
+    const isImage = checkExt(doc.type, /(image|jpg|jpeg|png|gif|webp)/i) || checkExt(doc.title, /\.(jpg|jpeg|png|gif|webp)$/i) || checkExt(doc.url, /\.(jpg|jpeg|png|gif|webp)(\?|$)/i);
+    // Only treat as PDF if NOT strictly office
+    const isPDF = !isStrictOffice && (checkExt(doc.type, /pdf/i) || checkExt(doc.title, /\.pdf$/i) || checkExt(doc.url, /\.pdf(\?|$)/i));
+    const isVideo = checkExt(doc.type, /(video|mp4|webm|mov)/i) || checkExt(doc.title, /\.(mp4|webm|mov)$/i) || checkExt(doc.url, /\.(mp4|webm|mov)(\?|$)/i);
+    const isOffice = isStrictOffice || checkExt(doc.type, /(doc|docx|xls|xlsx|ppt|pptx|msword|officedocument)/i) || checkExt(doc.title, /\.(doc|docx|xls|xlsx|ppt|pptx)$/i) || checkExt(doc.url, /\.(doc|docx|xls|xlsx|ppt|pptx)(\?|$)/i);
+    const isEmbed = doc.type === 'embed';
+
+
     // Fetch secure URL for preview
     useEffect(() => {
         const fetchUrl = async () => {
@@ -104,7 +118,12 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                 // First try standard repo action
                 const res = await getDocumentDownloadUrlAction(doc.id);
                 if (res.success && res.url) {
-                    setPreviewUrl(res.url);
+                    let finalUrl = res.url;
+                    // Always proxy PDFs to avoid "Access-Control-Allow-Origin" errors
+                    if (isPDF) {
+                        finalUrl = `/api/proxy?url=${encodeURIComponent(finalUrl)}`;
+                    }
+                    setPreviewUrl(finalUrl);
                 } else {
                     // Fallback: If not found in repo (e.g. project evidence), try generic signer or proxy
 
@@ -120,13 +139,26 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                     console.log('[DocumentViewer] Signed URL result:', JSON.stringify(signRes));
 
                     if (signRes.success && 'url' in signRes && signRes.url) {
-                        setPreviewUrl(signRes.url);
+                        let finalUrl = signRes.url;
+                        // Always proxy PDFs to avoid "Access-Control-Allow-Origin" errors
+                        if (isPDF) {
+                            finalUrl = `/api/proxy?url=${encodeURIComponent(finalUrl)}`;
+                        }
+                        setPreviewUrl(finalUrl);
                     } else if (signRes.error) {
                         console.error("Signer error:", signRes.error);
                         // Silent fallback
-                        setPreviewUrl(docUrl);
+                        let finalUrl = docUrl;
+                        if (isPDF && !finalUrl.includes('/api/proxy')) {
+                            finalUrl = `/api/proxy?url=${encodeURIComponent(finalUrl)}`;
+                        }
+                        setPreviewUrl(finalUrl);
                     } else {
-                        setPreviewUrl(docUrl);
+                        let finalUrl = docUrl;
+                        if (isPDF && !finalUrl.includes('/api/proxy')) {
+                            finalUrl = `/api/proxy?url=${encodeURIComponent(finalUrl)}`;
+                        }
+                        setPreviewUrl(finalUrl);
                     }
                 }
             } catch (error: any) {
@@ -225,14 +257,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
         setIsSidebarOpen(true);
     };
 
-    // Helper to check extensions
-    const checkExt = (str: string | undefined | null, regex: RegExp) => (str || '').match(regex);
 
-    const isImage = checkExt(doc.type, /(image|jpg|jpeg|png|gif|webp)/i) || checkExt(doc.title, /\.(jpg|jpeg|png|gif|webp)$/i) || checkExt(doc.url, /\.(jpg|jpeg|png|gif|webp)(\?|$)/i);
-    const isPDF = checkExt(doc.type, /pdf/i) || checkExt(doc.title, /\.pdf$/i) || checkExt(doc.url, /\.pdf(\?|$)/i);
-    const isVideo = checkExt(doc.type, /(video|mp4|webm|mov)/i) || checkExt(doc.title, /\.(mp4|webm|mov)$/i) || checkExt(doc.url, /\.(mp4|webm|mov)(\?|$)/i);
-    const isOffice = checkExt(doc.type, /(doc|docx|xls|xlsx|ppt|pptx|msword|officedocument)/i) || checkExt(doc.title, /\.(doc|docx|xls|xlsx|ppt|pptx)$/i) || checkExt(doc.url, /\.(doc|docx|xls|xlsx|ppt|pptx)(\?|$)/i);
-    const isEmbed = doc.type === 'embed';
 
 
     return (
@@ -424,8 +449,8 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                             <div className="flex flex-col items-center w-full min-h-full pb-20 relative bg-slate-500/10">
                                 <Document
                                     key={previewUrl} // Strict remount
-                                    // Use object to ensure credentials are sent to proxy for redirect
-                                    file={{ url: previewUrl || '', withCredentials: true } as any}
+                                    // Revert credentials, use Proxy URL instead
+                                    file={previewUrl}
                                     options={pdfOptions}
                                     className="flex flex-col items-center p-4"
                                     loading={<div className="animate-pulse text-slate-400 mt-10">Cargando motor PDF...</div>}
