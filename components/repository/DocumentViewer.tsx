@@ -15,9 +15,14 @@ import { Unit } from '@/shared/schema';
 import { RepositorySidebar } from './RepositorySidebar';
 import html2canvas from 'html2canvas'; // Import html2canvas
 import { Document, Page, pdfjs } from 'react-pdf';
-import InteractivePDFViewer from './InteractivePDFViewer'; // Import custom viewer
+import dynamic from 'next/dynamic';
 import './AnnotationLayer.css';
 import './TextLayer.css';
+
+const InteractivePDFViewer = dynamic(() => import('./InteractivePDFViewer'), {
+    ssr: false,
+    loading: () => <div className="flex items-center justify-center h-full min-h-[400px] text-slate-400 animate-pulse">Iniciando motor PDF...</div>
+});
 
 // Configure worker to use Local File (Copied via postinstall - Guarantees version match + No CORS)
 if (typeof window !== 'undefined') {
