@@ -26,7 +26,35 @@ export async function GET(
         const result = await storageService.download(key);
 
         if (result.success && result.url) {
-            // Redirect to the signed URL (offload bandwidth to R2/S3)
+            const stream = request.nextUrl.searchParams.get('stream') === 'true';
+
+            if (stream) {
+                console.log('[Storage Proxy] Streaming file from:', result.url);
+                try {
+                    const upstream = await fetch(result.url);
+                    if (!upstream.ok) {
+                        console.error('[Storage Proxy] Upstream fetch failed:', upstream.status, upstream.statusText);
+                        return new NextResponse(`Upstream Error: ${upstream.statusText}`, { status: upstream.status });
+                    }
+
+                    const headers = new Headers();
+                    headers.set('Content-Type', upstream.headers.get('Content-Type') || 'application/octet-stream');
+                    headers.set('Cache-Control', 'public, max-age=3600');
+                    headers.set('Access-Control-Allow-Origin', '*');
+
+                    // Helper to clone/pass body
+                    // @ts-ignore
+                    return new NextResponse(upstream.body, {
+                        status: 200,
+                        headers: headers
+                    });
+                } catch (fetchError: any) {
+                    console.error('[Storage Proxy] Stream fetch failed:', fetchError);
+                    return new NextResponse(`Stream Error: ${fetchError.message}`, { status: 500 });
+                }
+            }
+
+            // Default: Redirect to the signed URL (offload bandwidth to R2/S3)
             return NextResponse.redirect(result.url);
         } else {
             console.error('[Storage Proxy] File not found or access denied for key:', key, result.error);

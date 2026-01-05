@@ -113,6 +113,21 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                 }
             }
 
+            // OPTIMIZATION: If URL is already an internal storage route, use it directly (Streaming if PDF)
+            if (docUrl && docUrl.includes('/api/storage/')) {
+                let finalUrl = docUrl;
+                if (isPDF) {
+                    // Force server-side streaming to avoid CORS/Redirection issues with R2
+                    finalUrl = `${finalUrl}${finalUrl.includes('?') ? '&' : '?'}stream=true`;
+                    // Ensure absolute URL for react-pdf
+                    finalUrl = toAbsolute(finalUrl);
+                }
+                console.log('[DocumentViewer] Using internal storage path:', finalUrl);
+                setPreviewUrl(finalUrl);
+                setLoadingPreview(false);
+                return;
+            }
+
             // Helper to ensure absolute URL for proxy consumption
             const toAbsolute = (u: string) => {
                 if (!u) return '';
@@ -136,17 +151,6 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                 } else {
                     // Fallback: If not found in repo (e.g. project evidence), try generic signer or proxy
 
-                    // If it is ALREADY a proxy URL (rewritten above), we can use it directly as the source for iframe/img.
-                    if (docUrl.includes('/api/storage/')) {
-                        console.log('[DocumentViewer] Using proxy URL directly:', docUrl);
-                        let finalUrl = docUrl;
-                        if (isPDF) {
-                            finalUrl = `/api/proxy?url=${encodeURIComponent(toAbsolute(finalUrl))}`;
-                        }
-                        setPreviewUrl(finalUrl);
-                        setLoadingPreview(false);
-                        return;
-                    }
 
                     const signRes = await getSignedUrlAction(docUrl);
                     console.log('[DocumentViewer] Signed URL result:', JSON.stringify(signRes));
