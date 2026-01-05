@@ -44,9 +44,14 @@ interface RepositorySidebarProps {
     isMarking?: boolean;
     onToggleMarking?: () => void;
     onCommentsLoaded?: (comments: any[]) => void;
+
+    // Interactive Props
+    highlightedCommentId?: string | null;
+    onHoverComment?: (id: string | null) => void;
+    onCommentSaved?: () => void;
 }
 
-export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOverride, onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand, capturedImage, onClearCapture, pendingLocation, onClearLocation, isMarking, onToggleMarking, onCommentsLoaded }: RepositorySidebarProps) {
+export function RepositorySidebar({ doc, units, mode = 'repository', activeTabOverride, onClose, onDownload, onUpdate, onAssign, onToggleLike, onShare, onDelete, onMove, onExpand, capturedImage, onClearCapture, pendingLocation, onClearLocation, isMarking, onToggleMarking, onCommentsLoaded, highlightedCommentId, onHoverComment, onCommentSaved }: RepositorySidebarProps) {
     // In 'view' mode, we default to history and show NOTHING else (per user request).
     const [activeTab, setActiveTab] = useState<'view' | 'edit' | 'comments' | 'history'>(
         activeTabOverride || (mode === 'view' ? 'history' : (mode === 'work' ? 'comments' : 'view'))
@@ -355,7 +360,7 @@ function InputGroup({ label, children }: any) {
 }
 
 
-function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation, onClearLocation, isMarking, onToggleMarking, onCommentsLoaded }: { doc: RepositoryFile, mode: string, capturedImage?: string | null, onClearCapture?: () => void, pendingLocation?: any, onClearLocation?: () => void, isMarking?: boolean, onToggleMarking?: () => void, onCommentsLoaded?: (c: any[]) => void }) {
+function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation, onClearLocation, isMarking, onToggleMarking, onCommentsLoaded, highlightedCommentId, onHoverComment, onCommentSaved }: { doc: RepositoryFile, mode: string, capturedImage?: string | null, onClearCapture?: () => void, pendingLocation?: any, onClearLocation?: () => void, isMarking?: boolean, onToggleMarking?: () => void, onCommentsLoaded?: (c: any[]) => void, highlightedCommentId?: string | null, onHoverComment?: (id: string | null) => void, onCommentSaved?: () => void }) {
     const [comments, setComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
@@ -379,8 +384,21 @@ function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation
     }, [doc.id]);
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [comments]);
+        loadComments();
+    }, [doc.id]);
+
+    useEffect(() => {
+        // If specific comment highlighted, scroll to it
+        if (highlightedCommentId) {
+            const el = document.getElementById(`comment-${highlightedCommentId}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            // Otherwise scroll to bottom on new comments or load
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [comments, highlightedCommentId]);
 
     const handleSend = async (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -415,6 +433,7 @@ function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation
             if (!res.success) throw new Error(res.error || 'Unknown error');
 
             if (onClearLocation) onClearLocation();
+            if (onCommentSaved) onCommentSaved(); // Notify parent to refresh markers
             setNewComment('');
             loadComments(); // Refresh for real data
         } catch (e: any) {
@@ -451,25 +470,34 @@ function CommentsTab({ doc, mode, capturedImage, onClearCapture, pendingLocation
                         <p className="text-xs text-slate-400 max-w-[200px]">Selecciona texto o escribe abajo para comentar.</p>
                     </div>
                 ) : (
-                    comments.map((c: any) => (
-                        <div key={c.id} className="flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold flex-shrink-0">
-                                {c.user?.initials || c.user?.name?.substring(0, 2).toUpperCase() || '?'}
-                            </div>
-                            <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex-1">
-                                <div className="flex justify-between items-center mb-1">
-                                    <span className="text-xs font-bold text-slate-700">{c.user?.name || 'Usuario'}</span>
-                                    <span className="text-[10px] text-slate-400">{new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    comments.map((c: any) => {
+                        const isHighlighted = highlightedCommentId === c.id;
+                        return (
+                            <div
+                                key={c.id}
+                                id={`comment-${c.id}`}
+                                className={`flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300 transition-all p-2 rounded-xl ${isHighlighted ? 'bg-blue-50 ring-1 ring-blue-200' : ''}`}
+                                onMouseEnter={() => onHoverComment?.(c.id)}
+                                onMouseLeave={() => onHoverComment?.(null)}
+                            >
+                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold flex-shrink-0">
+                                    {c.user?.initials || c.user?.name?.substring(0, 2).toUpperCase() || '?'}
                                 </div>
-                                <p className="text-sm text-slate-600">{c.content}</p>
-                                {c.x && (
-                                    <div className="mt-2 text-[10px] text-blue-500 flex items-center gap-1">
-                                        <MapPin weight="fill" /> Marcador en documento
+                                <div className={`bg-white p-3 rounded-2xl border shadow-sm flex-1 ${isHighlighted ? 'border-blue-300' : 'border-slate-100'}`}>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs font-bold text-slate-700">{c.user?.name || 'Usuario'}</span>
+                                        <span className="text-[10px] text-slate-400">{new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
-                                )}
+                                    <p className="text-sm text-slate-600 whitespace-pre-wrap">{c.content}</p>
+                                    {(c.x || c.location) && (
+                                        <div className={`mt-2 text-[10px] flex items-center gap-1 font-bold ${isHighlighted ? 'text-blue-600' : 'text-blue-500'}`}>
+                                            <MapPin weight="fill" /> Marcador en documento
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        )
+                    })
                 )}
                 <div ref={messagesEndRef} />
             </div>

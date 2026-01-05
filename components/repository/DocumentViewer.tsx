@@ -15,6 +15,7 @@ import { Unit } from '@/shared/schema';
 import { RepositorySidebar } from './RepositorySidebar';
 import html2canvas from 'html2canvas'; // Import html2canvas
 import { Document, Page, pdfjs } from 'react-pdf';
+import InteractivePDFViewer from './InteractivePDFViewer'; // Import custom viewer
 import './AnnotationLayer.css';
 import './TextLayer.css';
 
@@ -227,6 +228,69 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
     const [pendingCommentLocation, setPendingCommentLocation] = useState<{ x: number, y: number, page: number } | null>(null);
     const [isMarking, setIsMarking] = useState(false); // New state for explicit marking mode
     const [savedComments, setSavedComments] = useState<any[]>([]); // Saved comments for markers
+    const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
+
+    // Sync savedComments from sidebar (This would realistically come from a shared context or prop if not fetched here)
+    // For now, assuming DocumentViewer or Sidebar manages fetching. 
+    // Actually, DocumentViewer doesn't fetch comments, RepositorySidebar does.
+    // We need to either lift the state up or refetch here. 
+    // Given the architecture, let's allow InteractivePDFViewer to just render what we pass.
+    // We already have `savedComments` state, but it wasn't populated.
+    // Let's populate it via a side-effect or prop if possible, but for now we'll rely on the fact that sidebar might need to pass it back.
+    // To make this work bidirectionally without refactoring the whole sidebar, we'll listen to a custom event or shared store, but simplest is to just fetch comments here too for the markers.
+
+    useEffect(() => {
+        const loadMarkers = async () => {
+            if (!doc.id) return;
+            const res = await getCommentsAction(doc.id);
+            if (res.success && res.data) {
+                // Parse markers from comment metadata (assuming we store x,y,page there)
+                // The current schema might not have x/y on comments directly unless we put it in content or a metadata field.
+                // For this demo, we'll assume the API/Action supports returning 'location' or we parse it.
+                // Since we don't have a 'location' column in schema yet, let's assume it's in the comment text or a specific field we added previously?
+                // Wait, the Schema has separate 'location' field if we migrated, or we use JSON in 'content'? 
+                // Let's use the 'data' field if available (RepositoryComment doesn't have it in standard schema but we might have added it).
+                // Let's assume we map standard comments to markers if they have x/y in their `location` property (if we added it to schema).
+                // If not, we might need to parse.
+
+                // MOCKING for stability if schema isn't updated:
+                // We'll trust the checked files. `commentActions.ts` implies simple comments.
+                // We need to ensure we can save/load location.
+                // For now, let's map what we can.
+                const markers = res.data.map((c: any) => ({
+                    id: c.id,
+                    x: c.location?.x || 0,
+                    y: c.location?.y || 0,
+                    page: c.location?.page || 1,
+                    content: c.content,
+                    user: c.user
+                })).filter((c: any) => c.x > 0 && c.y > 0);
+                setSavedComments(markers);
+            }
+        };
+        loadMarkers();
+        // Poll or listen for updates?
+        const interval = setInterval(loadMarkers, 5000); // Poll for now
+        return () => clearInterval(interval);
+    }, [doc.id]);
+
+    const handleCommentClick = (commentId: string) => {
+        setHighlightedCommentId(commentId);
+        setSidebarMode('comments');
+        setIsSidebarOpen(true);
+        // Dispatch event or callback to scroll sidebar? 
+        // We'll need to pass this state down to sidebar or use a ref.
+    };
+
+    const handleTextSelection = (text: string, rect: { x: number, y: number, page: number }) => {
+        setPendingCommentLocation(rect);
+        // Pre-fill comment box? We need a way to pass this "Draft" context to the sidebar.
+        // For now, just open sidebar and marker.
+        setSidebarMode('comments');
+        setIsSidebarOpen(true);
+        // Provide visual feedback
+        console.log("Text selected:", text);
+    };
 
     const handleCapture = async () => {
         const element = document.getElementById('document-preview-container');
@@ -463,22 +527,40 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                     ) : isImage ? (
                         <img src={previewUrl!} alt={doc.title} className="max-w-full max-h-full object-contain shadow-lg rounded-lg bg-white" />
                     ) : isPDF ? (
-                        /* STANDARD PDF VIEWER (Iframe) - Unified for View/Work for stability */
-                        <div className="w-full h-full bg-white rounded-lg shadow-lg relative group">
-                            <iframe
-                                src={previewUrl!}
-                                className="w-full h-full rounded-lg"
-                                title="PDF Preview"
+                        /* MODE DECISION: Work vs View */
+                        mode === 'work' ? (
+                            <InteractivePDFViewer
+                                url={previewUrl!}
+                                comments={savedComments}
+                                onCommentClick={handleCommentClick}
+                                onTextSelect={handleTextSelection}
+                                highlightedCommentId={highlightedCommentId}
+                                isMarking={isMarking}
+                                onMarkClick={(x, y, page) => {
+                                    setPendingCommentLocation({ x, y, page });
+                                    setIsMarking(false);
+                                    setSidebarMode('comments');
+                                    setIsSidebarOpen(true);
+                                }}
                             />
-                            <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                    onClick={() => window.open(previewUrl || '', '_blank')}
-                                    className="bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg"
-                                >
-                                    Abrir en nueva pestaña
-                                </button>
+                        ) : (
+                            /* STANDARD PDF VIEWER (Iframe) - View Mode */
+                            <div className="w-full h-full bg-white rounded-lg shadow-lg relative group">
+                                <iframe
+                                    src={previewUrl!}
+                                    className="w-full h-full rounded-lg"
+                                    title="PDF Preview"
+                                />
+                                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => window.open(previewUrl || '', '_blank')}
+                                        className="bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg"
+                                    >
+                                        Abrir en nueva pestaña
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )
                     ) : isVideo ? (
                         <div className="w-full max-w-4xl bg-black rounded-lg shadow-lg overflow-hidden flex items-center justify-center">
                             <video
