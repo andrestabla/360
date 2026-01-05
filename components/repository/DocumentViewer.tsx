@@ -424,11 +424,14 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                             <div className="flex flex-col items-center w-full min-h-full pb-20 relative bg-slate-500/10">
                                 <Document
                                     key={previewUrl} // Strict remount
-                                    file={previewUrl}
+                                    // Use object to ensure credentials are sent to proxy for redirect
+                                    file={{ url: previewUrl, withCredentials: true }}
                                     options={pdfOptions}
                                     className="flex flex-col items-center p-4"
                                     loading={<div className="animate-pulse text-slate-400 mt-10">Cargando motor PDF...</div>}
-                                    error={<div className="text-red-400 mt-10">Error al cargar PDF</div>}
+                                    error={<div className="text-red-400 mt-10">Error al cargar PDF (Ver consola)</div>}
+                                    onLoadError={(error) => console.error("[React-PDF] Load Error:", error)}
+                                    onSourceError={(error) => console.error("[React-PDF] Source Error:", error)}
                                 >
                                     <div className="relative shadow-xl">
                                         <Page
