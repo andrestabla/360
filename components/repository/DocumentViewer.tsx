@@ -113,6 +113,14 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                 }
             }
 
+            // Helper to ensure absolute URL for proxy consumption
+            const toAbsolute = (u: string) => {
+                if (!u) return '';
+                if (u.startsWith('http')) return u;
+                if (typeof window !== 'undefined') return `${window.location.origin}${u.startsWith('/') ? '' : '/'}${u}`;
+                return u;
+            };
+
             console.log('[DocumentViewer] Fetching URL for:', doc.id, 'Original URL:', doc.url, 'Effective URL:', docUrl);
             try {
                 // First try standard repo action
@@ -121,8 +129,9 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                     let finalUrl = res.url;
                     // Always proxy PDFs to avoid "Access-Control-Allow-Origin" errors
                     if (isPDF) {
-                        finalUrl = `/api/proxy?url=${encodeURIComponent(finalUrl)}`;
+                        finalUrl = `/api/proxy?url=${encodeURIComponent(toAbsolute(finalUrl))}`;
                     }
+                    console.log('[DocumentViewer] Final Preview URL (Repo):', finalUrl);
                     setPreviewUrl(finalUrl);
                 } else {
                     // Fallback: If not found in repo (e.g. project evidence), try generic signer or proxy
@@ -130,7 +139,11 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                     // If it is ALREADY a proxy URL (rewritten above), we can use it directly as the source for iframe/img.
                     if (docUrl.includes('/api/storage/')) {
                         console.log('[DocumentViewer] Using proxy URL directly:', docUrl);
-                        setPreviewUrl(docUrl);
+                        let finalUrl = docUrl;
+                        if (isPDF) {
+                            finalUrl = `/api/proxy?url=${encodeURIComponent(toAbsolute(finalUrl))}`;
+                        }
+                        setPreviewUrl(finalUrl);
                         setLoadingPreview(false);
                         return;
                     }
@@ -142,7 +155,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                         let finalUrl = signRes.url;
                         // Always proxy PDFs to avoid "Access-Control-Allow-Origin" errors
                         if (isPDF) {
-                            finalUrl = `/api/proxy?url=${encodeURIComponent(finalUrl)}`;
+                            finalUrl = `/api/proxy?url=${encodeURIComponent(toAbsolute(finalUrl))}`;
                         }
                         setPreviewUrl(finalUrl);
                     } else if (signRes.error) {
@@ -150,13 +163,13 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                         // Silent fallback
                         let finalUrl = docUrl;
                         if (isPDF && !finalUrl.includes('/api/proxy')) {
-                            finalUrl = `/api/proxy?url=${encodeURIComponent(finalUrl)}`;
+                            finalUrl = `/api/proxy?url=${encodeURIComponent(toAbsolute(finalUrl))}`;
                         }
                         setPreviewUrl(finalUrl);
                     } else {
                         let finalUrl = docUrl;
                         if (isPDF && !finalUrl.includes('/api/proxy')) {
-                            finalUrl = `/api/proxy?url=${encodeURIComponent(finalUrl)}`;
+                            finalUrl = `/api/proxy?url=${encodeURIComponent(toAbsolute(finalUrl))}`;
                         }
                         setPreviewUrl(finalUrl);
                     }
