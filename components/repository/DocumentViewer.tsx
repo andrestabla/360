@@ -425,7 +425,7 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                                 <Document
                                     key={previewUrl} // Strict remount
                                     // Use object to ensure credentials are sent to proxy for redirect
-                                    file={{ url: previewUrl, withCredentials: true }}
+                                    file={{ url: previewUrl || '', withCredentials: true }}
                                     options={pdfOptions}
                                     className="flex flex-col items-center p-4"
                                     loading={<div className="animate-pulse text-slate-400 mt-10">Cargando motor PDF...</div>}
