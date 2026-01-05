@@ -561,6 +561,11 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                                 Tu navegador no soporta el elemento de video.
                             </video>
                         </div>
+                    ) : isEmbed && doc.content ? (
+                        <div
+                            className="w-full h-full bg-white rounded-lg overflow-hidden shadow-lg [&_iframe]:w-full [&_iframe]:h-full [&_iframe]:border-0"
+                            dangerouslySetInnerHTML={{ __html: doc.content }}
+                        />
                     ) : (isEmbed || doc.type === 'link') ? (
                         <div className="w-full h-full bg-white rounded-lg shadow-lg relative">
                             <iframe
@@ -577,12 +582,6 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
                                 </button>
                             </div>
                         </div>
-
-                    ) : isEmbed && doc.content ? (
-                        <div
-                            className="w-full h-full bg-white rounded-lg overflow-hidden shadow-lg [&_iframe]:w-full [&_iframe]:h-full [&_iframe]:border-0"
-                            dangerouslySetInnerHTML={{ __html: doc.content }}
-                        />
                     ) : isOffice ? (
                         <iframe
                             src={getGoogleDocsUrl(previewUrl!)}
