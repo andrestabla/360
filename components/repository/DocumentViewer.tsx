@@ -78,12 +78,12 @@ export default function DocumentViewer({ initialDoc, units, initialMode = 'repos
         router.refresh();
     };
 
-    // Helper to check extensions
+    // Helper to check extensions (Reusing checkExt)
     const checkExt = (str: string | undefined | null, regex: RegExp) => (str || '').match(regex);
     const urlExt = doc.url?.split('?')[0].split('.').pop()?.toLowerCase();
     const isStrictOffice = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'msword'].includes(urlExt || '');
 
-    // Priority: If URL says it's Office, trust it over metadata (to prevent PDF viewer crashing on PPTX)
+    // Priority: If URL says it's Office, trust it over metadata
     const isImage = checkExt(doc.type, /(image|jpg|jpeg|png|gif|webp)/i) || checkExt(doc.title, /\.(jpg|jpeg|png|gif|webp)$/i) || checkExt(doc.url, /\.(jpg|jpeg|png|gif|webp)(\?|$)/i);
     // Only treat as PDF if NOT strictly office
     const isPDF = !isStrictOffice && (checkExt(doc.type, /pdf/i) || checkExt(doc.title, /\.pdf$/i) || checkExt(doc.url, /\.pdf(\?|$)/i));
