@@ -102,12 +102,12 @@ export default function InteractivePDFViewer({
             </div>
 
             <Document
-                file={url}
+                file={{ url, withCredentials: true } as any}
                 options={pdfOptions}
                 className="flex flex-col items-center p-4 gap-4"
                 loading={<div className="animate-pulse text-slate-400 mt-10">Cargando documento...</div>}
                 onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={(e) => console.error("PDF LOAD ERROR:", e)}
+                onLoadError={(e) => console.error("PDF LOAD ERROR详情:", e.message, e.name, e)}
                 error={
                     <div className="flex flex-col items-center justify-center w-full h-full min-h-[50vh] gap-4 p-8">
                         <div className="text-red-500 bg-red-50 px-4 py-2 rounded-lg text-sm border border-red-100 flex items-center gap-2">
